@@ -1,16 +1,16 @@
 `define GW_IDE
 
 module v9958_top(
-    input  A7,
-    input  A6,
-    input  A5,
-    input  A4,
-    input  A3,
-    input  A2,
+    input   A7,
+    input   A6,
+    input   A5,
+    input   A4,
+    input   A3,
+    input   A2,
 
-    input  rd_n,
-    input  wr_n,
-    input iorq_n,
+    input   rd_n,
+    input   wr_n,
+    input   iorq_n,
 
     input   clk,
     input   clk_50,
@@ -20,8 +20,7 @@ module v9958_top(
 
     input   reset_n,
     input   [1:0] mode,
-    output   csw_n,
-    output   csr_n,
+    output  cs_n,
 
     output  int_n,
     inout   [7:0] cd,
@@ -53,12 +52,14 @@ module v9958_top(
     );
 
     wire    addr;
+    wire    csw_n;
+    wire    csr_n;
 
     assign ADDR = A7 & ~A6 & ~A5 & A4 & A3 & ~A2;   // $98 TO $9B
-    assign CS = ADDR & (!iorq_n);
+    assign cs_n = !(ADDR & (!iorq_n));
 
-    assign csw_n = !(CS & (!wr_n));
-    assign csr_n = !(CS & (!rd_n));
+    assign csw_n = !((!cs_n) & (!wr_n));
+    assign csr_n = !((!cs_n) & (!rd_n));
 
 // VDP signals
 	wire			VdpReq;
