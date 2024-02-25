@@ -1,35 +1,36 @@
 `define GW_IDE
 
 module v9958_top(
+    input  A7,
+    input  A6,
+    input  A5,
+    input  A4,
+    input  A3,
+    input  A2,
+
+    input  rd_n,
+    input  wr_n,
+    input iorq_n,
+
     input   clk,
     input   clk_50,
     input   clk_125,
- //   input   clk_111,
 
     input   s1,
 
     input   reset_n,
     input   [1:0] mode,
-    input   csw_n,
-    input   csr_n,
+    output   csw_n,
+    output   csr_n,
 
     output  int_n,
-    output  gromclk,
-    output  cpuclk,
     inout   [7:0] cd,
-//    inout   [0:7] cd,
 
     output  adc_clk,
     output  adc_cs,
     output  adc_mosi,
     input   adc_miso,
 
-    //output  [1:0]   led,
-
-    input   maxspr_n,
-    input   scanlin_n,
-    input   gromclk_ena_n,
-    input   cpuclk_ena_n,
 
     output            tmds_clk_p,
     output            tmds_clk_n,
@@ -51,6 +52,13 @@ module v9958_top(
 
     );
 
+    wire    addr;
+
+    assign ADDR = A7 & ~A6 & ~A5 & A4 & A3 & ~A2;   // $98 TO $9B
+    assign CS = ADDR & (!iorq_n);
+
+    assign csw_n = !(CS & (!wr_n));
+    assign csr_n = !(CS & (!rd_n));
 
 // VDP signals
 	wire			VdpReq;
@@ -181,17 +189,6 @@ module v9958_top(
     );
 
 
-//    wire [7:0] vdp_dbi;
-//    ram64k vram64k_inst(
-//      .clk(clk_w),
-//      .we(~WeVdp_n & VideoDLClk),
-//      .re(1'b1), //~ReVdp_n & VideoDLClk),
-//      .addr(VdpAdr[15:0] ),
-//      .din(VrmDbo),
-//      .dout(vdp_dbi)
-//    );
-//    assign VrmDbi = { vdp_dbi, vdp_dbi };
-
 	// Internal bus signals (common)
 
     reg io_state_r = 1'b0;
@@ -210,7 +207,7 @@ module v9958_top(
 
     assign VDP_ID  =  5'b00010; // V9958
     assign OFFSET_Y = 6'd16;
-    assign scanlin = ~scanlin_n;
+    assign scanlin = 1'b0;
 
     wire cswn_w;
     PINFILTER cswn_filter (
@@ -287,8 +284,8 @@ module v9958_top(
 		.PRAMADR			( VdpAdr							),
 		.PRAMDBI			( VrmDbi							),
 		.PRAMDBO			( VrmDbo							),
-		.VDPSPEEDMODE		( ~gromclk_ena_n                     ),	// for V9958 MSX2+/tR VDP
-		.RATIOMODE			( 3'b000							    ),	// for V9958 MSX2+/tR VDP
+		.VDPSPEEDMODE		( 1'b0                              ),	// for V9958 MSX2+/tR VDP
+		.RATIOMODE			( 3'b000						    ),	// for V9958 MSX2+/tR VDP
 		.CENTERYJK_R25_N 	( 1'b0          					),	// for V9958 MSX2+/tR VDP
 		.PVIDEOR			( VideoR							),
 		.PVIDEOG			( VideoG							),
@@ -306,8 +303,8 @@ module v9958_top(
 		.VDP_ID				( VDP_ID							),
 		.OFFSET_Y			( OFFSET_Y							),
         .HDMI_RESET         ( vdp_hdmi_reset                    ),
-        .PAL_MODE           ( pal_mode                      ),
-        .SPMAXSPR           ( ~maxspr_n                         ),
+        .PAL_MODE           ( pal_mode                          ),
+        .SPMAXSPR           ( 1'b0                              ),
         .CX                 ( vdp_cx                            ),
         .CY                 ( vdp_cy                            )
 	);
@@ -343,25 +340,6 @@ module v9958_top(
     );
 
     assign int_n = pVdpInt_n ? 1'bz : 1'b0;
-
-//    wire clk_grom;
-//    CLOCK_DIV #(
-//        .CLK_SRC(125.0),
-//        .CLK_DIV(3.58/8.0),
-//        .PRECISION_BITS(16)
-//    ) gromclkd (
-//        .clk_src(clk_125_w),
-//        .clk_div(clk_grom)
-//    );
-
-//    BUFG clk_gromclk_bufg_inst(
-//    .O(gromclk_w),
-//    .I(clk_grom)
-//    );
-
-    assign gromclk = cpuclk_ena_n ? cpuclk_w : 1'b1;
-    assign cpuclk = cpuclk_ena_n ? 1'bz :  cpuclk_w;
-//////////
 
     reg ff_video_reset;
 
