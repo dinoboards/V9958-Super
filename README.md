@@ -15,7 +15,8 @@ The FPGA code is based on the V3 version of the MSX VDP replacement modules at t
 
 ## Other changes
 
-1. Now outputs DVI signal -- works with standard HDMI to DVI converters. TODO to make this configurable with an onboard jumper
+1. Now outputs DVI signal -- works with standard HDMI to DVI converters. TODO to make this configurable with an onboard jumper.
+2. Data lines assignment have been inverted. (The Data lines appeared to have been accidentally inverted in the original system).
 
 ## Building using the Command Line
 
