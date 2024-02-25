@@ -403,7 +403,7 @@ module v9958_top(
 
     logic [9:0] tmds_ntsc [NUM_CHANNELS-1:0];
     hdmi #( .VIDEO_ID_CODE(2),
-            .DVI_OUTPUT(0),
+            .DVI_OUTPUT(1),
             .VIDEO_REFRESH_RATE(59.94),
             .IT_CONTENT(1),
             .AUDIO_RATE(AUDIO_RATE),
