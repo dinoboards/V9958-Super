@@ -450,7 +450,7 @@ module v9958_top(
 
     logic [9:0] tmds_pal [NUM_CHANNELS-1:0];
     hdmi #( .VIDEO_ID_CODE(17),
-            .DVI_OUTPUT(0),
+            .DVI_OUTPUT(1),
             .VIDEO_REFRESH_RATE(50),
             .IT_CONTENT(0),
             .AUDIO_RATE(AUDIO_RATE),

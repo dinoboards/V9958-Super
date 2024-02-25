@@ -13,6 +13,10 @@ The FPGA code is based on the V3 version of the MSX VDP replacement modules at t
 3. Internally decodes its own IO Address - does not need the CSR and CSW signals of the original VDP.
 4. Additional pins assigned to the FPGA now includes other Z80 signals (address A0-A7, RD, WR, IORQ)
 
+## Other changes
+
+1. Now outputs DVI signal -- works with standard HDMI to DVI converters. TODO to make this configurable with an onboard jumper
+
 ## Building using the Command Line
 
 There is a TCL script that mirrors the GUI project config.  To build the file stream (fs).
