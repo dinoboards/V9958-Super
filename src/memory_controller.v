@@ -48,12 +48,12 @@ sdram #(
     .FREQ(FREQ)
 ) u_sdram (
     .clk(clk), .clk_sdram(clk_sdram), .resetn(resetn),
-	.addr(busy ? MemAddr : {1'b0, addr}), .rd(busy ? MemRD : read), 
+	.addr(busy ? MemAddr : {1'b0, addr}), .rd(busy ? MemRD : read),
     .wr(busy ? MemWR : write), .refresh(busy ? MemRefresh : refresh),
 	.din(busy ? MemDin : din), .wdm(wdm), .dout(MemDout), .busy(MemBusy), .data_ready(MemDataReady),
     .enabled(enabled),
 
-    .SDRAM_DQ(SDRAM_DQ), .SDRAM_A(SDRAM_A), .SDRAM_BA(SDRAM_BA), 
+    .SDRAM_DQ(SDRAM_DQ), .SDRAM_A(SDRAM_A), .SDRAM_BA(SDRAM_BA),
     .SDRAM_nCS(SDRAM_nCS), .SDRAM_nWE(SDRAM_nWE), .SDRAM_nRAS(SDRAM_nRAS),
     .SDRAM_nCAS(SDRAM_nCAS), .SDRAM_CLK(SDRAM_CLK), .SDRAM_CKE(SDRAM_CKE),
     .SDRAM_DQM(SDRAM_DQM)
@@ -66,11 +66,11 @@ always @(posedge clk or negedge resetn) begin
         fail <= 1'b0;
         total_written <= 0;
         MemInitializing <= 1'b1;
-    end 
+    end
     else begin
         MemWR <= 1'b0; MemRD <= 1'b0; MemRefresh <= 1'b0;
         cycles <= cycles == 3'd7 ? 3'd7 : cycles + 3'd1;
-        
+
         // Initiate read or write
         if (!busy) begin
             if (read || write || refresh) begin
@@ -84,7 +84,7 @@ always @(posedge clk or negedge resetn) begin
                 r_read <= read;
 
                 if (write) total_written <= total_written + 1;
-            end 
+            end
         end else if (MemInitializing) begin
             if (~MemBusy) begin
                 // initialization is done
@@ -98,7 +98,7 @@ always @(posedge clk or negedge resetn) begin
                 if (r_read) begin
                     if (~MemDataReady)      // assert data ready
                         fail <= 1'b1;
-                    if (r_read) 
+                    if (r_read)
                         data <= MemDout;
                     r_read <= 1'b0;
                 end

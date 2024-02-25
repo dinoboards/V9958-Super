@@ -112,7 +112,7 @@ module serializer
             endgenerate
         `endif
     `elsif GW_IDE
-        OSER10 gwSer0( 
+        OSER10 gwSer0(
             .Q( tmds[ 0 ] ),
             .D0( tmds_internal[ 0 ][ 0 ] ),
             .D1( tmds_internal[ 0 ][ 1 ] ),
@@ -128,7 +128,7 @@ module serializer
             .FCLK( clk_pixel_x5 ),
             .RESET( reset ) );
 
-        OSER10 gwSer1( 
+        OSER10 gwSer1(
           .Q( tmds[ 1 ] ),
           .D0( tmds_internal[ 1 ][ 0 ] ),
           .D1( tmds_internal[ 1 ][ 1 ] ),
@@ -144,7 +144,7 @@ module serializer
           .FCLK( clk_pixel_x5 ),
           .RESET( reset ) );
 
-        OSER10 gwSer2( 
+        OSER10 gwSer2(
           .Q( tmds[ 2 ] ),
           .D0( tmds_internal[ 2 ][ 0 ] ),
           .D1( tmds_internal[ 2 ][ 1 ] ),
@@ -159,9 +159,9 @@ module serializer
           .PCLK( clk_pixel ),
           .FCLK( clk_pixel_x5 ),
           .RESET( reset ) );
-          
+
         assign tmds_clock = clk_pixel;
-  
+
     `else
         logic [9:0] tmds_reversed [NUM_CHANNELS-1:0];
         genvar i, j;

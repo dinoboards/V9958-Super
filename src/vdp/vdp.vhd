@@ -1138,7 +1138,7 @@ BEGIN
         REQ_HSYNC_INT_N         => REQ_HSYNC_INT_N                  ,
         REG_R19_HSYNC_INT_LINE  => REG_R19_HSYNC_INT_LINE
     );
-    
+
     PROCESS( CLK21M )
     BEGIN
         IF( CLK21M'EVENT AND CLK21M = '1' )THEN

@@ -1,7 +1,7 @@
 // Implementation of HDMI Spec v1.4a
 // By Sameer Puri https://github.com/sameer
 
-module hdmi 
+module hdmi
 #(
     // Defaults to 640x480 which should be supported by almost if not all HDMI sinks.
     // See README.md or CEA-861-D for enumeration of video id codes.
@@ -75,7 +75,7 @@ module hdmi
     // These outputs go to your HDMI port
     //output logic [2:0] tmds,
     //output logic tmds_clock,
-    
+
     // All outputs below this line stay inside the FPGA
     // They are used (by you) to pick the color each pixel should have
     // i.e. always_ff @(posedge pixel_clk) rgb <= {8'd0, 8'(cx), 8'(cy)};

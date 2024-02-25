@@ -116,7 +116,7 @@ ARCHITECTURE RTL OF VDP_HVCOUNTER IS
 --    SIGNAL W_V_BLANKING_START       : STD_LOGIC;
 --    SIGNAL W_V_BLANKING_END         : STD_LOGIC;
     SIGNAL W_V_SYNC_INTR_START_LINE : STD_LOGIC_VECTOR(  8 DOWNTO 0 );
-        
+
 BEGIN
 
     H_CNT               <= FF_H_CNT;
@@ -142,7 +142,7 @@ BEGIN
                 FF_INTERLACE_MODE   <= INTERLACE_MODE;
                 IF (FF_PAL_MODE = PAL_MODE)THEN
                     FF_HDMI_RESET <= '0';
-                ELSE 
+                ELSE
                     FF_HDMI_RESET <= '1';
                 END IF;
             ELSE
@@ -236,7 +236,7 @@ BEGIN
                     (FF_FIELD = '1' AND FF_INTERLACE_MODE = '1' AND FF_PAL_MODE = '0' AND FF_V_CNT_IN_FIELD = CONV_STD_LOGIC_VECTOR( 524, 10 )) OR
                     (FF_FIELD = '1' AND FF_INTERLACE_MODE = '1' AND FF_PAL_MODE = '1' AND FF_V_CNT_IN_FIELD = CONV_STD_LOGIC_VECTOR( 624, 10 )) ) THEN
                 FF_FIELD_END <= '1';
-            ELSE    
+            ELSE
                 FF_FIELD_END <= '0';
             END IF;
         END IF;

@@ -1,6 +1,6 @@
 // Simple SDRAM controller for Tang 20k
 // nand2mario
-// 
+//
 // 2023.3: ported to use GW2AR-18's embedded 64Mbit SDRAM.
 //         changed to byte-based access.
 // 2022.9: iniital version.
@@ -9,7 +9,7 @@
 // on Tang Nano 20K. The SDRAM module is 64Mbit 32bit. (2K rows x 256 columns x 4 banks x 32 bits).
 //
 // Under default settings (max 66.7Mhz):
-// - Data read latency is 4 cycles. 
+// - Data read latency is 4 cycles.
 // - Read/write operations take 5 cycles to complete. There's no overlap between
 //   reads/writes.
 // - All reads/writes are done with auto-precharge. So user does not need to deal with
@@ -17,17 +17,17 @@
 // - SDRAMs need periodic refreshes or they lose data. So they provide an "auto-refresh"
 //   function to do one row of refresh. This "auto-refresh" operation is controlled with
 //   the 'refresh' input. 4096 or more refreshes should happen in any 64ms for the memory
-//   to not lose data. So the main circuit should invoke auto-refresh at least once 
+//   to not lose data. So the main circuit should invoke auto-refresh at least once
 //   **every ~15us**.
 //
-// Finally you need a 180-degree phase-shifted clock signal (clk_sdram) for SDRAM. 
+// Finally you need a 180-degree phase-shifted clock signal (clk_sdram) for SDRAM.
 // This can be generated with PLL's clkoutp output.
 //
 
 module sdram
 #(
     // Clock frequency, max 66.7Mhz with current set of T_xx/CAS parameters.
-    parameter         FREQ = 54_000_000,  
+    parameter         FREQ = 54_000_000,
     parameter         DATA_WIDTH = 32,
     parameter         ROW_WIDTH = 11,  // 2K rows
     parameter         COL_WIDTH = 8,   // 256 words per row (1Kbytes)
@@ -59,7 +59,7 @@ module sdram
     output            SDRAM_CLK,
     output            SDRAM_CKE,    // not strictly necessary, always 1
     output reg  [3:0] SDRAM_DQM,
-    
+
     // Logic side interface
     input             clk,
     input             clk_sdram,    // phase shifted from clk (normally 180-degrees)
@@ -146,7 +146,7 @@ always @(posedge clk or negedge resetn) begin
     begin
         cycle <= cycle == 4'd15 ? 4'd15 : cycle + 4'd1;
         // defaults
-        {FF_SDRAM_nRAS, FF_SDRAM_nCAS, FF_SDRAM_nWE} <= CMD_NOP; 
+        {FF_SDRAM_nRAS, FF_SDRAM_nCAS, FF_SDRAM_nWE} <= CMD_NOP;
         casex ({state, cycle})
             // wait 200 us on power-on
             {INIT, 4'bxxxx} : if (cfg_now) begin
@@ -180,7 +180,7 @@ always @(posedge clk or negedge resetn) begin
                 state <= IDLE;
                 ff_busy <= 1'b0;              // init&config is done
             end
-            
+
             // read/write/refresh
             {IDLE, 4'bxxxx}: if (rd | wr) begin
                 // bank activate
@@ -204,7 +204,7 @@ always @(posedge clk or negedge resetn) begin
             //  rd     /       \_______________________________
             //  cmd            |Active | Read  |  NOP  |  NOP  | _Next_
             //  DQ                                     |  Dout |
-            //  ff_data_ready ____________________________/       \_______   
+            //  ff_data_ready ____________________________/       \_______
             //  ff_busy   ________/                               \_______
             //                 `-T_RCD-'------CAS------'
             {READ, T_RCD}: begin

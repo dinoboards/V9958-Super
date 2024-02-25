@@ -16,11 +16,11 @@ module ram64k(
 //end
 
     always @(posedge clk) begin
-    
+
         if (re == 1)
             dout_r <= mem_r[addr];
 
-        if (we == 1) 
+        if (we == 1)
             mem_r[addr] <= din;
 
     end

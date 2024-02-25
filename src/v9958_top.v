@@ -132,7 +132,7 @@ module v9958_top(
     );
 
     wire rst_n_w;
-    assign rst_n_w = rst_n & clk_135_lock_w & clk_sdram_lock_w; 
+    assign rst_n_w = rst_n & clk_135_lock_w & clk_sdram_lock_w;
 
     CLK_108P clk_sdramp_inst (
         .clkout(clk_sdram), //output clkout
@@ -160,23 +160,23 @@ module v9958_top(
       wire [19:0] ram_total_written;
       wire ram_enabled;
       memory_controller #(.FREQ(108_000_000) )
-       vram(.clk(clk_sdramp_w), 
-            .clk_sdram(clk_sdram_w), 
+       vram(.clk(clk_sdramp_w),
+            .clk_sdram(clk_sdram_w),
             .resetn(reset_n_w),
-            .read(WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy), 
+            .read(WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
             .write(~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
             .refresh(~VideoDLClk & ~VideoDHClk & ~ram_busy),
             .addr({ 5'b0 , VdpAdr[15:0] } ),
             .din({ VrmDbo, VrmDbo }),
             .wdm({ ~VdpAdr[16], VdpAdr[16] }),
             .dout(VrmDbi),
-            .busy(ram_busy), 
-            .fail(ram_fail), 
+            .busy(ram_busy),
+            .fail(ram_fail),
             .total_written(ram_total_written),
             .enabled(ram_enabled),
 
             .SDRAM_DQ(IO_sdram_dq), .SDRAM_A(O_sdram_addr), .SDRAM_BA(O_sdram_ba), .SDRAM_nCS(O_sdram_cs_n),
-            .SDRAM_nWE(O_sdram_wen_n), .SDRAM_nRAS(O_sdram_ras_n), .SDRAM_nCAS(O_sdram_cas_n), 
+            .SDRAM_nWE(O_sdram_wen_n), .SDRAM_nRAS(O_sdram_ras_n), .SDRAM_nCAS(O_sdram_cas_n),
             .SDRAM_CLK(O_sdram_clk), .SDRAM_CKE(O_sdram_cke), .SDRAM_DQM(O_sdram_dqm)
     );
 
@@ -194,7 +194,7 @@ module v9958_top(
 
 	// Internal bus signals (common)
 
-    reg io_state_r = 1'b0; 
+    reg io_state_r = 1'b0;
     reg [1:0] cs_latch;
  	wire [7:0]	CpuDbi;
 
@@ -205,11 +205,11 @@ module v9958_top(
     reg csrn_sdram_r;
     reg cswn_sdram_r;
 
- 
+
     assign cd = csr_n == 0 ? CpuDbi : 8'bzzzzzzzz;
 
     assign VDP_ID  =  5'b00010; // V9958
-    assign OFFSET_Y = 6'd16; 
+    assign OFFSET_Y = 6'd16;
     assign scanlin = ~scanlin_n;
 
     wire cswn_w;
@@ -247,7 +247,7 @@ module v9958_top(
             if (!io_state_r) begin
 
                 CpuAdr = { 14'b0, { mode[1], mode[0] }};
-                CpuDbo = cd; 
+                CpuDbo = cd;
                 CpuReq = (csrn_w ^ cswn_w);
                 CpuWrt = ~cswn_w;
 
@@ -307,7 +307,7 @@ module v9958_top(
 		.OFFSET_Y			( OFFSET_Y							),
         .HDMI_RESET         ( vdp_hdmi_reset                    ),
         .PAL_MODE           ( pal_mode                      ),
-        .SPMAXSPR           ( ~maxspr_n                         ),  
+        .SPMAXSPR           ( ~maxspr_n                         ),
         .CX                 ( vdp_cx                            ),
         .CY                 ( vdp_cy                            )
 	);
@@ -359,7 +359,7 @@ module v9958_top(
 //    .I(clk_grom)
 //    );
 
-    assign gromclk = cpuclk_ena_n ? cpuclk_w : 1'b1; 
+    assign gromclk = cpuclk_ena_n ? cpuclk_w : 1'b1;
     assign cpuclk = cpuclk_ena_n ? 1'bz :  cpuclk_w;
 //////////
 
@@ -372,9 +372,9 @@ module v9958_top(
     logic [9:0] cy_pal;
     logic [9:0] cx_pal;
 
-    always_ff@(posedge clk_w) 
+    always_ff@(posedge clk_w)
     begin
-        
+
         ff_video_reset <= vdp_hdmi_reset;
 
         if (vdp_cx == 11'd0 && vdp_cy == 11'd0) begin
@@ -423,11 +423,11 @@ module v9958_top(
     assign audio_sample_word_w = audio_sample_word;
 
     logic [9:0] tmds_ntsc [NUM_CHANNELS-1:0];
-    hdmi #( .VIDEO_ID_CODE(2), 
-            .DVI_OUTPUT(0), 
+    hdmi #( .VIDEO_ID_CODE(2),
+            .DVI_OUTPUT(0),
             .VIDEO_REFRESH_RATE(59.94),
             .IT_CONTENT(1),
-            .AUDIO_RATE(AUDIO_RATE), 
+            .AUDIO_RATE(AUDIO_RATE),
             .AUDIO_BIT_WIDTH(AUDIO_BIT_WIDTH),
             .VENDOR_NAME({"Unknown", 8'd0}), // Must be 8 bytes null-padded 7-bit ASCII
             .PRODUCT_DESCRIPTION({"FPGA", 96'd0}), // Must be 16 bytes null-padded 7-bit ASCII
@@ -437,23 +437,23 @@ module v9958_top(
             .NUM_CHANNELS(NUM_CHANNELS)
             )
 
-    hdmi_ntsc ( .clk_pixel_x5(clk_135_w), 
-          .clk_pixel(clk_w), 
+    hdmi_ntsc ( .clk_pixel_x5(clk_135_w),
+          .clk_pixel(clk_w),
           .clk_audio(clk_audio_w),
-          .rgb({dvi_r, dvi_g, dvi_b}), 
+          .rgb({dvi_r, dvi_g, dvi_b}),
           .reset( hdmi_reset ),
           .audio_sample_word(audio_sample_word_w),
-          .cx(cx_ntsc), 
+          .cx(cx_ntsc),
           .cy(cy_ntsc),
           .tmds_internal(tmds_ntsc)
         );
 
     logic [9:0] tmds_pal [NUM_CHANNELS-1:0];
-    hdmi #( .VIDEO_ID_CODE(17), 
-            .DVI_OUTPUT(0), 
+    hdmi #( .VIDEO_ID_CODE(17),
+            .DVI_OUTPUT(0),
             .VIDEO_REFRESH_RATE(50),
             .IT_CONTENT(0),
-            .AUDIO_RATE(AUDIO_RATE), 
+            .AUDIO_RATE(AUDIO_RATE),
             .AUDIO_BIT_WIDTH(AUDIO_BIT_WIDTH),
             .VENDOR_NAME({"Unknown", 8'd0}), // Must be 8 bytes null-padded 7-bit ASCII
             .PRODUCT_DESCRIPTION({"FPGA", 96'd0}), // Must be 16 bytes null-padded 7-bit ASCII
@@ -463,13 +463,13 @@ module v9958_top(
             .NUM_CHANNELS(NUM_CHANNELS)
             )
 
-    hdmi_pal ( .clk_pixel_x5(clk_135_w), 
-          .clk_pixel(clk_w), 
+    hdmi_pal ( .clk_pixel_x5(clk_135_w),
+          .clk_pixel(clk_w),
           .clk_audio(clk_audio_w),
-          .rgb({dvi_r, dvi_g, dvi_b}), 
+          .rgb({dvi_r, dvi_g, dvi_b}),
           .reset( hdmi_reset ),
           .audio_sample_word(audio_sample_word_w),
-          .cx(cx_pal), 
+          .cx(cx_pal),
           .cy(cy_pal),
           .tmds_internal(tmds_pal)
         );
@@ -481,9 +481,9 @@ module v9958_top(
     logic [9:0] tmds_internal [NUM_CHANNELS-1:0];
 
     assign tmds_internal = pal_mode ? tmds_pal : tmds_ntsc;
-    
+
     serializer #(.NUM_CHANNELS(NUM_CHANNELS), .VIDEO_RATE(0)) serializer(.clk_pixel(clk_w), .clk_pixel_x5(clk_135_w), .reset(reset_w),
-    .tmds_internal(tmds_internal), .tmds(tmds) ); 
+    .tmds_internal(tmds_internal), .tmds(tmds) );
 
     // Gowin LVDS output buffer
     ELVDS_OBUF tmds_bufds [3:0] (
@@ -502,15 +502,15 @@ module v9958_top(
 	.ODD(0)         // sets sample input to channel 0
 	)
     SPI_MCP3202 (
-	.clk(clk_135_w),                 // 125  MHz 
+	.clk(clk_135_w),                 // 125  MHz
 	.EN(reset_n_w),                  // Enable the SPI core (ACTIVE HIGH)
 	.MISO(adc_miso),                // data out of ADC (Dout pin)
 	.MOSI(adc_mosi),               // Data into ADC (Din pin)
     .SCK_ENABLE(sck_enable),
 	.o_DATA(audio_sample),      // 12 bit word (for other modules)
     .CS(adc_cs),                 // Chip Select
-	.DATA_VALID(sample_valid)          // is high when there is a full 12 bit word. 
-	); 
+	.DATA_VALID(sample_valid)          // is high when there is a full 12 bit word.
+	);
 
     localparam SCKCLK_SRCFRQ = 135.0;
     localparam SCKCLK_FRQ = 0.9;
@@ -535,9 +535,9 @@ module v9958_top(
     );
 
     assign adc_clk = sckclk_w & sck_enable;
-    
+
     reg [15:0] adc_sample;
-    always @(posedge clk_135_w) begin     
+    always @(posedge clk_135_w) begin
         if (sample_valid)
             adc_sample <= { audio_sample[11:0], 4'b0 };
     end
