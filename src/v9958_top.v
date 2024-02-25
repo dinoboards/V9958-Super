@@ -14,7 +14,6 @@ module v9958_top(
 
     input   clk,
     input   clk_50,
-    input   clk_125,
 
     input   s1,
 
@@ -113,11 +112,6 @@ module v9958_top(
     BUFG clk_50_bufg_inst(
     .O(clk_50_w),
     .I(clk_50)
-    );
-    wire clk_125_w;
-    BUFG clk_125_bufg_inst(
-    .O(clk_125_w),
-    .I(clk_125)
     );
 
     reg s1_n = 0;
@@ -325,20 +319,6 @@ module v9958_top(
 
 
 ///////////
-
-    wire clk_cpu;
-    CLOCK_DIV #(
-        .CLK_SRC(125.0),
-        .CLK_DIV(315.0/88.0),
-        .PRECISION_BITS(16)
-    ) cpuclkd (
-        .clk_src(clk_125_w),
-        .clk_div(clk_cpu)
-    );
-    BUFG clk_cpuclk_bufg_inst(
-    .O(cpuclk_w),
-    .I(clk_cpu)
-    );
 
     assign int_n = pVdpInt_n ? 1'bz : 1'b0;
 
