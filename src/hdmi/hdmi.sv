@@ -72,10 +72,6 @@ module hdmi
     input logic [23:0] rgb,
     input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
 
-    // These outputs go to your HDMI port
-    //output logic [2:0] tmds,
-    //output logic tmds_clock,
-
     // All outputs below this line stay inside the FPGA
     // They are used (by you) to pick the color each pixel should have
     // i.e. always_ff @(posedge pixel_clk) rgb <= {8'd0, 8'(cx), 8'(cy)};
@@ -90,7 +86,7 @@ module hdmi
     output logic [BIT_WIDTH-1:0] screen_width,
     output logic [BIT_HEIGHT-1:0] screen_height,
 
-    output logic [9:0] tmds_internal [NUM_CHANNELS-1:0]
+    output logic [9:0] tmds_channels [NUM_CHANNELS-1:0]
 );
 
 //localparam int NUM_CHANNELS = 3;
@@ -360,16 +356,14 @@ generate
 endgenerate
 
 // All logic below relates to the production and output of the 10-bit TMDS code.
-logic [9:0] tmds_internal [NUM_CHANNELS-1:0] /* verilator public_flat */ ;
+logic [9:0] tmds_channels [NUM_CHANNELS-1:0] /* verilator public_flat */ ;
 genvar i;
 generate
     // TMDS code production.
     for (i = 0; i < NUM_CHANNELS; i++)
     begin: tmds_gen
-        tmds_channel #(.CN(i)) tmds_channel (.clk_pixel(clk_pixel), .video_data(video_data[i*8+7:i*8]), .data_island_data(data_island_data[i*4+3:i*4]), .control_data(control_data[i*2+1:i*2]), .mode(mode), .tmds(tmds_internal[i]));
+        tmds_channel #(.CN(i)) tmds_channel (.clk_pixel(clk_pixel), .video_data(video_data[i*8+7:i*8]), .data_island_data(data_island_data[i*4+3:i*4]), .control_data(control_data[i*2+1:i*2]), .mode(mode), .tmds(tmds_channels[i]));
     end
 endgenerate
-
-//serializer #(.NUM_CHANNELS(NUM_CHANNELS), .VIDEO_RATE(VIDEO_RATE)) serializer(.clk_pixel(clk_pixel), .clk_pixel_x5(clk_pixel_x5), .reset(reset), .tmds_internal(tmds_internal), .tmds(tmds), .tmds_clock(tmds_clock));
 
 endmodule

@@ -1,6 +1,8 @@
 `define GW_IDE
 
 module v9958_top(
+    output  led5_n,
+
     input   A7,
     input   A6,
     input   A5,
@@ -381,7 +383,10 @@ module v9958_top(
     wire [15:0] audio_sample_word_w [1:0];
     assign audio_sample_word_w = audio_sample_word;
 
-    logic [9:0] tmds_ntsc [NUM_CHANNELS-1:0];
+    logic[2:0] tmds;
+    logic [9:0] tmds_channels_ntsc [NUM_CHANNELS-1:0];
+    logic [9:0] tmds_channels_pal [NUM_CHANNELS-1:0];
+
     hdmi #( .VIDEO_ID_CODE(2),
             .DVI_OUTPUT(1),
             .VIDEO_REFRESH_RATE(59.94),
@@ -404,10 +409,9 @@ module v9958_top(
           .audio_sample_word(audio_sample_word_w),
           .cx(cx_ntsc),
           .cy(cy_ntsc),
-          .tmds_internal(tmds_ntsc)
+          .tmds_channels(tmds_channels_ntsc)
         );
 
-    logic [9:0] tmds_pal [NUM_CHANNELS-1:0];
     hdmi #( .VIDEO_ID_CODE(17),
             .DVI_OUTPUT(1),
             .VIDEO_REFRESH_RATE(50),
@@ -430,21 +434,28 @@ module v9958_top(
           .audio_sample_word(audio_sample_word_w),
           .cx(cx_pal),
           .cy(cy_pal),
-          .tmds_internal(tmds_pal)
+          .tmds_channels(tmds_channels_pal)
         );
+
+    assign led5_n = ~blank_o;
 
     assign cx = pal_mode ? cx_pal :cx_ntsc;
     assign cy = pal_mode ? cy_pal :cy_ntsc;
 
-    logic[2:0] tmds;
-    logic [9:0] tmds_internal [NUM_CHANNELS-1:0];
+    // Select the tmds_channels based on video mode (pal/ntsc)
+    // encode it with the serializer
+    serializer_diplexer #( )
+    (
+        .clk_pixel(clk_w),
+        .clk_pixel_x5(clk_135_w),
+        .reset(reset_w),
+        .pal_mode(pal_mode),
+        .tmds_channels_ntsc(tmds_channels_ntsc),
+        .tmds_channels_pal(tmds_channels_pal),
+        .tmds(tmds)
+    );
 
-    assign tmds_internal = pal_mode ? tmds_pal : tmds_ntsc;
-
-    serializer #(.NUM_CHANNELS(NUM_CHANNELS), .VIDEO_RATE(0)) serializer(.clk_pixel(clk_w), .clk_pixel_x5(clk_135_w), .reset(reset_w),
-    .tmds_internal(tmds_internal), .tmds(tmds) );
-
-    // Gowin LVDS output buffer
+    // now take the tmds encoded feed and send it to the Gowin LVDS output buffer
     ELVDS_OBUF tmds_bufds [3:0] (
         .I({clk_w, tmds}),
         .O({tmds_clk_p, tmds_data_p}),

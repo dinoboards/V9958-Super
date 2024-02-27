@@ -1,5 +1,40 @@
 `define GW_IDE
 
+module serializer_diplexer
+#(
+  parameter int NUM_CHANNELS = 3,
+  parameter real VIDEO_RATE = 0
+)
+(
+  input logic clk_pixel,
+  input logic clk_pixel_x5,
+  input logic reset,
+
+  input logic pal_mode,
+  input logic [9:0] tmds_channels_pal [NUM_CHANNELS-1:0],
+  input logic [9:0] tmds_channels_ntsc [NUM_CHANNELS-1:0],
+  output logic [2:0] tmds
+);
+
+  logic [9:0] tmds_channels [NUM_CHANNELS-1:0];
+
+  assign tmds_channels = pal_mode ? tmds_channels_pal : tmds_channels_ntsc;
+
+  serializer #(
+    .NUM_CHANNELS(NUM_CHANNELS),
+    .VIDEO_RATE(VIDEO_RATE)
+  )
+  serializer(
+    .clk_pixel(clk_pixel),
+    .clk_pixel_x5(clk_pixel_x5),
+    .reset(reset),
+    .tmds_internal(tmds_channels),
+    .tmds(tmds)
+  );
+
+
+endmodule
+
 module serializer
 #(
     parameter int NUM_CHANNELS = 3,
