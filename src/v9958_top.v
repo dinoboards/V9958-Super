@@ -52,6 +52,11 @@ module v9958_top(
 
     );
 
+    localparam CLKFRQ = 27000;
+    localparam AUDIO_RATE=44100;
+    localparam AUDIO_BIT_WIDTH = 16;
+    localparam NUM_CHANNELS = 3;
+
     wire    addr;
     wire    csw_n;
     wire    csr_n;
@@ -351,11 +356,6 @@ module v9958_top(
     wire hdmi_reset;
     assign hdmi_reset = video_reset | reset_w | ~ram_enabled;
 
-    localparam CLKFRQ = 27000;
-    localparam AUDIO_RATE=44100;
-    localparam AUDIO_BIT_WIDTH = 16;
-    localparam NUM_CHANNELS = 3;
-
     wire clk_audio;
     CLOCK_DIV #(
         .CLK_SRC(27),
@@ -397,8 +397,7 @@ module v9958_top(
             .PRODUCT_DESCRIPTION({"FPGA", 96'd0}), // Must be 16 bytes null-padded 7-bit ASCII
             .SOURCE_DEVICE_INFORMATION(8'h00), // See README.md or CTA-861-G for the list of valid codes
             .START_X(0),
-            .START_Y(NTSC_Y), //(525-49),
-            .NUM_CHANNELS(NUM_CHANNELS)
+            .START_Y(NTSC_Y) //(525-49),
             )
 
     hdmi_ntsc ( .clk_pixel_x5(clk_135_w),
@@ -422,8 +421,7 @@ module v9958_top(
             .PRODUCT_DESCRIPTION({"FPGA", 96'd0}), // Must be 16 bytes null-padded 7-bit ASCII
             .SOURCE_DEVICE_INFORMATION(8'h00), // See README.md or CTA-861-G for the list of valid codes
             .START_X(0), //(0),
-            .START_Y(PAL_Y), //(147),
-            .NUM_CHANNELS(NUM_CHANNELS)
+            .START_Y(PAL_Y) //(147),
             )
 
     hdmi_pal ( .clk_pixel_x5(clk_135_w),
