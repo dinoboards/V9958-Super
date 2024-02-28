@@ -56,6 +56,7 @@
 ------------------------------------------------------------------------------
 --  20th,March,2008
 --      JP: VDP.VHD から分離 by t.hara
+--      Translation: VDP.VHD extracted by t.hara
 --
 
 LIBRARY IEEE;

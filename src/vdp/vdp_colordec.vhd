@@ -56,9 +56,11 @@
 ------------------------------------------------------------------------------
 --  21st,March,2008
 --      JP: VDP.VHD から分離 by t.hara
+--      (Extracted from VDP.VHD by t.hara)
 --
 --  22nd,March,2008
 --      JP: 不要な信号間の相関を除去 by t.hara
+--      (Removed unnecessary signal correlation by t.hara)
 --
 
 LIBRARY IEEE;

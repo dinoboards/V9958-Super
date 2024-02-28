@@ -65,6 +65,7 @@
 --
 -- 12th,August,2006 created by Kunihiko Ohnaka
 -- JP: VDPのコアの実装とスクリーンモードの実装を分離した
+-- (Separated the implementation of VDP core and the screen mode)
 --
 -- 29th,October,2006 modified by Kunihiko Ohnaka
 --   - Insert the license text.
@@ -72,11 +73,13 @@
 --
 -- 16th, March, 2008 Refactoring by t.hara
 -- JP: リファクタリング, VDP_PACKAGE の参照を削除
+-- (Refactoring, Remove the reference to VDP_PACKAGE)
 --
 -------------------------------------------------------------------------------
 -- Document
 --
 -- JP: GRAPHICモード1,2,3および MULTICOLORモードのメイン処理回路です。
+-- (This is the main processing circuit of GRAPHIC mode 1,2,3 and MULTICOLOR mode.)
 --
 
 LIBRARY IEEE;

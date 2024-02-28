@@ -73,7 +73,10 @@
 -- JP: ESE-VDPのパッケージファイルです。
 -- JP: ESE-VDPに含まれるモジュールのコンポーネント宣言や、定数宣言、
 -- JP: 型変換用の関数などが定義されています。
---
+-- Translation:
+--   This is the package file for ESE-VDP.
+--   It defines the component declarations of the modules included in ESE-VDP, constant declarations,
+--   and functions for type conversion, etc.
 
 LIBRARY IEEE;
     USE IEEE.STD_LOGIC_1164.ALL;
@@ -124,9 +127,9 @@ PACKAGE VDP_PACKAGE IS
 --  SHARED VARIABLE OFFSET_Y                    : STD_LOGIC_VECTOR(  6 DOWNTO 0 );              -- managed by Switched I/O ports
 
     CONSTANT LED_TV_X_NTSC                      : INTEGER := -20;
-    CONSTANT LED_TV_Y_NTSC                      : INTEGER := 1; 
+    CONSTANT LED_TV_Y_NTSC                      : INTEGER := 1;
     CONSTANT LED_TV_X_PAL                       : INTEGER := -20;
-    CONSTANT LED_TV_Y_PAL                       : INTEGER := 3; 
+    CONSTANT LED_TV_Y_PAL                       : INTEGER := 3;
 
 --  CONSTANT DISPLAY_OFFSET_NTSC                : INTEGER := 0;
 --  CONSTANT DISPLAY_OFFSET_PAL                 : INTEGER := 27;

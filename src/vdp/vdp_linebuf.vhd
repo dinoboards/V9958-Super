@@ -80,6 +80,13 @@
 -- JP: ドットクロックは一般的な 640x480ドットVGAモードの25.175MHz
 -- JP: とは異なります。そのため、液晶モニタ等で表示させるとドットの形が
 -- JP: いびつな形になる事があります。
+-- (Convert NTSC timing 15kHz video signal to VGA timing.)
+-- (This is a line buffer module to convert NTSC timing 15kHz video)
+-- (signal to VGA timing 31kHz.)
+-- (This module is designed to operate at 21.477MHz, which is the)
+-- (dot clock of the general 640x480 dot VGA mode is 25.175MHz.)
+-- (Therefore, the shape of the dot is distorted when displayed on)
+-- (an LCD monitor, etc.)
 --
 
 LIBRARY IEEE;
