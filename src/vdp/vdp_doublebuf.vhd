@@ -65,13 +65,20 @@
 --
 -- JP: ダブルバッファリング機能付きラインバッファモジュール。
 -- JP: vga.vhdによるアップスキャンコンバートに使用します。
+-- (Line buffer module with double buffering function)
+-- (Used for up scan convert by vga.vhd)
 --
 -- JP: xPositionWに X座標を入れ，weを 1にすると書き込みバッファに
 -- JP: 書き込まれる．また，xPositionRに X座標を入れると，読み込み
 -- JP: バッファから読み出した色コードが qから出力される。
 -- JP: evenOdd信号によって，読み込みバッファと書き込みバッファが
 -- JP: 切り替わる。
---
+-- (Put X coordinate in xPositionW, and set we to 1, then write to the buffer)
+-- (Also, put X coordinate in xPositionR, then read from the buffer)
+-- (The color code read from the buffer is output from q.)
+-- (By the evenOdd signal, the read buffer and the write buffer)
+-- (Switch)
+
 
 LIBRARY IEEE;
     USE IEEE.STD_LOGIC_1164.ALL;
