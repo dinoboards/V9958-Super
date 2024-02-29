@@ -308,6 +308,8 @@ module VDP (
     output wire [10:0] CY
 );
 
+import custom_timings::*;
+
   // VDP CLOCK ... 21.477MHZ
   // VIDEO OUTPUT
   // DISPLAY RESOLUTION (0=15kHz, 1=31kHz)
@@ -635,7 +637,7 @@ module VDP (
       if ((H_CNT == 200)) begin
         //200) THEN
         BWINDOW_X <= 1'b1;
-      end else if ((H_CNT == (`CLOCKS_PER_LINE - 1 - 1))) begin
+      end else if ((H_CNT == (CLOCKS_PER_LINE(VDPR9PALMODE) - 1 - 1))) begin
         BWINDOW_X <= 1'b0;
       end
     end

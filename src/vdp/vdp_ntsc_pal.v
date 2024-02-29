@@ -115,7 +115,6 @@
 //   the timing of NTSC/PAL during NTSC mode, so this module only performs
 //   the process of inserting equivalent pulses into the horizontal sync
 //   signal.
-// no timescale needed
 
 module VDP_NTSC_PAL(
 input wire CLK21M,
@@ -135,11 +134,11 @@ output wire VIDEOHSOUT_N,
 output wire VIDEOVSOUT_N
 );
 
+import custom_timings::*;
+
 // MODE
 // VIDEO INPUT
 // VIDEO OUTPUT
-
-
 
 parameter [1:0]
   SSTATE_A = 0,
@@ -236,21 +235,21 @@ reg [10:0] W_STATE_C_FULL;
       FF_HSYNC_N <= 1'b0;
     end else begin
       if((FF_SSTATE == SSTATE_A)) begin
-        if(((HCOUNTERIN == 1) || (HCOUNTERIN == (`CLOCKS_PER_HALF_LINE + 1)))) begin
+        if(((HCOUNTERIN == 1) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 1)))) begin
           FF_HSYNC_N <= 1'b0;
           // PULSE ON
         end
-        else if(((HCOUNTERIN == 51) || (HCOUNTERIN == (`CLOCKS_PER_HALF_LINE + 51)))) begin
+        else if(((HCOUNTERIN == 51) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 51)))) begin
           FF_HSYNC_N <= 1'b1;
           // PULSE OFF
         end
       end
       else if((FF_SSTATE == SSTATE_B)) begin
-        if(((HCOUNTERIN == (`CLOCKS_PER_LINE - 100 + 1)) || (HCOUNTERIN == (`CLOCKS_PER_HALF_LINE - 100 + 1)))) begin
+        if(((HCOUNTERIN == (CLOCKS_PER_LINE(PALMODE) - 100 + 1)) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) - 100 + 1)))) begin
           FF_HSYNC_N <= 1'b0;
           // PULSE ON
         end
-        else if(((HCOUNTERIN == 1) || (HCOUNTERIN == (`CLOCKS_PER_HALF_LINE + 1)))) begin
+        else if(((HCOUNTERIN == 1) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 1)))) begin
           FF_HSYNC_N <= 1'b1;
           // PULSE OFF
         end

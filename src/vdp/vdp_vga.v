@@ -146,6 +146,8 @@ module VDP_VGA (
     input wire [2:0] RATIOMODE
 );
 
+import custom_timings::*;
+
   // VDP CLOCK ... 21.477MHZ
   // VIDEO INPUT
   // MODE
@@ -165,7 +167,7 @@ module VDP_VGA (
   wire WE_BUF;
   wire [5:0] DATAROUT;
   wire [5:0] DATAGOUT;
-  wire [5:0] DATABOUT;  // DISP_START_X + DISP_WIDTH < `CLOCKS_PER_HALF_LINE = 684
+  wire [5:0] DATABOUT;  // DISP_START_X + DISP_WIDTH < CLOCKS_PER_HALF_LINE(PALMODE) = 684
   parameter DISP_WIDTH = 720;  //    SHARED VARIABLE DISP_START_X    : INTEGER := 0; --684 - DISP_WIDTH - 2;          -- 106
   parameter DISP_START_X = 0;  // 106
 
@@ -187,7 +189,7 @@ module VDP_VGA (
   );
 
   assign XPOSITIONW = HCOUNTERIN[10:1];
-  // - (`CLOCKS_PER_HALF_LINE - DISP_WIDTH - 10);
+  // - (CLOCKS_PER_HALF_LINE(PALMODE) - DISP_WIDTH - 10);
   assign EVENODD = VCOUNTERIN[1];
   assign WE_BUF = 1'b1;
   //    -- PIXEL RATIO 1:1 FOR LED DISPLAY
@@ -231,9 +233,9 @@ module VDP_VGA (
     if ((RESET == 1'b1)) begin
       FF_HSYNC_N <= 1'b1;
     end else begin
-      if (((HCOUNTERIN == 0) || (HCOUNTERIN == (`CLOCKS_PER_HALF_LINE)))) begin
+      if (((HCOUNTERIN == 0) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE))))) begin
         FF_HSYNC_N <= 1'b0;
-      end else if (((HCOUNTERIN == 40) || (HCOUNTERIN == ((`CLOCKS_PER_HALF_LINE) + 40)))) begin
+      end else if (((HCOUNTERIN == 40) || (HCOUNTERIN == ((CLOCKS_PER_HALF_LINE(PALMODE)) + 40)))) begin
         FF_HSYNC_N <= 1'b1;
       end
     end
@@ -288,7 +290,7 @@ module VDP_VGA (
     if ((RESET == 1'b1)) begin
       XPOSITIONR <= {10{1'b0}};
     end else begin
-      if(((HCOUNTERIN == DISP_START_X) || (HCOUNTERIN == (DISP_START_X + (`CLOCKS_PER_HALF_LINE))))) begin
+      if(((HCOUNTERIN == DISP_START_X) || (HCOUNTERIN == (DISP_START_X + (CLOCKS_PER_HALF_LINE(PALMODE)))))) begin
         XPOSITIONR <= {10{1'b0}};
       end else begin
         XPOSITIONR <= XPOSITIONR + 1;
@@ -302,10 +304,10 @@ module VDP_VGA (
       VIDEOOUTX <= 1'b0;
     end else begin
       //            IF( (HCOUNTERIN = DISP_START_X) OR
-      //                    ((HCOUNTERIN = DISP_START_X + (`CLOCKS_PER_HALF_LINE)) AND INTERLACEMODE = '0') )THEN
+      //                    ((HCOUNTERIN = DISP_START_X + (CLOCKS_PER_HALF_LINE(PALMODE))) AND INTERLACEMODE = '0') )THEN
       VIDEOOUTX <= 1'b1;
       //            ELSIF( (HCOUNTERIN = DISP_START_X + DISP_WIDTH) OR
-      //                    (HCOUNTERIN = DISP_START_X + DISP_WIDTH + (`CLOCKS_PER_HALF_LINE)) )THEN
+      //                    (HCOUNTERIN = DISP_START_X + DISP_WIDTH + (CLOCKS_PER_HALF_LINE(PALMODE))) )THEN
       //                VIDEOOUTX <= '0';
       //            END IF;
     end

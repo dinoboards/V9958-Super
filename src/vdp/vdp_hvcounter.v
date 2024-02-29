@@ -79,7 +79,6 @@
 //
 //-----------------------------------------------------------------------------
 //
-// no timescale needed
 
 `include "vdp_constants.vh"
 
@@ -102,8 +101,7 @@ module VDP_HVCOUNTER (
     input wire BLANKING_END
 );
 
-
-
+import custom_timings::*;
 
   // FLIP FLOP
   reg [10:0] FF_H_CNT;
@@ -181,8 +179,8 @@ module VDP_HVCOUNTER (
   //------------------------------------------------------------------------
   //  HORIZONTAL COUNTER
   //------------------------------------------------------------------------
-  assign W_H_CNT_HALF = (FF_H_CNT == ((`CLOCKS_PER_HALF_LINE) - 1)) ? 1'b1 : 1'b0;
-  assign W_H_CNT_END  = (FF_H_CNT == (`CLOCKS_PER_LINE - 1)) ? 1'b1 : 1'b0;
+  assign W_H_CNT_HALF = (FF_H_CNT == ((CLOCKS_PER_HALF_LINE(PAL_MODE)) - 1)) ? 1'b1 : 1'b0;
+  assign W_H_CNT_END  = (FF_H_CNT == (CLOCKS_PER_LINE(PAL_MODE) - 1)) ? 1'b1 : 1'b0;
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_H_CNT <= {11{1'b0}};

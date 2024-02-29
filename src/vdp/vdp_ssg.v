@@ -119,9 +119,7 @@ module VDP_SSG (
     output wire HDMI_RESET
 );
 
-  //        REG_R19_HSYNC_INT_LINE  : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
-
-
+import custom_timings::*;
 
   // FLIP FLOP
   reg [1:0] FF_DOTSTATE;
@@ -203,7 +201,7 @@ module VDP_SSG (
       FF_VIDEO_DH_CLK <= 1'b0;
       FF_VIDEO_DL_CLK <= 1'b0;
     end else begin
-      if ((W_H_CNT == (`CLOCKS_PER_LINE - 1))) begin
+      if ((W_H_CNT == (CLOCKS_PER_LINE(VDPR9PALMODE) - 1))) begin
         FF_DOTSTATE <= 2'b00;
         FF_VIDEO_DH_CLK <= 1'b1;
         FF_VIDEO_DL_CLK <= 1'b1;

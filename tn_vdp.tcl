@@ -41,6 +41,7 @@ add_file src\\vdp\\vdp_text12.v
 add_file src\\vdp\\vdp_vga.v
 add_file src\\vdp\\vdp_wait_control.v
 add_file src\\vdp\\vdp.v
+add_file src\\vdp\\vdp_package.v
 add_file src\\vdp\\vencode.v
 
 add_file src\\gowin\\clk_135.v
