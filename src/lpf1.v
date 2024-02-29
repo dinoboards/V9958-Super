@@ -1,6 +1,6 @@
-//
-// lpf.vhd
+// lpf1.v
 //   low pass filter
+//   LPF [1:4:6:4:1]/16
 //   Revision 1.00
 //
 // Copyright (c) 2007 Takayuki Hara.
@@ -29,7 +29,6 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-//  LPF [1:4:6:4:1]/16
 
 module LPF1 (
     input wire CLK21M,
@@ -53,13 +52,12 @@ module LPF1 (
   wire [MSBI + 4:0] W_OUT;
 
   assign ODATA = FF_OUT;
-  assign W_0 = ({1'b0,FF_D3,2'b00}) + ({2'b00,FF_D3,1'b0});
-  //  FF_D3 * 6
-  assign W_1 = {({1'b0,FF_D2}) + ({1'b0,FF_D4}),2'b00};
-  //  (FF_D2 + DD_D4) * 4
-  assign W_2 = ({1'b0,FF_D1}) + ({1'b0,FF_D5});
-  //  FF_D1 + FF_D5
+  assign W_0 = ({1'b0,FF_D3,2'b00}) + ({2'b00,FF_D3,1'b0});  // FF_D3 * 6
+  assign W_1 = {({1'b0,FF_D2}) + ({1'b0,FF_D4}),2'b00};  // (FF_D2 + DD_D4) * 4
+  assign W_2 = ({1'b0,FF_D1}) + ({1'b0,FF_D5});  // FF_D1 + FF_D5
+
   assign W_OUT = ({1'b0,W_0}) + ({1'b0,W_1}) + ({2'b00,W_2});
+
   // DELAY LINE
   always @(posedge RESET, posedge CLK21M) begin
     if((RESET == 1'b1)) begin

@@ -1,15 +1,15 @@
-add_file src\\SPI_MCP3202.v
 add_file src\\clockdiv.v
+add_file src\\interpo_mul.v
+add_file src\\interpo.v
 add_file src\\lpf1.v
 add_file src\\lpf2.v
-add_file src\\interpo.v
-add_file src\\interpo_mul.v
 add_file src\\memory_controller.v
+add_file src\\palette_g.v
+add_file src\\palette_rb.v
 add_file src\\pinfilter.v
 add_file src\\ram.v
-add_file src\\palette.v
-add_file src\\palette_g.v
 add_file src\\sdram.v
+add_file src\\SPI_MCP3202.v
 add_file src\\v9958_top.v
 add_file src\\vram.v
 
@@ -33,6 +33,7 @@ add_file src\\vdp\\vdp_hvcounter.v
 add_file src\\vdp\\vdp_interrupt.v
 add_file src\\vdp\\vdp_linebuf.v
 add_file src\\vdp\\vdp_ntsc_pal.v
+add_file src\\vdp\\vdp_package.v
 add_file src\\vdp\\vdp_register.v
 add_file src\\vdp\\vdp_spinforam.v
 add_file src\\vdp\\vdp_sprite.v
@@ -41,11 +42,10 @@ add_file src\\vdp\\vdp_text12.v
 add_file src\\vdp\\vdp_vga.v
 add_file src\\vdp\\vdp_wait_control.v
 add_file src\\vdp\\vdp.v
-add_file src\\vdp\\vdp_package.v
 add_file src\\vdp\\vencode.v
 
-add_file src\\gowin\\clk_135.v
 add_file src\\gowin\\clk_108p.v
+add_file src\\gowin\\clk_135.v
 
 add_file src\\v9958.cst
 add_file src\\v9958.sdc
