@@ -1,25 +1,3 @@
-// File src/vdp/vdp_command.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
 //
 //  vdp_command.vhd
 //
@@ -80,7 +58,6 @@
 //      JP: VDP.VHD から分離 by t.hara
 //      Translation: VDP.VHD extracted by t.hara
 //
-// no timescale needed
 
 module VDP_COMMAND (
     input wire RESET,
@@ -120,40 +97,42 @@ module VDP_COMMAND (
   // S#2 (BIT 7)
   // S#8, S#9
 
-
-
   // VDP COMMAND SIGNALS - CAN BE SET BY CPU
-  reg [8:0] SX;  // R33,32
-  reg [9:0] SY;  // R35,34
-  reg [8:0] DX;  // R37,36
-  reg [9:0] DY;  // R39,38
-  reg [9:0] NX;  // R41,40
-  reg [9:0] NY;  // R43,42
-  reg MM;  // R45 BIT 0
-  reg EQ;  // R45 BIT 1
-  reg DIX;  // R45 BIT 2
-  reg DIY;  // R45 BIT 3
-  //  SIGNAL MXS                  : STD_LOGIC;                            -- R45 BIT 4
-  //  SIGNAL MXD                  : STD_LOGIC;                            -- R45 BIT 5
-  reg [7:0] CMR;  // R46
+  reg  [ 8:0] SX;  // R33,32
+  reg  [ 9:0] SY;  // R35,34
+  reg  [ 8:0] DX;  // R37,36
+  reg  [ 9:0] DY;  // R39,38
+  reg  [ 9:0] NX;  // R41,40
+  reg  [ 9:0] NY;  // R43,42
+  reg         MM;  // R45 BIT 0
+  reg         EQ;  // R45 BIT 1
+  reg         DIX;  // R45 BIT 2
+  reg         DIY;  // R45 BIT 3
+
+  reg  [ 7:0] CMR;  // R46
+
   // VDP COMMAND SIGNALS - INTERNAL REGISTERS
-  reg [9:0] DXTMP;
-  reg [9:0] NXTMP;
-  reg REGWRACK;
-  reg TRCLRACK;
-  reg CMRWR;  // VDP COMMAND SIGNALS - COMMUNICATION BETWEEN COMMAND PROCESSOR
+  reg  [ 9:0] DXTMP;
+  reg  [ 9:0] NXTMP;
+  reg         REGWRACK;
+  reg         TRCLRACK;
+  reg         CMRWR;
+
+  // VDP COMMAND SIGNALS - COMMUNICATION BETWEEN COMMAND PROCESSOR
   // AND MEMORY INTERFACE (WHICH IS IN THE COLOR GENERATOR)
-  reg VRAMWRREQ;
-  reg VRAMRDREQ;
-  reg [16:0] VRAMACCESSADDR;
-  reg [7:0] VRAMWRDATA;
-  reg [7:0] CLR;  // R44, S#7
+  reg         VRAMWRREQ;
+  reg         VRAMRDREQ;
+  reg  [16:0] VRAMACCESSADDR;
+  reg  [ 7:0] VRAMWRDATA;
+  reg  [ 7:0] CLR;  // R44, S#7
+
   // VDP COMMAND SIGNALS - CAN BE READ BY CPU
-  reg CE;  // S#2 (BIT 0)
-  reg BD;  // S#2 (BIT 4)
-  reg TR;  // S#2 (BIT 7)
-  reg [10:0] SXTMP;  // S#8, S#9
-  wire W_VDPCMD_EN;  // VDP COMMAND STATE REGISTER
+  reg         CE;  // S#2 (BIT 0)
+  reg         BD;  // S#2 (BIT 4)
+  reg         TR;  // S#2 (BIT 7)
+  reg  [10:0] SXTMP;  // S#8, S#9
+  wire        W_VDPCMD_EN;  // VDP COMMAND STATE REGISTER
+
   parameter [3:0]
   STIDLE = 0,
   STCHKLOOP = 1,
@@ -204,6 +183,7 @@ module VDP_COMMAND (
   assign PTR = TR;
   assign PSXTMP = SXTMP;
   assign CUR_VDP_COMMAND = CMR[7:4];
+
   // R25 CMD BIT
   // 0 = NORMAL
   // 1 = VDP COMMAND ON TEXT/GRAPHIC1/GRAPHIC2/GRAPHIC3/MOSAIC MODE
@@ -238,46 +218,29 @@ module VDP_COMMAND (
       YCOUNTDELTA = {1{1'b0}};
       COLMASK = {1{1'b1}};
       RDXLOW = 2'b00;
-      SX <= {9{1'b0}};
-      // R32
-      SY <= {10{1'b0}};
-      // R34
-      DX <= {9{1'b0}};
-      // R36
-      DY <= {10{1'b0}};
-      // R38
-      NX <= {10{1'b0}};
-      // R40
-      NY <= {10{1'b0}};
-      // R42
-      CLR <= {8{1'b0}};
-      // R44
-      MM <= 1'b0;
-      // R45 BIT 0
-      EQ <= 1'b0;
-      // R45 BIT 1
-      DIX <= 1'b0;
-      // R45 BIT 2
-      DIY <= 1'b0;
-      // R45 BIT 3
-      //          MXS <= '0'; -- R45 BIT 4
-      //          MXD <= '0'; -- R45 BIT 5
-      CMR <= {8{1'b0}};
-      // R46
-      SXTMP <= {11{1'b0}};
-      DXTMP <= {10{1'b0}};
-      CMRWR <= 1'b0;
-      REGWRACK <= 1'b0;
-      VRAMWRREQ <= 1'b0;
-      VRAMRDREQ <= 1'b0;
+      SX         <= {9{1'b0}};  // R32
+      SY         <= {10{1'b0}};  // R34
+      DX         <= {9{1'b0}};  // R36
+      DY         <= {10{1'b0}};  // R38
+      NX         <= {10{1'b0}};  // R40
+      NY         <= {10{1'b0}};  // R42
+      CLR        <= {8{1'b0}};  // R44
+      MM         <= 1'b0;  // R45 BIT 0
+      EQ         <= 1'b0;  // R45 BIT 1
+      DIX        <= 1'b0;  // R45 BIT 2
+      DIY        <= 1'b0;  // R45 BIT 3
+      CMR        <= {8{1'b0}};  // R46
+      SXTMP      <= {11{1'b0}};
+      DXTMP      <= {10{1'b0}};
+      CMRWR      <= 1'b0;
+      REGWRACK   <= 1'b0;
+      VRAMWRREQ  <= 1'b0;
+      VRAMRDREQ  <= 1'b0;
       VRAMWRDATA <= {8{1'b0}};
-      TR <= 1'b1;
-      // TRANSFER READY
-      CE <= 1'b0;
-      // COMMAND EXECUTING
-      BD <= 1'b0;
-      // BORDER COLOR FOUND
-      TRCLRACK <= 1'b0;
+      TR         <= 1'b1;  // TRANSFER READY
+      CE         <= 1'b0;  // COMMAND EXECUTING
+      BD         <= 1'b0;  // BORDER COLOR FOUND
+      TRCLRACK   <= 1'b0;
       VDPVRAMACCESSY = {1{1'b0}};
       VDPVRAMACCESSX = {1{1'b0}};
       VRAMACCESSADDR <= {17{1'b0}};
@@ -294,31 +257,25 @@ module VDP_COMMAND (
             // GRAPHIC4,6 (SCREEN 5, 7)
             NXCOUNT = {1'b0, NX[9:1]};
             if ((DIX == 1'b0)) begin
-              XCOUNTDELTA = 11'b00000000010;
-              // +2
+              XCOUNTDELTA = 11'b00000000010;  // +2
             end else begin
-              XCOUNTDELTA = 11'b11111111110;
-              // -2
+              XCOUNTDELTA = 11'b11111111110;  // -2
             end
           end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
             // GRAPHIC5 (SCREEN 6)
             NXCOUNT = {2'b00, NX[9:2]};
             if ((DIX == 1'b0)) begin
-              XCOUNTDELTA = 11'b00000000100;
-              // +4
+              XCOUNTDELTA = 11'b00000000100;  // +4
             end else begin
-              XCOUNTDELTA = 11'b11111111100;
-              // -4;
+              XCOUNTDELTA = 11'b11111111100;  // -4;
             end
           end else begin
             // GRAPHIC7 (SCREEN 8) AND OTHER
             NXCOUNT = NX;
             if ((DIX == 1'b0)) begin
-              XCOUNTDELTA = 11'b00000000001;
-              // +1
+              XCOUNTDELTA = 11'b00000000001;  // +1
             end else begin
-              XCOUNTDELTA = 11'b11111111111;
-              // -1
+              XCOUNTDELTA = 11'b11111111111;  // -1
             end
           end
           COLMASK = {1{1'b1}};
@@ -327,11 +284,9 @@ module VDP_COMMAND (
           // DOT COMMAND
           NXCOUNT = NX;
           if ((DIX == 1'b0)) begin
-            XCOUNTDELTA = 11'b00000000001;
-            // +1;
+            XCOUNTDELTA = 11'b00000000001;  // +1;
           end else begin
-            XCOUNTDELTA = 11'b11111111111;
-            // -1;
+            XCOUNTDELTA = 11'b11111111111;  // -1;
           end
           if ((GRAPHIC4_OR_6 == 1'b1)) begin
             COLMASK = 8'b00001111;
@@ -415,10 +370,9 @@ module VDP_COMMAND (
             RDPOINT = {6'b000000, VRAMRDDATA[3:2]};
           end
           default: begin
-            //                  WHEN "11" =>
+            // 2'b11:
             RDPOINT = {6'b000000, VRAMRDDATA[1:0]};
-            //                  WHEN OTHERS =>
-            //                      NULL; -- SHOULD NEVER OCCUR
+            // NULL; -- SHOULD NEVER OCCUR
           end
         endcase
       end else begin
@@ -456,56 +410,43 @@ module VDP_COMMAND (
       if ((REGWRREQ != REGWRACK)) begin
         REGWRACK <= ~REGWRACK;
         case (REGNUM)
-          4'b0000: begin
-            // #32
+          4'b0000: begin  // #32
             SX[7:0] <= REGDATA;
           end
-          4'b0001: begin
-            // #33
+          4'b0001: begin  // #33
             SX[8] <= REGDATA[0];
           end
-          4'b0010: begin
-            // #34
+          4'b0010: begin  // #34
             SY[7:0] <= REGDATA;
           end
-          4'b0011: begin
-            // #35
+          4'b0011: begin  // #35
             SY[9:8] <= REGDATA[1:0];
           end
-          4'b0100: begin
-            // #36
+          4'b0100: begin  // #36
             DX[7:0] <= REGDATA;
           end
-          4'b0101: begin
-            // #37
+          4'b0101: begin  // #37
             DX[8] <= REGDATA[0];
           end
-          4'b0110: begin
-            // #38
+          4'b0110: begin  // #38
             DY[7:0] <= REGDATA;
           end
-          4'b0111: begin
-            // #39
+          4'b0111: begin  // #39
             DY[9:8] <= REGDATA[1:0];
           end
-          4'b1000: begin
-            // #40
+          4'b1000: begin  // #40
             NX[7:0] <= REGDATA;
           end
-          4'b1001: begin
-            // #41
+          4'b1001: begin  // #41
             NX[9:8] <= REGDATA[1:0];
           end
-          4'b1010: begin
-            // #42
+          4'b1010: begin  // #42
             NY[7:0] <= REGDATA;
           end
-          4'b1011: begin
-            // #43
+          4'b1011: begin  // #43
             NY[9:8] <= REGDATA[1:0];
           end
-          4'b1100: begin
-            // #44
+          4'b1100: begin  // #44
             if ((CE == 1'b1)) begin
               CLR <= REGDATA & COLMASK;
             end else begin
@@ -514,16 +455,14 @@ module VDP_COMMAND (
             TR <= 1'b0;
             // DATA IS TRANSFERRED FROM CPU TO VDP COLOR REGISTER
           end
-          4'b1101: begin
-            // #45
+          4'b1101: begin  // #45
             MM  <= REGDATA[0];
             EQ  <= REGDATA[1];
             DIX <= REGDATA[2];
             DIY <= REGDATA[3];
             //                      MXD <= REGDATA(5);
           end
-          4'b1110: begin
-            // #46
+          4'b1110: begin  // #46
             // INITIALIZE THE NEW COMMAND
             // NOTE THAT THIS WILL ABORT ANY ONGOING COMMAND!
             CMR   <= REGDATA;
@@ -690,10 +629,9 @@ module VDP_COMMAND (
                     VRAMWRDATA <= {VRAMRDDATA[7:4], LOGOPDESTCOL[1:0], VRAMRDDATA[1:0]};
                   end
                   default: begin
-                    //                                  WHEN "11" =>
+                    // 2'b11:
                     VRAMWRDATA <= {VRAMRDDATA[7:2], LOGOPDESTCOL[1:0]};
-                    //                                  WHEN OTHERS =>
-                    //                                      NULL; -- SHOULD NEVER OCCUR
+                    // NULL; -- SHOULD NEVER OCCUR
                   end
                 endcase
               end else begin
@@ -772,8 +710,8 @@ module VDP_COMMAND (
             // WHEN INITIALIZING = '1':
             //   APPLICABLE TO ALL COMMANDS
             // WHEN INITIALIZING = '0':
-            // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMCM, LMMM, LMMV
-            // DETERMINE NYLOOPEND
+            //   APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMCM, LMMM, LMMV
+            //   DETERMINE NYLOOPEND
             DYEND = 1'b0;
             SYEND = 1'b0;
             if ((DIY == 1'b1)) begin

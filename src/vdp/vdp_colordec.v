@@ -1,25 +1,3 @@
-// File vdp_colordec.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
 //
 //  vdp_colordec.vhd
 //
@@ -84,7 +62,6 @@
 //      JP: 不要な信号間の相関を除去 by t.hara
 //      (Removed unnecessary signal correlation by t.hara)
 //
-// no timescale needed
 
 module VDP_COLORDEC (
     input wire RESET,
@@ -133,9 +110,14 @@ module VDP_COLORDEC (
   // JP: モニタへ出力する色
   // REGISTERS
 
+  // EN: Only the effective display area becomes 1
+  // EN: Only the pixel position of the sprite becomes 1
+  // EN: Color of TEXT1, 2
+  // EN: Color of GRAPHIC1,2,3,MOSAIC
+  // EN: Color of GRAPHIC4,5,6,7
+  // EN: Color of the sprite
+  // EN: Color output to the monitor
 
-
-  // D-FLIPFLOP
   reg [5:0] FF_VIDEO_R;
   reg [5:0] FF_VIDEO_G;
   reg [5:0] FF_VIDEO_B;
@@ -146,7 +128,7 @@ module VDP_COLORDEC (
   reg [5:0] FF_YJK_G;
   reg [5:0] FF_YJK_B;
   reg FF_YJK_EN;
-  reg FF_SPRITECOLOROUT;  // WIRE
+  reg FF_SPRITECOLOROUT;
   wire W_EVEN_DOTSTATE;
   reg [7:0] W_GRP7_SPRITE_COLOR;
   wire [3:0] W_FORE_COLOR;
@@ -159,6 +141,7 @@ module VDP_COLORDEC (
   assign PVIDEOG_VDP = FF_VIDEO_G;
   assign PVIDEOB_VDP = FF_VIDEO_B;
   assign W_EVEN_DOTSTATE = (DOTSTATE == 2'b00 || DOTSTATE == 2'b11) ? 1'b1 : 1'b0;
+
   // OUTPUT DATA LATCH
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
