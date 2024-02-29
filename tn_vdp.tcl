@@ -1,9 +1,14 @@
 add_file src\\SPI_MCP3202.v
 add_file src\\clockdiv.v
-add_file src\\lpf.vhd
+add_file src\\lpf1.v
+add_file src\\lpf2.v
+add_file src\\interpo.v
+add_file src\\interpo_mul.v
 add_file src\\memory_controller.v
 add_file src\\pinfilter.v
-add_file src\\ram.vhd
+add_file src\\ram.v
+add_file src\\palette.v
+add_file src\\palette_g.v
 add_file src\\sdram.v
 add_file src\\v9958_top.v
 add_file src\\vram.v
