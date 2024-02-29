@@ -1222,11 +1222,11 @@ BEGIN
                 END IF;
             ELSE
                 -- INTERLACE
-                IF( (V_CNT = 20*2) OR
                         -- +1 SHOULD BE NEEDED.
                         -- BECAUSE ODD FIELD'S START IS DELAYED HALF LINE.
                         -- SO THE START POSITION OF DISPLAY TIME SHOULD BE
                         -- DELAYED MORE HALF LINE.
+                IF( (V_CNT = 20*2) OR
                         ((V_CNT = 525+20*2 + 1) AND (VDPR9PALMODE = '0')) OR
                         ((V_CNT = 625+20*2 + 1) AND (VDPR9PALMODE = '1')) ) THEN
                     BWINDOW_Y <= '1';

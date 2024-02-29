@@ -1,1 +1,0 @@
-`define LEFT_BORDER 255

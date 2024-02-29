@@ -24,19 +24,18 @@ add_file src\\vdp\\vdp_command.v
 add_file src\\vdp\\vdp_doublebuf.v
 add_file src\\vdp\\vdp_graphic123m.v
 add_file src\\vdp\\vdp_graphic4567.v
-add_file src\\vdp\\vdp_hvcounter.vhd
+add_file src\\vdp\\vdp_hvcounter.v
 add_file src\\vdp\\vdp_interrupt.v
 add_file src\\vdp\\vdp_linebuf.v
-add_file src\\vdp\\vdp_ntsc_pal.vhd
-add_file src\\vdp\\vdp_package.vhd
+add_file src\\vdp\\vdp_ntsc_pal.v
 add_file src\\vdp\\vdp_register.v
 add_file src\\vdp\\vdp_spinforam.v
 add_file src\\vdp\\vdp_sprite.v
-add_file src\\vdp\\vdp_ssg.vhd
+add_file src\\vdp\\vdp_ssg.v
 add_file src\\vdp\\vdp_text12.v
-add_file src\\vdp\\vdp_vga.vhd
+add_file src\\vdp\\vdp_vga.v
 add_file src\\vdp\\vdp_wait_control.v
-add_file src\\vdp\\vdp.vhd
+add_file src\\vdp\\vdp.v
 add_file src\\vdp\\vencode.v
 
 add_file src\\gowin\\clk_135.v

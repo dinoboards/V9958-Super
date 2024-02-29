@@ -79,7 +79,7 @@
 //
 // no timescale needed
 
-`include "vdp_constants.v"
+`include "vdp_constants.vh"
 
 module VDP_INTERRUPT (
     input wire RESET,

@@ -1,4 +1,4 @@
-// File ./src/vdp/vdp_ssg.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
+// File src/vdp/vdp_ssg.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
 // vhd2vl settings:
 //  * Verilog Module Declaration Style: 2001
 
@@ -83,75 +83,75 @@
 //
 // no timescale needed
 
-module VDP_SSG(
-input wire RESET,
-input wire CLK21M,
-output wire [10:0] H_CNT,
-output wire [10:0] H_CNT_IN_FIELD,
-output wire [10:0] V_CNT,
-output wire [1:0] DOTSTATE,
-output wire [2:0] EIGHTDOTSTATE,
-output wire [8:0] PREDOTCOUNTER_X,
-output wire [8:0] PREDOTCOUNTER_Y,
-output wire [8:0] PREDOTCOUNTER_YP,
-output reg PREWINDOW_Y,
-output reg PREWINDOW_Y_SP,
-output wire FIELD,
-output wire WINDOW_X,
-output wire PVIDEODHCLK,
-output wire PVIDEODLCLK,
-output reg IVIDEOVS_N,
-output wire HD,
-output wire VD,
-output wire HSYNC,
-output reg ENAHSYNC,
-output wire V_BLANKING_START,
-input wire VDPR9PALMODE,
-input wire REG_R9_INTERLACE_MODE,
-input wire REG_R9_Y_DOTS,
-input wire [7:0] REG_R18_ADJ,
-input wire [7:0] REG_R23_VSTART_LINE,
-input wire REG_R25_MSK,
-input wire [2:0] REG_R27_H_SCROLL,
-input wire REG_R25_YJK,
-input wire CENTERYJK_R25_N,
-input wire [6:0] OFFSET_Y,
-output wire HDMI_RESET
+module VDP_SSG (
+    input wire RESET,
+    input wire CLK21M,
+    output wire [10:0] H_CNT,
+    output wire [10:0] H_CNT_IN_FIELD,
+    output wire [10:0] V_CNT,
+    output wire [1:0] DOTSTATE,
+    output wire [2:0] EIGHTDOTSTATE,
+    output wire [8:0] PREDOTCOUNTER_X,
+    output wire [8:0] PREDOTCOUNTER_Y,
+    output wire [8:0] PREDOTCOUNTER_YP,
+    output reg PREWINDOW_Y,
+    output reg PREWINDOW_Y_SP,
+    output wire FIELD,
+    output wire WINDOW_X,
+    output wire PVIDEODHCLK,
+    output wire PVIDEODLCLK,
+    output reg IVIDEOVS_N,
+    output wire HD,
+    output wire VD,
+    output wire HSYNC,
+    output reg ENAHSYNC,
+    output wire V_BLANKING_START,
+    input wire VDPR9PALMODE,
+    input wire REG_R9_INTERLACE_MODE,
+    input wire REG_R9_Y_DOTS,
+    input wire [7:0] REG_R18_ADJ,
+    input wire [7:0] REG_R23_VSTART_LINE,
+    input wire REG_R25_MSK,
+    input wire [2:0] REG_R27_H_SCROLL,
+    input wire REG_R25_YJK,
+    input wire CENTERYJK_R25_N,
+    input wire [6:0] OFFSET_Y,
+    output wire HDMI_RESET
 );
 
-//        REG_R19_HSYNC_INT_LINE  : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
+  //        REG_R19_HSYNC_INT_LINE  : IN    STD_LOGIC_VECTOR(  7 DOWNTO 0 );
 
 
 
-// FLIP FLOP
-reg [1:0] FF_DOTSTATE;
-reg [2:0] FF_EIGHTDOTSTATE;
-reg [8:0] FF_PRE_X_CNT;
-reg [8:0] FF_X_CNT;
-reg [8:0] FF_PRE_Y_CNT;
-reg [8:0] FF_MONITOR_LINE;
-reg FF_VIDEO_DH_CLK;
-reg FF_VIDEO_DL_CLK;
-reg [5:0] FF_PRE_X_CNT_START1;
-reg [8:0] FF_RIGHT_MASK;
-reg FF_WINDOW_X;  // WIRE
-wire [10:0] W_H_CNT;
-wire [10:0] W_H_CNT_IN_FIELD;
-wire [10:0] W_V_CNT_IN_FRAME;
-wire [9:0] W_V_CNT_IN_FIELD;
-wire W_FIELD;
-wire W_H_BLANK;
-wire W_V_BLANK;
-wire [4:0] W_PRE_X_CNT_START0;
-wire [8:0] W_PRE_X_CNT_START2;
-wire W_HSYNC;
-wire [8:0] W_LEFT_MASK;
-wire [8:0] W_Y_ADJ;
-wire [1:0] W_LINE_MODE;
-wire W_V_BLANKING_START;
-wire W_V_BLANKING_END;
-wire [8:0] W_V_SYNC_INTR_START_LINE;
-reg [8:0] FF_TOP_BORDER_LINES;
+  // FLIP FLOP
+  reg [1:0] FF_DOTSTATE;
+  reg [2:0] FF_EIGHTDOTSTATE;
+  reg [8:0] FF_PRE_X_CNT;
+  reg [8:0] FF_X_CNT;
+  reg [8:0] FF_PRE_Y_CNT;
+  reg [8:0] FF_MONITOR_LINE;
+  reg FF_VIDEO_DH_CLK;
+  reg FF_VIDEO_DL_CLK;
+  reg [5:0] FF_PRE_X_CNT_START1;
+  reg [8:0] FF_RIGHT_MASK;
+  reg FF_WINDOW_X;  // WIRE
+  wire [10:0] W_H_CNT;
+  wire [10:0] W_H_CNT_IN_FIELD;
+  wire [10:0] W_V_CNT_IN_FRAME;
+  wire [9:0] W_V_CNT_IN_FIELD;
+  wire W_FIELD;
+  wire W_H_BLANK;
+  wire W_V_BLANK;
+  wire [4:0] W_PRE_X_CNT_START0;
+  wire [8:0] W_PRE_X_CNT_START2;
+  wire W_HSYNC;
+  wire [8:0] W_LEFT_MASK;
+  wire [8:0] W_Y_ADJ;
+  wire [1:0] W_LINE_MODE;
+  wire W_V_BLANKING_START;
+  wire W_V_BLANKING_END;
+  wire [8:0] W_V_SYNC_INTR_START_LINE;
+  reg [8:0] FF_TOP_BORDER_LINES;
 
   //---------------------------------------------------------------------------
   //  PORT ASSIGNMENT
@@ -175,62 +175,62 @@ reg [8:0] FF_TOP_BORDER_LINES;
   //---------------------------------------------------------------------------
   //  SUB COMPONENTS
   //---------------------------------------------------------------------------
-  VDP_HVCOUNTER U_HVCOUNTER(
+  VDP_HVCOUNTER U_HVCOUNTER (
       .RESET(RESET),
-    .CLK21M(CLK21M),
-    .H_CNT(W_H_CNT),
-    .H_CNT_IN_FIELD(W_H_CNT_IN_FIELD),
-    .V_CNT_IN_FIELD(W_V_CNT_IN_FIELD),
-    .V_CNT_IN_FRAME(W_V_CNT_IN_FRAME),
-    .FIELD(W_FIELD),
-    .H_BLANK(W_H_BLANK),
-    .V_BLANK(W_V_BLANK),
-    .PAL_MODE(VDPR9PALMODE),
-    .INTERLACE_MODE(REG_R9_INTERLACE_MODE),
-    .Y212_MODE(REG_R9_Y_DOTS),
-    .OFFSET_Y(OFFSET_Y),
-    .HDMI_RESET(HDMI_RESET),
-    .BLANKING_START(W_V_BLANKING_START),
-    .BLANKING_END(W_V_BLANKING_END));
+      .CLK21M(CLK21M),
+      .H_CNT(W_H_CNT),
+      .H_CNT_IN_FIELD(W_H_CNT_IN_FIELD),
+      .V_CNT_IN_FIELD(W_V_CNT_IN_FIELD),
+      .V_CNT_IN_FRAME(W_V_CNT_IN_FRAME),
+      .FIELD(W_FIELD),
+      .H_BLANK(W_H_BLANK),
+      .V_BLANK(W_V_BLANK),
+      .PAL_MODE(VDPR9PALMODE),
+      .INTERLACE_MODE(REG_R9_INTERLACE_MODE),
+      .Y212_MODE(REG_R9_Y_DOTS),
+      .OFFSET_Y(OFFSET_Y),
+      .HDMI_RESET(HDMI_RESET),
+      .BLANKING_START(W_V_BLANKING_START),
+      .BLANKING_END(W_V_BLANKING_END)
+  );
 
   //---------------------------------------------------------------------------
   //  DOT STATE
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_DOTSTATE <= 2'b00;
       FF_VIDEO_DH_CLK <= 1'b0;
       FF_VIDEO_DL_CLK <= 1'b0;
     end else begin
-      if((W_H_CNT == (CLOCKS_PER_LINE - 1))) begin
+      if ((W_H_CNT == (`CLOCKS_PER_LINE - 1))) begin
         FF_DOTSTATE <= 2'b00;
         FF_VIDEO_DH_CLK <= 1'b1;
         FF_VIDEO_DL_CLK <= 1'b1;
-      end
-      else begin
-        case(FF_DOTSTATE)
-        2'b00 : begin
-          FF_DOTSTATE <= 2'b01;
-          FF_VIDEO_DH_CLK <= 1'b0;
-          FF_VIDEO_DL_CLK <= 1'b1;
-        end
-        2'b01 : begin
-          FF_DOTSTATE <= 2'b11;
-          FF_VIDEO_DH_CLK <= 1'b1;
-          FF_VIDEO_DL_CLK <= 1'b0;
-        end
-        2'b11 : begin
-          FF_DOTSTATE <= 2'b10;
-          FF_VIDEO_DH_CLK <= 1'b0;
-          FF_VIDEO_DL_CLK <= 1'b0;
-        end
-        2'b10 : begin
-          FF_DOTSTATE <= 2'b00;
-          FF_VIDEO_DH_CLK <= 1'b1;
-          FF_VIDEO_DL_CLK <= 1'b1;
-        end
-        default : begin
-        end
+      end else begin
+        case (FF_DOTSTATE)
+          2'b00: begin
+            FF_DOTSTATE <= 2'b01;
+            FF_VIDEO_DH_CLK <= 1'b0;
+            FF_VIDEO_DL_CLK <= 1'b1;
+          end
+          2'b01: begin
+            FF_DOTSTATE <= 2'b11;
+            FF_VIDEO_DH_CLK <= 1'b1;
+            FF_VIDEO_DL_CLK <= 1'b0;
+          end
+          2'b11: begin
+            FF_DOTSTATE <= 2'b10;
+            FF_VIDEO_DH_CLK <= 1'b0;
+            FF_VIDEO_DL_CLK <= 1'b0;
+          end
+          2'b10: begin
+            FF_DOTSTATE <= 2'b00;
+            FF_VIDEO_DH_CLK <= 1'b1;
+            FF_VIDEO_DL_CLK <= 1'b1;
+          end
+          default: begin
+          end
         endcase
       end
     end
@@ -240,14 +240,13 @@ reg [8:0] FF_TOP_BORDER_LINES;
   //  8DOT STATE
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_EIGHTDOTSTATE <= 3'b000;
     end else begin
-      if((W_H_CNT[1:0] == 2'b11)) begin
-        if((FF_PRE_X_CNT == 0)) begin
+      if ((W_H_CNT[1:0] == 2'b11)) begin
+        if ((FF_PRE_X_CNT == 0)) begin
           FF_EIGHTDOTSTATE <= 3'b000;
-        end
-        else begin
+        end else begin
           FF_EIGHTDOTSTATE <= FF_EIGHTDOTSTATE + 1;
         end
       end
@@ -257,10 +256,10 @@ reg [8:0] FF_TOP_BORDER_LINES;
   //---------------------------------------------------------------------------
   //  GENERATE DOTCOUNTER
   //---------------------------------------------------------------------------
-  assign W_PRE_X_CNT_START0 = {REG_R18_ADJ[3],REG_R18_ADJ[3:0]} + 5'b11000;
+  assign W_PRE_X_CNT_START0 = {REG_R18_ADJ[3], REG_R18_ADJ[3:0]} + 5'b11000;
   //  (-8...7) - 8 = (-16...-1)
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_PRE_X_CNT_START1 <= {6{1'b0}};
     end else begin
       FF_PRE_X_CNT_START1 <= ({W_PRE_X_CNT_START0[4],W_PRE_X_CNT_START0}) - ({3'b000,REG_R27_H_SCROLL});
@@ -271,40 +270,37 @@ reg [8:0] FF_TOP_BORDER_LINES;
   assign W_PRE_X_CNT_START2[8:6] = {3{FF_PRE_X_CNT_START1[5]}};
   assign W_PRE_X_CNT_START2[5:0] = FF_PRE_X_CNT_START1;
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_PRE_X_CNT <= {9{1'b0}};
     end else begin
-      //            IF( (W_H_CNT = ("00" & (OFFSET_X + LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '0') OR
-      //                (W_H_CNT = ("00" & (OFFSET_X + LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '0') OR
-      //                (W_H_CNT = ("00" & (OFFSET_X + LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '1') OR
-      //                (W_H_CNT = ("00" & (OFFSET_X + LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '1') )THEN
-      if(((W_H_CNT == ({2'b00,OFFSET_X + LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,OFFSET_X + LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,OFFSET_X + LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,OFFSET_X + LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      //            IF( (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '0') OR
+      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '0') OR
+      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '1') OR
+      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '1') )THEN
+      if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         FF_PRE_X_CNT <= W_PRE_X_CNT_START2;
-      end
-      else if((W_H_CNT[1:0] == 2'b10)) begin
+      end else if ((W_H_CNT[1:0] == 2'b10)) begin
         FF_PRE_X_CNT <= FF_PRE_X_CNT + 1;
       end
     end
   end
 
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_X_CNT <= {9{1'b0}};
     end else begin
-      //            IF( (W_H_CNT = ("00" & (OFFSET_X + LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '0') OR
-      //                (W_H_CNT = ("00" & (OFFSET_X + LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '0') OR
-      //                (W_H_CNT = ("00" & (OFFSET_X + LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '1') OR
-      //                (W_H_CNT = ("00" & (OFFSET_X + LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '1') )THEN
-      if(((W_H_CNT == ({2'b00,OFFSET_X + LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,OFFSET_X + LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,OFFSET_X + LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,OFFSET_X + LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      //            IF( (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '0') OR
+      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '0') OR
+      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '1') OR
+      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '1') )THEN
+      if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         // HOLD
-      end
-      else if((W_H_CNT[1:0] == 2'b10)) begin
-        if((FF_PRE_X_CNT == 9'b111111111)) begin
+      end else if ((W_H_CNT[1:0] == 2'b10)) begin
+        if ((FF_PRE_X_CNT == 9'b111111111)) begin
           // JP: FF_PRE_X_CNT が -1から0にカウントアップする時にFF_X_CNTを-8にする
           FF_X_CNT <= 9'b111111000;
           // -8
-        end
-        else begin
+        end else begin
           FF_X_CNT <= FF_X_CNT + 1;
         end
       end
@@ -315,14 +311,13 @@ reg [8:0] FF_TOP_BORDER_LINES;
   // GENERATE V-SYNC PULSE
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       IVIDEOVS_N <= 1'b1;
     end else begin
-      if((W_V_CNT_IN_FIELD == 6)) begin
+      if ((W_V_CNT_IN_FIELD == 6)) begin
         // SSTATE = SSTATE_B
         IVIDEOVS_N <= 1'b0;
-      end
-      else if((W_V_CNT_IN_FIELD == 12)) begin
+      end else if ((W_V_CNT_IN_FIELD == 12)) begin
         // SSTATE = SSTATE_A
         IVIDEOVS_N <= 1'b1;
       end
@@ -344,22 +339,21 @@ reg [8:0] FF_TOP_BORDER_LINES;
   assign W_LEFT_MASK = (REG_R25_MSK == 1'b0) ? {9{1'b0}} : {5'b00000,{1'b0, ~REG_R27_H_SCROLL} + 1};
   always @(posedge CLK21M) begin
     // MAIN WINDOW
-    if((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
+    if ((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
       // WHEN DOTCOUNTER_X = 0
-      FF_RIGHT_MASK <= 9'b100000000 - ({6'b000000,REG_R27_H_SCROLL});
+      FF_RIGHT_MASK <= 9'b100000000 - ({6'b000000, REG_R27_H_SCROLL});
     end
   end
 
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_WINDOW_X <= 1'b0;
     end else begin
       // MAIN WINDOW
-      if((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
+      if ((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
         // WHEN DOTCOUNTER_X = 0
         FF_WINDOW_X <= 1'b1;
-      end
-      else if((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == FF_RIGHT_MASK)) begin
+      end else if ((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == FF_RIGHT_MASK)) begin
         // WHEN DOTCOUNTER_X = 256
         FF_WINDOW_X <= 1'b0;
       end
@@ -370,47 +364,44 @@ reg [8:0] FF_TOP_BORDER_LINES;
   // Y
   //---------------------------------------------------------------------------
   assign W_HSYNC = (W_H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
-  assign W_Y_ADJ = {REG_R18_ADJ[7],REG_R18_ADJ[7],REG_R18_ADJ[7],REG_R18_ADJ[7],REG_R18_ADJ[7],REG_R18_ADJ[7:4]};
+  assign W_Y_ADJ = {
+    REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7:4]
+  };
   always @(posedge CLK21M, posedge RESET) begin : P1
     reg [8:0] PREDOTCOUNTER_YP_V;
     reg [8:0] PREDOTCOUNTERYPSTART;
 
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_PRE_Y_CNT <= {9{1'b0}};
       FF_MONITOR_LINE <= {9{1'b0}};
       PREWINDOW_Y <= 1'b0;
     end else begin
-      if((W_HSYNC == 1'b1)) begin
+      if ((W_HSYNC == 1'b1)) begin
         // JP: PREWINDOW_Xが 1になるタイミングと同じタイミングでY座標の計算
-        if((W_V_BLANKING_END == 1'b1)) begin
-          if((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b0)) begin
+        if ((W_V_BLANKING_END == 1'b1)) begin
+          if ((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b0)) begin
             PREDOTCOUNTERYPSTART = 9'b111100110;
             // TOP BORDER LINES = -26
-          end
-          else if((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b0)) begin
+          end else if ((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b0)) begin
             PREDOTCOUNTERYPSTART = 9'b111110000;
             // TOP BORDER LINES = -16
-          end
-          else if((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b1)) begin
+          end else if ((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b1)) begin
             PREDOTCOUNTERYPSTART = 9'b111001011;
             // TOP BORDER LINES = -53
-          end
-          else if((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b1)) begin
+          end else if ((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b1)) begin
             PREDOTCOUNTERYPSTART = 9'b111010101;
             // TOP BORDER LINES = -43
           end
           FF_MONITOR_LINE <= PREDOTCOUNTERYPSTART + W_Y_ADJ;
           FF_TOP_BORDER_LINES <= 9'b000000000 - PREDOTCOUNTERYPSTART - W_Y_ADJ;
           PREWINDOW_Y_SP <= 1'b1;
-        end
-        else begin
-          if((PREDOTCOUNTER_YP_V == 255)) begin
+        end else begin
+          if ((PREDOTCOUNTER_YP_V == 255)) begin
             PREDOTCOUNTER_YP_V = FF_MONITOR_LINE;
-          end
-          else begin
+          end else begin
             PREDOTCOUNTER_YP_V = FF_MONITOR_LINE + 1;
           end
-          if((PREDOTCOUNTER_YP_V == 0)) begin
+          if ((PREDOTCOUNTER_YP_V == 0)) begin
             ENAHSYNC <= 1'b1;
             PREWINDOW_Y <= 1'b1;
           end
@@ -424,26 +415,22 @@ reg [8:0] FF_TOP_BORDER_LINES;
           FF_MONITOR_LINE <= PREDOTCOUNTER_YP_V;
         end
       end
-      FF_PRE_Y_CNT <= FF_MONITOR_LINE + ({1'b0,REG_R23_VSTART_LINE});
+      FF_PRE_Y_CNT <= FF_MONITOR_LINE + ({1'b0, REG_R23_VSTART_LINE});
     end
   end
 
   // -----------------------------------------------------------------------------
   // -- VSYNC INTERRUPT REQUEST
   // -----------------------------------------------------------------------------
-  assign W_LINE_MODE = {REG_R9_Y_DOTS,VDPR9PALMODE};
+  assign W_LINE_MODE = {REG_R9_Y_DOTS, VDPR9PALMODE};
 
-  always @(*) begin
-      case (W_LINE_MODE)
-          2'b00: W_V_SYNC_INTR_START_LINE = 9'd192 + OFFSET_Y + LED_TV_Y_NTSC;
-          2'b10: W_V_SYNC_INTR_START_LINE = 9'd212 + OFFSET_Y + LED_TV_Y_NTSC;
-          2'b01: W_V_SYNC_INTR_START_LINE = 9'd192 + OFFSET_Y + LED_TV_Y_PAL;
-          2'b11: W_V_SYNC_INTR_START_LINE = 9'd212 + OFFSET_Y + LED_TV_Y_PAL;
-          default: W_V_SYNC_INTR_START_LINE = 'bx;
-      endcase
-  end
+  assign W_V_SYNC_INTR_START_LINE = (W_LINE_MODE == 2'b00) ? (9'd192 + OFFSET_Y + `LED_TV_Y_NTSC) :
+                                    (W_LINE_MODE == 2'b10) ? (9'd212 + OFFSET_Y + `LED_TV_Y_NTSC) :
+                                    (W_LINE_MODE == 2'b01) ? (9'd192 + OFFSET_Y + `LED_TV_Y_PAL) :
+                                    (W_LINE_MODE == 2'b11) ? (9'd212 + OFFSET_Y + `LED_TV_Y_PAL) :
+                                    9'bxxxxxxxxx;
 
-  assign W_V_BLANKING_END = ((W_V_CNT_IN_FIELD == ({2'b00,OFFSET_Y + LED_TV_Y_NTSC,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b0) || (W_V_CNT_IN_FIELD == ({2'b00,OFFSET_Y + LED_TV_Y_PAL,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
+  assign W_V_BLANKING_END = ((W_V_CNT_IN_FIELD == ({2'b00,OFFSET_Y + `LED_TV_Y_NTSC,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b0) || (W_V_CNT_IN_FIELD == ({2'b00,OFFSET_Y + `LED_TV_Y_PAL,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
   assign W_V_BLANKING_START = ((W_V_CNT_IN_FIELD == ({W_V_SYNC_INTR_START_LINE + FF_TOP_BORDER_LINES,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b0) || (W_V_CNT_IN_FIELD == ({W_V_SYNC_INTR_START_LINE + FF_TOP_BORDER_LINES,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
 
 endmodule
