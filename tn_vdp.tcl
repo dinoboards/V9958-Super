@@ -21,7 +21,7 @@ add_file src\\hdmi\\tmds_channel.sv
 
 add_file src\\vdp\\vdp.vhd
 add_file src\\vdp\\vdp_command.v
-add_file src\\vdp\\vdp_graphic123m.vhd
+add_file src\\vdp\\vdp_graphic123m.v
 add_file src\\vdp\\vdp_hvcounter.vhd
 add_file src\\vdp\\vdp_linebuf.v
 add_file src\\vdp\\vdp_package.vhd
@@ -31,10 +31,10 @@ add_file src\\vdp\\vdp_vga.vhd
 add_file src\\vdp\\vencode.vhd
 add_file src\\vdp\\vdp_colordec.v
 add_file src\\vdp\\vdp_doublebuf.v
-add_file src\\vdp\\vdp_graphic4567.vhd
-add_file src\\vdp\\vdp_interrupt.vhd
+add_file src\\vdp\\vdp_graphic4567.v
+add_file src\\vdp\\vdp_interrupt.v
 add_file src\\vdp\\vdp_ntsc_pal.vhd
-add_file src\\vdp\\vdp_register.vhd
+add_file src\\vdp\\vdp_register.v
 add_file src\\vdp\\vdp_sprite.vhd
 add_file src\\vdp\\vdp_text12.vhd
 add_file src\\vdp\\vdp_wait_control.vhd

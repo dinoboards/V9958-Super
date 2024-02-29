@@ -293,7 +293,6 @@ ENTITY VDP IS
         DISPRESO            : IN    STD_LOGIC;
 
         NTSC_PAL_TYPE       : IN    STD_LOGIC;
-        FORCED_V_MODE       : IN    STD_LOGIC;
         LEGACY_VGA          : IN    STD_LOGIC;
 
         VDP_ID              : IN    STD_LOGIC_VECTOR(  4 DOWNTO 0 );
@@ -797,7 +796,6 @@ ARCHITECTURE RTL OF VDP IS
             VDPMODEISVRAMINTERLEAVE     : OUT   STD_LOGIC;
 
             -- SWITCHED I/O SIGNALS
-            FORCED_V_MODE               : IN    STD_LOGIC;
             VDP_ID                      : IN    STD_LOGIC_VECTOR(  4 DOWNTO 0 )
         );
     END COMPONENT;
@@ -1037,9 +1035,7 @@ BEGIN
     ----------------------------------------------------------------
     DISPMODEVGA     <=  DISPRESO;   -- DISPLAY RESOLUTION (0=15kHz, 1=31kHz)
 
---  VDPR9PALMODE    <=  REG_R9_PAL_MODE     WHEN( NTSC_PAL_TYPE = '1' AND LEGACY_VGA = '0' )ELSE
-    VDPR9PALMODE    <=  REG_R9_PAL_MODE     WHEN( NTSC_PAL_TYPE = '1' )ELSE
-                        FORCED_V_MODE;
+    VDPR9PALMODE    <=  REG_R9_PAL_MODE;
 
     IVIDEOR <=  --(OTHERS => '0') WHEN( BWINDOW = '0' )ELSE
                 IVIDEOR_VDP;
@@ -1799,7 +1795,6 @@ BEGIN
         SPMODE2                     => SPMODE2                      ,
         VDPMODEISVRAMINTERLEAVE     => VDPMODEISVRAMINTERLEAVE      ,
 
-        FORCED_V_MODE               => FORCED_V_MODE                ,
         VDP_ID                      => VDP_ID
     );
 

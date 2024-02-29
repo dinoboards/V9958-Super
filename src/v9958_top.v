@@ -300,7 +300,6 @@ module v9958_top(
 		.BLANK_o			( blank_o							),
 		.DISPRESO			( 1'b1      				        ),  // VGA 31Khz
 		.NTSC_PAL_TYPE		( 1'b1      						),
-		.FORCED_V_MODE		( 1'b0      						),
 		.LEGACY_VGA			( 1'b0      						),
 		.VDP_ID				( VDP_ID							),
 		.OFFSET_Y			( OFFSET_Y							),

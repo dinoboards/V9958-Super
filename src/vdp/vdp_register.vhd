@@ -197,7 +197,6 @@ ENTITY VDP_REGISTER IS
         VDPMODEISVRAMINTERLEAVE     : OUT   STD_LOGIC;
 
         -- SWITCHED I/O SIGNALS
-        FORCED_V_MODE               : IN    STD_LOGIC;
         VDP_ID                      : IN    STD_LOGIC_VECTOR(  4 DOWNTO 0 )
     );
 END VDP_REGISTER;
@@ -501,7 +500,7 @@ BEGIN
     --------------------------------------------------------------------------
     -- PROCESS OF CPU WRITE REQUEST
     --------------------------------------------------------------------------
-    PROCESS( RESET, CLK21M, FORCED_V_MODE )
+    PROCESS( RESET, CLK21M )
     BEGIN
         IF( RESET = '1' )THEN
             VDPP1DATA               <= (OTHERS => '0');
@@ -529,7 +528,7 @@ BEGIN
             REG_R7_FRAME_COL        <= (OTHERS => '0');
             REG_R8_SP_OFF           <= '0';
             REG_R8_COL0_ON          <= '0';
-            REG_R9_PAL_MODE         <= FORCED_V_MODE;
+            REG_R9_PAL_MODE         <= '0';
             FF_R9_2PAGE_MODE        <= '0';
             REG_R9_INTERLACE_MODE   <= '0';
             REG_R9_Y_DOTS           <= '0';
