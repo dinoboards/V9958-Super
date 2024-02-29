@@ -116,114 +116,92 @@
 //   the process of inserting equivalent pulses into the horizontal sync
 //   signal.
 
-module VDP_NTSC_PAL(
-input wire CLK21M,
-input wire RESET,
-input wire PALMODE,
-input wire INTERLACEMODE,
-input wire [5:0] VIDEORIN,
-input wire [5:0] VIDEOGIN,
-input wire [5:0] VIDEOBIN,
-input wire VIDEOVSIN_N,
-input wire [10:0] HCOUNTERIN,
-input wire [10:0] VCOUNTERIN,
-output wire [5:0] VIDEOROUT,
-output wire [5:0] VIDEOGOUT,
-output wire [5:0] VIDEOBOUT,
-output wire VIDEOHSOUT_N,
-output wire VIDEOVSOUT_N
+module VDP_NTSC_PAL (
+    input wire CLK21M,
+    input wire RESET,
+    input wire PALMODE,
+    input wire INTERLACEMODE,
+    input wire [5:0] VIDEORIN,
+    input wire [5:0] VIDEOGIN,
+    input wire [5:0] VIDEOBIN,
+    input wire VIDEOVSIN_N,
+    input wire [10:0] HCOUNTERIN,
+    input wire [10:0] VCOUNTERIN,
+    output wire [5:0] VIDEOROUT,
+    output wire [5:0] VIDEOGOUT,
+    output wire [5:0] VIDEOBOUT,
+    output wire VIDEOHSOUT_N,
+    output wire VIDEOVSOUT_N
 );
 
-import custom_timings::*;
-
-// MODE
-// VIDEO INPUT
-// VIDEO OUTPUT
-
-parameter [1:0]
-  SSTATE_A = 0,
-  SSTATE_B = 1,
-  SSTATE_C = 2,
-  SSTATE_D = 3;
-
-reg [1:0] FF_SSTATE;
-reg FF_HSYNC_N;
-wire [1:0] W_MODE;
-reg [10:0] W_STATE_A1_FULL;
-reg [10:0] W_STATE_A2_FULL;
-reg [10:0] W_STATE_B_FULL;
-reg [10:0] W_STATE_C_FULL;
+  import custom_timings::*;
 
   // MODE
-  assign W_MODE = {PALMODE,INTERLACEMODE};
+  // VIDEO INPUT
+  // VIDEO OUTPUT
+
+  parameter [1:0] SSTATE_A = 0, SSTATE_B = 1, SSTATE_C = 2, SSTATE_D = 3;
+
+  reg [1:0] FF_SSTATE;
+  reg FF_HSYNC_N;
+  wire [1:0] W_MODE;
+  reg [10:0] W_STATE_A1_FULL;
+  reg [10:0] W_STATE_A2_FULL;
+  reg [10:0] W_STATE_B_FULL;
+  reg [10:0] W_STATE_C_FULL;
+
+  // MODE
+  assign W_MODE = {PALMODE, INTERLACEMODE};
   always @(*) begin
-    case(W_MODE)
-      2'b00 : W_STATE_A1_FULL <= 11'b01000001100;
-  // 524
-      2'b01 : W_STATE_A1_FULL <= 11'b01000001101;
-  // 525
-      2'b10 : W_STATE_A1_FULL <= 11'b01001110010;
-  // 626
-      2'b11 : W_STATE_A1_FULL <= 11'b01001110001;
-  // 625
-      default : W_STATE_A1_FULL <= {11{1'bX}};
+    case (W_MODE)
+      2'b00:   W_STATE_A1_FULL <= 11'b01000001100;  // 524
+      2'b01:   W_STATE_A1_FULL <= 11'b01000001101;  // 525
+      2'b10:   W_STATE_A1_FULL <= 11'b01001110010;  // 626
+      2'b11:   W_STATE_A1_FULL <= 11'b01001110001;  // 625
+      default: W_STATE_A1_FULL <= {11{1'bX}};
     endcase
   end
 
   always @(*) begin
-    case(W_MODE)
-      2'b00 : W_STATE_A2_FULL <= 11'b01000011000;
-  // 524+12
-      2'b01 : W_STATE_A2_FULL <= 11'b01000011001;
-  // 525+12
-      2'b10 : W_STATE_A2_FULL <= 11'b01001111110;
-  // 626+12
-      2'b11 : W_STATE_A2_FULL <= 11'b01001111101;
-  // 625+12
-      default : W_STATE_A2_FULL <= {11{1'bX}};
+    case (W_MODE)
+      2'b00:   W_STATE_A2_FULL <= 11'b01000011000;  // 524+12
+      2'b01:   W_STATE_A2_FULL <= 11'b01000011001;  // 525+12
+      2'b10:   W_STATE_A2_FULL <= 11'b01001111110;  // 626+12
+      2'b11:   W_STATE_A2_FULL <= 11'b01001111101;  // 625+12
+      default: W_STATE_A2_FULL <= {11{1'bX}};
     endcase
   end
 
   always @(*) begin
-    case(W_MODE)
-      2'b00 : W_STATE_B_FULL <= 11'b01000010010;
-  // 524+6
-      2'b01 : W_STATE_B_FULL <= 11'b01000010011;
-  // 525+6
-      2'b10 : W_STATE_B_FULL <= 11'b01001111000;
-  // 626+6
-      2'b11 : W_STATE_B_FULL <= 11'b01001110111;
-  // 625+6
-      default : W_STATE_B_FULL <= {11{1'bX}};
+    case (W_MODE)
+      2'b00:   W_STATE_B_FULL <= 11'b01000010010;  // 524+6
+      2'b01:   W_STATE_B_FULL <= 11'b01000010011;  // 525+6
+      2'b10:   W_STATE_B_FULL <= 11'b01001111000;  // 626+6
+      2'b11:   W_STATE_B_FULL <= 11'b01001110111;  // 625+6
+      default: W_STATE_B_FULL <= {11{1'bX}};
     endcase
   end
 
   always @(*) begin
-    case(W_MODE)
-      2'b00 : W_STATE_C_FULL <= 11'b01000011110;
-  // 524+18
-      2'b01 : W_STATE_C_FULL <= 11'b01000011111;
-  // 525+18
-      2'b10 : W_STATE_C_FULL <= 11'b01010000100;
-  // 626+18
-      2'b11 : W_STATE_C_FULL <= 11'b01010000011;
-  // 625+18
-      default : W_STATE_C_FULL <= {11{1'bX}};
+    case (W_MODE)
+      2'b00:   W_STATE_C_FULL <= 11'b01000011110;  // 524+18
+      2'b01:   W_STATE_C_FULL <= 11'b01000011111;  // 525+18
+      2'b10:   W_STATE_C_FULL <= 11'b01010000100;  // 626+18
+      2'b11:   W_STATE_C_FULL <= 11'b01010000011;  // 625+18
+      default: W_STATE_C_FULL <= {11{1'bX}};
     endcase
   end
 
   // STATE
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_SSTATE <= SSTATE_A;
     end else begin
-      if(((VCOUNTERIN == 0) || (VCOUNTERIN == 12) || (VCOUNTERIN == W_STATE_A1_FULL) || (VCOUNTERIN == W_STATE_A2_FULL))) begin
+      if (((VCOUNTERIN == 0) || (VCOUNTERIN == 12) || (VCOUNTERIN == W_STATE_A1_FULL) || (VCOUNTERIN == W_STATE_A2_FULL))) begin
         FF_SSTATE <= SSTATE_A;
-      end
-      else if(((VCOUNTERIN == 6) || (VCOUNTERIN == W_STATE_B_FULL))) begin
+      end else if (((VCOUNTERIN == 6) || (VCOUNTERIN == W_STATE_B_FULL))) begin
         FF_SSTATE <= SSTATE_B;
-      end
-      else if(((VCOUNTERIN == 18) || (VCOUNTERIN == W_STATE_C_FULL))) begin
+      end else if (((VCOUNTERIN == 18) || (VCOUNTERIN == W_STATE_C_FULL))) begin
         FF_SSTATE <= SSTATE_C;
       end
     end
@@ -231,37 +209,26 @@ reg [10:0] W_STATE_C_FULL;
 
   // GENERATE H SYNC PULSE
   always @(posedge RESET, posedge CLK21M) begin
-    if((RESET == 1'b1)) begin
+    if ((RESET == 1'b1)) begin
       FF_HSYNC_N <= 1'b0;
     end else begin
-      if((FF_SSTATE == SSTATE_A)) begin
-        if(((HCOUNTERIN == 1) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 1)))) begin
-          FF_HSYNC_N <= 1'b0;
-          // PULSE ON
+      if ((FF_SSTATE == SSTATE_A)) begin
+        if (((HCOUNTERIN == 1) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 1)))) begin
+          FF_HSYNC_N <= 1'b0;  // PULSE ON
+        end else if (((HCOUNTERIN == 51) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 51)))) begin
+          FF_HSYNC_N <= 1'b1;  // PULSE OFF
         end
-        else if(((HCOUNTERIN == 51) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 51)))) begin
-          FF_HSYNC_N <= 1'b1;
-          // PULSE OFF
+      end else if ((FF_SSTATE == SSTATE_B)) begin
+        if (((HCOUNTERIN == (CLOCKS_PER_LINE(PALMODE) - 100 + 1)) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) - 100 + 1)))) begin
+          FF_HSYNC_N <= 1'b0;  // PULSE ON
+        end else if (((HCOUNTERIN == 1) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 1)))) begin
+          FF_HSYNC_N <= 1'b1;  // PULSE OFF
         end
-      end
-      else if((FF_SSTATE == SSTATE_B)) begin
-        if(((HCOUNTERIN == (CLOCKS_PER_LINE(PALMODE) - 100 + 1)) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) - 100 + 1)))) begin
-          FF_HSYNC_N <= 1'b0;
-          // PULSE ON
-        end
-        else if(((HCOUNTERIN == 1) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE) + 1)))) begin
-          FF_HSYNC_N <= 1'b1;
-          // PULSE OFF
-        end
-      end
-      else if((FF_SSTATE == SSTATE_C)) begin
-        if((HCOUNTERIN == 1)) begin
-          FF_HSYNC_N <= 1'b0;
-          // PULSE ON
-        end
-        else if((HCOUNTERIN == 101)) begin
-          FF_HSYNC_N <= 1'b1;
-          // PULSE OFF
+      end else if ((FF_SSTATE == SSTATE_C)) begin
+        if ((HCOUNTERIN == 1)) begin
+          FF_HSYNC_N <= 1'b0;  // PULSE ON
+        end else if ((HCOUNTERIN == 101)) begin
+          FF_HSYNC_N <= 1'b1;  // PULSE OFF
         end
       end
     end

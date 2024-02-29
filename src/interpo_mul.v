@@ -21,7 +21,6 @@
 // considered unchanged from the original VHDL.
 
 // Signed multiplier for linear interpolation filter --
-// no timescale needed
 
 module INTERPO_MUL(
 input wire [MSBI + 1:0] DIFF,

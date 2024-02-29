@@ -1,26 +1,3 @@
-// File src/vdp/vdp_ssg.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
-//
 //  vdp_ssg.vhd
 //   Synchronous Signal Generator of ESE-VDP.
 //
@@ -80,8 +57,8 @@
 //-----------------------------------------------------------------------------
 //  30th,March,2008
 //  JP: VDP.VHD から分離 by t.hara
+//  (Extracted from by t.hara)
 //
-// no timescale needed
 
 module VDP_SSG (
     input wire RESET,
@@ -119,7 +96,7 @@ module VDP_SSG (
     output wire HDMI_RESET
 );
 
-import custom_timings::*;
+  import custom_timings::*;
 
   // FLIP FLOP
   reg [1:0] FF_DOTSTATE;
@@ -170,6 +147,7 @@ import custom_timings::*;
   assign VD = W_V_BLANK;
   assign HSYNC = (W_H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
   assign V_BLANKING_START = W_V_BLANKING_START;
+
   //---------------------------------------------------------------------------
   //  SUB COMPONENTS
   //---------------------------------------------------------------------------
@@ -254,13 +232,13 @@ import custom_timings::*;
   //---------------------------------------------------------------------------
   //  GENERATE DOTCOUNTER
   //---------------------------------------------------------------------------
-  assign W_PRE_X_CNT_START0 = {REG_R18_ADJ[3], REG_R18_ADJ[3:0]} + 5'b11000;
-  //  (-8...7) - 8 = (-16...-1)
+  assign W_PRE_X_CNT_START0 = {REG_R18_ADJ[3], REG_R18_ADJ[3:0]} + 5'b11000;  //  (-8...7) - 8 = (-16...-1)
+
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PRE_X_CNT_START1 <= {6{1'b0}};
     end else begin
-      FF_PRE_X_CNT_START1 <= ({W_PRE_X_CNT_START0[4],W_PRE_X_CNT_START0}) - ({3'b000,REG_R27_H_SCROLL});
+      FF_PRE_X_CNT_START1 <= ({W_PRE_X_CNT_START0[4], W_PRE_X_CNT_START0}) - ({3'b000, REG_R27_H_SCROLL});
       // (-23...-1)
     end
   end
@@ -271,10 +249,6 @@ import custom_timings::*;
     if ((RESET == 1'b1)) begin
       FF_PRE_X_CNT <= {9{1'b0}};
     end else begin
-      //            IF( (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '0') OR
-      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '0') OR
-      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '1') OR
-      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '1') )THEN
       if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         FF_PRE_X_CNT <= W_PRE_X_CNT_START2;
       end else if ((W_H_CNT[1:0] == 2'b10)) begin
@@ -287,17 +261,13 @@ import custom_timings::*;
     if ((RESET == 1'b1)) begin
       FF_X_CNT <= {9{1'b0}};
     end else begin
-      //            IF( (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '0') OR
-      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '0') OR
-      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '1') OR
-      //                (W_H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '1') )THEN
       if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         // HOLD
       end else if ((W_H_CNT[1:0] == 2'b10)) begin
         if ((FF_PRE_X_CNT == 9'b111111111)) begin
           // JP: FF_PRE_X_CNT が -1から0にカウントアップする時にFF_X_CNTを-8にする
-          FF_X_CNT <= 9'b111111000;
-          // -8
+          // (When FF_PRE_X_CNT counts up from -1 to 0, FF_X_CNT is set to -8.)
+          FF_X_CNT <= 9'b111111000;  // -8
         end else begin
           FF_X_CNT <= FF_X_CNT + 1;
         end
@@ -334,7 +304,7 @@ import custom_timings::*;
   // H_SCROLL = 5 --> 3
   // H_SCROLL = 6 --> 2
   // H_SCROLL = 7 --> 1
-  assign W_LEFT_MASK = (REG_R25_MSK == 1'b0) ? {9{1'b0}} : {5'b00000,{1'b0, ~REG_R27_H_SCROLL} + 1};
+  assign W_LEFT_MASK = (REG_R25_MSK == 1'b0) ? {9{1'b0}} : {5'b00000, {1'b0, ~REG_R27_H_SCROLL} + 1};
   always @(posedge CLK21M) begin
     // MAIN WINDOW
     if ((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
@@ -362,9 +332,7 @@ import custom_timings::*;
   // Y
   //---------------------------------------------------------------------------
   assign W_HSYNC = (W_H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
-  assign W_Y_ADJ = {
-    REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7:4]
-  };
+  assign W_Y_ADJ = {REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7:4]};
   always @(posedge CLK21M, posedge RESET) begin : P1
     reg [8:0] PREDOTCOUNTER_YP_V;
     reg [8:0] PREDOTCOUNTERYPSTART;
@@ -376,19 +344,16 @@ import custom_timings::*;
     end else begin
       if ((W_HSYNC == 1'b1)) begin
         // JP: PREWINDOW_Xが 1になるタイミングと同じタイミングでY座標の計算
+        // (Y coordinate calculation at the same timing as when PREWINDOW_X becomes 1)
         if ((W_V_BLANKING_END == 1'b1)) begin
           if ((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b0)) begin
-            PREDOTCOUNTERYPSTART = 9'b111100110;
-            // TOP BORDER LINES = -26
+            PREDOTCOUNTERYPSTART = 9'b111100110;  // TOP BORDER LINES = -26
           end else if ((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b0)) begin
-            PREDOTCOUNTERYPSTART = 9'b111110000;
-            // TOP BORDER LINES = -16
+            PREDOTCOUNTERYPSTART = 9'b111110000;  // TOP BORDER LINES = -16
           end else if ((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b1)) begin
-            PREDOTCOUNTERYPSTART = 9'b111001011;
-            // TOP BORDER LINES = -53
+            PREDOTCOUNTERYPSTART = 9'b111001011;  // TOP BORDER LINES = -53
           end else if ((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b1)) begin
-            PREDOTCOUNTERYPSTART = 9'b111010101;
-            // TOP BORDER LINES = -43
+            PREDOTCOUNTERYPSTART = 9'b111010101;  // TOP BORDER LINES = -43
           end
           FF_MONITOR_LINE <= PREDOTCOUNTERYPSTART + W_Y_ADJ;
           FF_TOP_BORDER_LINES <= 9'b000000000 - PREDOTCOUNTERYPSTART - W_Y_ADJ;
@@ -402,8 +367,7 @@ import custom_timings::*;
           if ((PREDOTCOUNTER_YP_V == 0)) begin
             ENAHSYNC <= 1'b1;
             PREWINDOW_Y <= 1'b1;
-          end
-          else if(((REG_R9_Y_DOTS == 1'b0 && PREDOTCOUNTER_YP_V == 192) || (REG_R9_Y_DOTS == 1'b1 && PREDOTCOUNTER_YP_V == 212))) begin
+          end else if (((REG_R9_Y_DOTS == 1'b0 && PREDOTCOUNTER_YP_V == 192) || (REG_R9_Y_DOTS == 1'b1 && PREDOTCOUNTER_YP_V == 212))) begin
             PREWINDOW_Y <= 1'b0;
             PREWINDOW_Y_SP <= 1'b0;
           end

@@ -21,7 +21,6 @@
 // considered unchanged from the original VHDL.
 
 // Linear interpolation filter --
-// no timescale needed
 
 module INTERPO(
 input wire CLK21M,

@@ -20,8 +20,6 @@
 // The result of translation follows.  Its copyright status should be
 // considered unchanged from the original VHDL.
 
-// no timescale needed
-
 module PALETTE_G (
     input wire [7:0] ADR,
     input wire CLK,

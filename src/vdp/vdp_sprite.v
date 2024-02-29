@@ -1,26 +1,3 @@
-// File src/vdp/vdp_sprite.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
-//
 //  vdp_sprite.vhd
 //    Sprite module.
 //
@@ -195,8 +172,61 @@
 // JP:   どうしても実機と同じタイミングにしたいという方は
 // JP:   チャレンジしてみてください。
 // JP:
+// Translation:
+// The aim of this implementation is to use BLOCKRAM and save SLICE consumption.
+// The number of SLICEs used when compiling vdp.vhd without this implementation is around 1900.
+// As of 2006/8/16, the latest version (Cyclone) without this sprite was 2726LC.
+// As of 2006/8/19, using this sprite reduced it to 2278LC.
 //
-// no timescale needed
+// [Terms]
+// ・Local plane number
+//   The rank when the sprites (planes) lined up on a certain line are extracted and arranged in the order of sprite plane numbers.
+//   For example, if sprite planes #1, #4, and #5 exist on a certain line, the local plane numbers of each sprite are #0, #1, and #2.
+//   Even in sprite mode 2, a maximum of 8 can be lined up horizontally, so the local plane number is a maximum of #7.
+//
+// ・Screen drawing bandwidth
+//   The actual VDP machine adds 2 cycles (2 bytes) of access to random addresses in addition to reading 4 bytes of data on continuous addresses at 8 dots (32 clocks).
+//   These DRAM access cycles are named as follows.
+//    * Screen drawing read cycle
+//    * Sprite Y coordinate inspection cycle
+//    * Random access cycle
+//
+// ・VRAM access cycle in pseudo VDP
+//   Pseudo VDP uses faster memory than old DRAM.
+//   Therefore, it is coded on the assumption that it has memory that can perform random access reliably once every 4 clocks.
+//   In addition, in the Cyclone version of pseudo MSX, 16-bit wide SDRAM is used, so it is also possible to read 16 bits of continuous data at one access.
+//   In pseudo VDP, the lower 8 bits of D0-D7 are mapped to the first half of 64K bytes of VRAM, and the upper 8 bits of D8-D15 are mapped to the second half of 64K bytes.
+//   This irregular assignment is to mimic the memory map of the actual VDP machine. In fact, the bandwidth required to read 2 bytes of memory in 4 clocks is only in GRAPHIC6,7 mode.
+//   The actual VDP machine uses memory interleaving in GRAPHIC6,7, assigning even dots to the first half of 64K bytes of VRAM and odd dots to the second half of 64K bytes.
+//   Therefore, in pseudo VDP, it is necessary to be able to read data on the same address in the first half of 64K and the second half of 64K in one cycle (4 clocks), so it is mapped like this.
+//   Simply put, it is likening the 16-bit access of SDRAM to the interleaved access of the actual DRAM.
+//
+//   From various phenomena, it is inferred that the inside of the VDP is operating in an 8-dot cycle. If you infer the movement of memory from the bandwidth of 8 dots, or 32 clocks, it will be as follows.
+//
+//   　　      Dot：<=0=><=1=><=2=><=3=><=4=><=5=><=6=><=7=>
+//   Normal Access： A0   A1   A2   A3   A4  (A5)  A6  (A7)
+//      Interleave： B0   B1   B2   B3
+//
+//    - During drawing
+//   　　・A0～A3 (B0～B3)
+//        Used for screen drawing. B0-B3 is data that can be read at the same time by interleaving, and is not used except in GRAPHIC6,7.
+//   　　・A4     Sprite Y coordinate inspection
+//   　　・A6     VRAM R/W or VDP command (allocated alternately once every 2 times)
+//
+//     - Non-drawing (during sprite preparation)
+//    　　・A0     Sprite X coordinate read
+//    　　・A1     Sprite pattern number read
+//    　　・A2     Sprite pattern left read
+//    　　・A3     Sprite pattern right read
+//    　　・A4     Sprite color read
+//    　　・A6     VRAM R/W or VDP command (allocated alternately once every 2 times)
+//
+//   Although the slots of A5 and A7 can actually be used, if you use this, the bandwidth will increase more than the actual machine, so it is intentionally left unused.
+//   Also, the cycle during non-drawing is different from the actual machine. The actual machine processes 2 sprites together in 64 clocks to effectively use the page mode cycle of DRAM.
+//   Also, there are no slots to allocate to VRAM and VDP commands in the 64 clock cycle, so it may be leaving a gap for VRAM access in the gap of the 64 clock cycle. (Unconfirmed)
+//   It is possible to completely mimic this operation in pseudo VDP, but the source looks unnecessarily complicated, and it was a little annoying to deviate from the 2^n power cycle, so it has a clean cycle as described above.
+//   If you want to have the same timing as the actual machine, please challenge.
+//
 
 module VDP_SPRITE (
     input wire CLK21M,
@@ -239,9 +269,9 @@ module VDP_SPRITE (
   // VDP REGISTERS
   // JP: スプライトを描画した時に'1'になる。カラーコード0で
   // JP: 描画する事もできるので、このビットが必要
+  // (Becomes '1' when a sprite is drawn. Since it is possible to)
+  // (draw with color code 0, this bit is necessary)
   // OUTPUT COLOR
-
-
 
   reg FF_SP_EN;
   reg [8:0] FF_CUR_Y;
@@ -265,7 +295,9 @@ module VDP_SPRITE (
   wire SPINFORAMIC_OUT;
   parameter [1:0] SPSTATE_IDLE = 0, SPSTATE_YTEST_DRAW = 1, SPSTATE_PREPARE = 2;
 
-  reg [1:0] SPSTATE;  // JP: スプライトプレーン番号×横方向表示枚数の配列
+  // JP: スプライトプレーン番号×横方向表示枚数の配列
+  // (Array of sprite plane number times the number of horizontal displays)
+  reg [1:0] SPSTATE;
 
   reg [4:0] SPRENDERPLANES[0:7];
   wire [16:0] IRAMADR;
@@ -275,22 +307,57 @@ module VDP_SPRITE (
   reg [10-1:0] SPPTNGENETBLBASEADDR;
   wire [16:2] SPATTRIB_ADDR;
   wire [16:0] READVRAMADDRCREAD;
-  wire [16:0] READVRAMADDRPTREAD;  // JP: Y座標検査中のプレーン番号
+
+  // JP: Y座標検査中のプレーン番号
+  // (Plane number under Y-coordinate inspection)
+  wire [16:0] READVRAMADDRPTREAD;
+
   reg [4:0] FF_Y_TEST_SP_NUM;
   reg [3:0] FF_Y_TEST_LISTUP_ADDR;  // 0 - 8
-  reg FF_Y_TEST_EN;  // JP: 下書きデータ準備中のローカルプレーン番号
-  reg [2:0] SPPREPARELOCALPLANENUM;  // JP: 下書きデータ準備中のプレーン番号
-  reg [4:0] SPPREPAREPLANENUM;  // JP: 下書きデータ準備中のスプライトのYライン番号(スプライトのどの部分を描画するか)
-  reg [3:0] SPPREPARELINENUM;  // JP: 下書きデータ準備中のスプライトのX位置。0の時左8ドット。1の時右8ドット。(16X16モードのみで使用)
+
+  // JP: 下書きデータ準備中のローカルプレーン番号
+  // (Local plane number being prepared for draft data)
+  reg FF_Y_TEST_EN;
+
+  // JP: 下書きデータ準備中のプレーン番号
+  // (Local plane number being prepared for draft data)
+  reg [2:0] SPPREPARELOCALPLANENUM;
+
+  // JP: 下書きデータ準備中のスプライトのYライン番号(スプライトのどの部分を描画するか)
+  // (Y-line number of the sprite being prepared for draft data (which part of the sprite to draw))
+  reg [4:0] SPPREPAREPLANENUM;
+
+  // JP: 下書きデータ準備中のスプライトのX位置。0の時左8ドット。1の時右8ドット。(16X16モードのみで使用)
+  // (X position of the sprite being prepared for draft data. 0 for the left 8 dots, 1 for the right 8 dots. (Used only in 16X16 mode))
+  reg [3:0] SPPREPARELINENUM;
+
   wire SPPREPAREXPOS;
-  reg [7:0] SPPREPAREPATTERNNUM;  // JP: 下書データの準備が終了した
+
+  // JP: 下書データの準備が終了した
+  // (Preparation of draft data is complete)
+  reg [7:0] SPPREPAREPATTERNNUM;
+
   reg SPPREPAREEND;
-  wire SPCCD;  // JP: 下書きをしているスプライトのローカルプレーン番号
+
+  // JP: 下書きをしているスプライトのローカルプレーン番号
+  // (Local plane number of the sprite being drafted)
+  wire SPCCD;
+
   reg [2:0] SPPREDRAWLOCALPLANENUM;  // 0 - 7
-  reg SPPREDRAWEND;  // JP: ラインバッファへの描画用
-  reg [8:0] SPDRAWX;  // -32 - 287 (=256+31)
+
+  // JP: ラインバッファへの描画用
+  // (For drawing to the line buffer)
+  reg SPPREDRAWEND;
+
+  // -32 - 287 (=256+31)
+  reg [8:0] SPDRAWX;
+
   reg [15:0] SPDRAWPATTERN;
-  reg [3:0] SPDRAWCOLOR;  // JP: スプライト描画ラインバッファの制御信号
+
+  // JP: スプライト描画ラインバッファの制御信号
+  // (Control signal of sprite drawing line buffer)
+  reg [3:0] SPDRAWCOLOR;
+
   wire [7:0] SPLINEBUFADDR_E;
   wire [7:0] SPLINEBUFADDR_O;
   wire SPLINEBUFWE_E;
@@ -320,8 +387,10 @@ module VDP_SPRITE (
   assign PVDPS5RESETACK = FF_VDPS5RESETACK;
   assign PVDPS0SPOVERMAPPED = FF_SP_OVERMAP;
   assign PVDPS0SPOVERMAPPEDNUM = FF_SP_OVERMAP_NUM;
+
   //---------------------------------------------------------------------------
   // スプライトを表示するか否かを示す信号
+  // (Signal indicating whether to display the sprite)
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -336,6 +405,7 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   // SPRITE INFORMATION ARRAY
   // 実際に表示するスプライトの情報を集めて記録しておくRAM
+  // (RAM to collect and record information of the sprite to be actually displayed)
   //---------------------------------------------------------------------------
   VDP_SPINFORAM ISPINFORAM (
       .ADDRESS(SPINFORAMADDR),
@@ -345,15 +415,14 @@ module VDP_SPRITE (
       .Q(SPINFORAMDATA_OUT)
   );
 
-  assign SPINFORAMDATA_IN = {
-    1'b0, SPINFORAMX_IN, SPINFORAMPATTERN_IN, SPINFORAMCOLOR_IN, SPINFORAMCC_IN, SPINFORAMIC_IN
-  };
+  assign SPINFORAMDATA_IN = {1'b0, SPINFORAMX_IN, SPINFORAMPATTERN_IN, SPINFORAMCOLOR_IN, SPINFORAMCC_IN, SPINFORAMIC_IN};
   assign SPINFORAMX_OUT = SPINFORAMDATA_OUT[30:22];
   assign SPINFORAMPATTERN_OUT = SPINFORAMDATA_OUT[21:6];
   assign SPINFORAMCOLOR_OUT = SPINFORAMDATA_OUT[5:2];
   assign SPINFORAMCC_OUT = SPINFORAMDATA_OUT[1];
   assign SPINFORAMIC_OUT = SPINFORAMDATA_OUT[0];
   assign SPINFORAMADDR = (SPSTATE == SPSTATE_PREPARE) ? SPPREPARELOCALPLANENUM : SPPREDRAWLOCALPLANENUM;
+
   //---------------------------------------------------------------------------
   // SPRITE LINE BUFFER
   //---------------------------------------------------------------------------
@@ -361,6 +430,7 @@ module VDP_SPRITE (
   assign SPLINEBUFDATA_IN_E = (DOTCOUNTERYP[0] == 1'b0) ? 8'b00000000 : SPLINEBUFDRAWCOLOR;
   assign SPLINEBUFWE_E = (DOTCOUNTERYP[0] == 1'b0) ? SPLINEBUFDISPWE : SPLINEBUFDRAWWE;
   assign SPLINEBUFDISPDATA_OUT = (DOTCOUNTERYP[0] == 1'b0) ? SPLINEBUFDATA_OUT_E : SPLINEBUFDATA_OUT_O;
+
   RAM U_EVEN_LINE_BUF (
       .ADR(SPLINEBUFADDR_E),
       .CLK(CLK21M),
@@ -383,9 +453,12 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   assign SPPREPAREXPOS = (EIGHTDOTSTATE == 3'b100) ? 1'b1 : 1'b0;
+
   // JP: VRAMアクセスアドレスの出力
+  // (Output of VRAM access address)
   assign IRAMADR = (SPSTATE == SPSTATE_YTEST_DRAW) ? FF_Y_TEST_VRAM_ADDR : IRAMADRPREPARE;
   assign PRAMADR = (VRAMINTERLEAVEMODE == 1'b0) ? IRAMADR[16:0] : {IRAMADR[0], IRAMADR[16:1]};
+
   //---------------------------------------------------------------------------
   // STATE MACHINE
   //---------------------------------------------------------------------------
@@ -420,10 +493,11 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // 現ラインのライン番号
+  // (Line number of the current line)
   //---------------------------------------------------------------------------
   always @(posedge CLK21M) begin
     if (((DOTSTATE == 2'b01) && (DOTCOUNTERX == 0))) begin
-      //   +1 SHOULD BE NEEDED. BECAUSE IT WILL BE DRAWN IN THE NEXT LINE.
+      // +1 SHOULD BE NEEDED. BECAUSE IT WILL BE DRAWN IN THE NEXT LINE.
       FF_CUR_Y <= DOTCOUNTERYP + ({1'b0, REG_R23_VSTART_LINE}) + 1;
     end
   end
@@ -436,6 +510,7 @@ module VDP_SPRITE (
 
   // detect a split screen
   assign SPLIT_SCRN = (FF_CUR_Y == (FF_PREV_CUR_Y + 1)) ? 1'b0 : 1'b1;
+
   //---------------------------------------------------------------------------
   // VRAM ADDRESS GENERATOR
   //---------------------------------------------------------------------------
@@ -484,16 +559,26 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // [Y_TEST]Yテスト用の信号
+  // (Signals for Y test)
   //---------------------------------------------------------------------------
   assign W_SPLISTUPY = FF_CUR_Y[7:0] - PRAMDAT;
+
   // [Y_TEST]着目スプライトを現ラインに表示するかどうかの信号
+  // (Signal indicating whether to display the sprite on the current line)
   assign W_TARGET_SP_EN = (((W_SPLISTUPY[7:3] == 5'b00000) && (REG_R1_SP_SIZE == 1'b0) && (REG_R1_SP_ZOOM == 1'b0)) || ((W_SPLISTUPY[7:4] == 4'b0000) && (REG_R1_SP_SIZE == 1'b1) && (REG_R1_SP_ZOOM == 1'b0)) || ((W_SPLISTUPY[7:4] == 4'b0000) && (REG_R1_SP_SIZE == 1'b0) && (REG_R1_SP_ZOOM == 1'b1)) || ((W_SPLISTUPY[7:5] == 3'b000) && (REG_R1_SP_SIZE == 1'b1) && (REG_R1_SP_ZOOM == 1'b1))) ? 1'b1 : 1'b0;
+
   // [Y_TEST]これ以降のスプライトは表示禁止かどうかの信号
+  // (Signal indicating whether the following sprites are prohibited from being displayed)
   assign W_SP_OFF = (PRAMDAT == ({4'b1101, SPMODE2, 3'b000})) ? 1'b1 : 1'b0;
+
   // [Y_TEST]４つ（８つ）のスプライトが並んでいるかどうかの信号
+  // (Signal indicating whether four (eight) sprites are lined up)
   assign W_SP_OVERMAP = ((FF_Y_TEST_LISTUP_ADDR[2] == 1'b1 && SPMODE2 == 1'b0 && SPMAXSPR == 1'b0) || FF_Y_TEST_LISTUP_ADDR[3] == 1'b1) ? 1'b1 : 1'b0;
+
   // [Y_TEST]表示中のラインか否か
+  // (Whether the line is being displayed)
   assign W_ACTIVE = BWINDOW_Y;
+
   //---------------------------------------------------------------------------
   // [SPWINDOW_Y]
   //---------------------------------------------------------------------------
@@ -503,8 +588,7 @@ module VDP_SPRITE (
     end else begin
       if ((DOTCOUNTERYP == 0)) begin
         SPWINDOW_Y <= 1'b1;
-      end
-      else if(((REG_R9_Y_DOTS == 1'b0 && DOTCOUNTERYP == 192) || (REG_R9_Y_DOTS == 1'b1 && DOTCOUNTERYP == 212))) begin
+      end else if (((REG_R9_Y_DOTS == 1'b0 && DOTCOUNTERYP == 192) || (REG_R9_Y_DOTS == 1'b1 && DOTCOUNTERYP == 212))) begin
         SPWINDOW_Y <= 1'b0;
       end
     end
@@ -512,6 +596,7 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // [Y_TEST]Yテストステートでないことを示す信号
+  // (Signal indicating that it is not a Y test state)
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -521,7 +606,7 @@ module VDP_SPRITE (
         if ((DOTCOUNTERX == 0)) begin
           FF_Y_TEST_EN <= FF_SP_EN;
         end else if ((EIGHTDOTSTATE == 3'b110)) begin
-          if((W_SP_OFF == 1'b1 || (W_SP_OVERMAP & W_TARGET_SP_EN) == 1'b1 || FF_Y_TEST_SP_NUM == 5'b11111)) begin
+          if ((W_SP_OFF == 1'b1 || (W_SP_OVERMAP & W_TARGET_SP_EN) == 1'b1 || FF_Y_TEST_SP_NUM == 5'b11111)) begin
             FF_Y_TEST_EN <= 1'b0;
           end
         end
@@ -531,6 +616,7 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // [Y_TEST]テスト対象のスプライト番号 (0～31)
+  // (Sprite number to be tested (0-31))
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -550,6 +636,7 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // [Y_TEST]表示するスプライトをリストアップするためのリストアップメモリアドレス 0～8
+  // (List-up memory address for listing the sprite to be displayed 0-8)
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -561,7 +648,7 @@ module VDP_SPRITE (
           FF_Y_TEST_LISTUP_ADDR <= {4{1'b0}};
         end else if ((EIGHTDOTSTATE == 3'b110)) begin
           // NEXT SPRITE [リストアップメモリが満杯になるまでインクリメント]
-          if((FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b0 && W_SP_OFF == 1'b0)) begin
+          if ((FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b0 && W_SP_OFF == 1'b0)) begin
             FF_Y_TEST_LISTUP_ADDR <= FF_Y_TEST_LISTUP_ADDR + 1;
           end
         end
@@ -571,6 +658,7 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // [Y_TEST]表示するスプライトをリストアップするためのリストアップメモリへの書き込み
+  // (Write to the list-up memory for listing the sprite to be displayed)
   //---------------------------------------------------------------------------
   always @(posedge CLK21M) begin
     if ((DOTSTATE == 2'b01)) begin
@@ -578,7 +666,7 @@ module VDP_SPRITE (
         // INITIALIZE
       end else if ((EIGHTDOTSTATE == 3'b110)) begin
         // NEXT SPRITE
-        if((FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b0 && W_SP_OFF == 1'b0)) begin
+        if ((FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b0 && W_SP_OFF == 1'b0)) begin
           SPRENDERPLANES[FF_Y_TEST_LISTUP_ADDR] <= FF_Y_TEST_SP_NUM;
         end
       end
@@ -587,6 +675,7 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // [Y_TEST]４つ目（８つ目）のスプライトが並んだかどうかの信号
+  // (Signal indicating whether the fourth (eighth) sprite is lined up)
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -594,12 +683,13 @@ module VDP_SPRITE (
     end else begin
       if ((PVDPS0RESETREQ == (~FF_VDPS0RESETACK))) begin
         // S#0が読み込まれるまでクリアしない
+        // Translation: Do not clear until S#0 is read
         FF_SP_OVERMAP <= 1'b0;
       end else if ((DOTSTATE == 2'b01)) begin
         if ((DOTCOUNTERX == 0)) begin
           // INITIALIZE
         end else if ((EIGHTDOTSTATE == 3'b110)) begin
-          if((SPWINDOW_Y == 1'b1 && FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b1 && W_SP_OFF == 1'b0)) begin
+          if ((SPWINDOW_Y == 1'b1 && FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b1 && W_SP_OFF == 1'b0)) begin
             FF_SP_OVERMAP <= 1'b1;
           end
         end
@@ -609,6 +699,7 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // [Y_TEST]処理をあきらめたスプライト信号
+  // (Signal of the sprite that gave up the process)
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -622,7 +713,9 @@ module VDP_SPRITE (
         end else if ((EIGHTDOTSTATE == 3'b110)) begin
           // JP: 調査をあきらめたスプライト番号が格納される。OVERMAPとは限らない。
           // JP: しかし、すでに OVERMAP で値が確定している場合は更新しない。
-          if((SPWINDOW_Y == 1'b1 && FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b1 && W_SP_OFF == 1'b0 && FF_SP_OVERMAP == 1'b0)) begin
+          // (The number of the sprite that gave up the investigation is stored. It's not necessarily OVERMAP.)
+          // (However, if the value has already been determined by OVERMAP, it will not be updated.)
+          if ((SPWINDOW_Y == 1'b1 && FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b1 && W_SP_OFF == 1'b0 && FF_SP_OVERMAP == 1'b0)) begin
             FF_SP_OVERMAP_NUM <= FF_Y_TEST_SP_NUM;
           end
         end
@@ -632,6 +725,7 @@ module VDP_SPRITE (
 
   //---------------------------------------------------------------------------
   // Yテスト用の VRAM読み出しアドレス
+  // (VRAM read address for Y test)
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -651,12 +745,22 @@ module VDP_SPRITE (
   // JP: 画面非描画中         : リストアップしたスプライトの情報を集め、inforamに格納
   // JP: 次の画面描画中       : inforamに格納された情報を元に、ラインバッファに描画
   // JP: 次の次の画面描画中   : ラインバッファに描画された絵を出力し、画面描画に混ぜる
+  // Translation:
+  // During screen rendering: Inspect the Y-coordinate of the sprite while drawing 8 dots,
+  //                          and list up the sprites to be displayed.
+  // When the screen is not being rendered: Collect information about the listed sprites and store it in inforam.
+  // During the next screen rendering: Draw on the line buffer based on the information stored in inforam.
+  // During the rendering of the screen after next: Output the picture drawn on the line buffer, and mix it with the screen rendering.
   //---------------------------------------------------------------------------
+
   // READ TIMING OF SPRITE ATTRIBUTE TABLE
   assign SPATTRIB_ADDR = {SPATTRTBLBASEADDR, SPPREPAREPLANENUM};
-  assign READVRAMADDRPTREAD = (REG_R1_SP_SIZE == 1'b0) ? {SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:0],SPPREPARELINENUM[2:0]} : {SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:2],SPPREPAREXPOS,SPPREPARELINENUM[3:0]};
-  // 16X16 MODE
-  assign READVRAMADDRCREAD = (SPMODE2 == 1'b0) ? {SPATTRIB_ADDR,2'b11} : {SPATTRTBLBASEADDR[9:3], ~SPATTRTBLBASEADDR[2],SPPREPAREPLANENUM,SPPREPARELINENUM};
+
+  assign READVRAMADDRPTREAD = (REG_R1_SP_SIZE == 1'b0) ?
+    {SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:0],SPPREPARELINENUM[2:0]} :                 // 16X16 MODE
+    {SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:2],SPPREPAREXPOS,SPPREPARELINENUM[3:0]};    // 16X16 MODE
+  assign READVRAMADDRCREAD = (SPMODE2 == 1'b0) ? {SPATTRIB_ADDR, 2'b11} : {SPATTRTBLBASEADDR[9:3], ~SPATTRTBLBASEADDR[2], SPPREPAREPLANENUM, SPPREPARELINENUM};
+
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       IRAMADRPREPARE <= {17{1'b0}};
@@ -664,24 +768,19 @@ module VDP_SPRITE (
       // PREPAREING
       if ((DOTSTATE == 2'b11)) begin
         case (EIGHTDOTSTATE)
-          3'b000: begin
-            // Y READ
+          3'b000: begin  // Y READ
             IRAMADRPREPARE <= {SPATTRIB_ADDR, 2'b00};
           end
-          3'b001: begin
-            // X READ
+          3'b001: begin  // X READ
             IRAMADRPREPARE <= {SPATTRIB_ADDR, 2'b01};
           end
-          3'b010: begin
-            // PATTERN NUM READ
+          3'b010: begin  // PATTERN NUM READ
             IRAMADRPREPARE <= {SPATTRIB_ADDR, 2'b10};
           end
-          3'b011, 3'b100: begin
-            // PATTERN READ
+          3'b011, 3'b100: begin  // PATTERN READ
             IRAMADRPREPARE <= READVRAMADDRPTREAD;
           end
-          3'b101: begin
-            // COLOR READ
+          3'b101: begin  // COLOR READ
             IRAMADRPREPARE <= READVRAMADDRCREAD;
           end
           default: begin
@@ -720,50 +819,45 @@ module VDP_SPRITE (
         2'b01: begin
           if ((SPSTATE == SPSTATE_PREPARE)) begin
             case (EIGHTDOTSTATE)
-              3'b001: begin
-                // Y READ
+              3'b001: begin  // Y READ
                 // JP: スプライトの何行目が該当したか覚えておく
+                // (Remember which line of the sprite was hit)
                 if ((REG_R1_SP_ZOOM == 1'b0)) begin
                   SPPREPARELINENUM <= W_SPLISTUPY[3:0];
                 end else begin
                   SPPREPARELINENUM <= W_SPLISTUPY[4:1];
                 end
               end
-              3'b010: begin
-                // X READ
+              3'b010: begin  // X READ
                 SPINFORAMX_IN <= {1'b0, PRAMDAT};
               end
-              3'b011: begin
-                // PATTERN NUM READ
+              3'b011: begin  // PATTERN NUM READ
                 SPPREPAREPATTERNNUM <= PRAMDAT;
               end
-              3'b100: begin
-                // PATTERN READ LEFT
+              3'b100: begin  // PATTERN READ LEFT
                 SPINFORAMPATTERN_IN[15:8] <= PRAMDAT;
               end
-              3'b101: begin
-                // PATTERN READ RIGHT
-                if ((REG_R1_SP_SIZE == 1'b0)) begin
-                  // 8X8 MODE
+              3'b101: begin  // PATTERN READ RIGHT
+                if ((REG_R1_SP_SIZE == 1'b0)) begin  // 8X8 MODE
                   SPINFORAMPATTERN_IN[7:0] <= {8{1'b0}};
-                end else begin
-                  // 16X16 MODE
+                end else begin  // 16X16 MODE
                   SPINFORAMPATTERN_IN[7:0] <= PRAMDAT;
                 end
               end
-              3'b110: begin
-                // COLOR READ
-                // COLOR
+              3'b110: begin  // COLOR READ
                 SPINFORAMCOLOR_IN <= PRAMDAT[3:0];
                 // CC   優先順位ビット (1: 優先順位無し, 0: 優先順位あり)
+                // (Priority bit (1: no priority, 0: priority))
                 if ((SPMODE2 == 1'b1)) begin
                   SPINFORAMCC_IN <= PRAMDAT[6];
                 end else begin
                   SPINFORAMCC_IN <= 1'b0;
                 end
                 // IC   衝突検知ビット (1: 検知しない, 0: 検知する)
+                // (Collision detection bit (1: not detected, 0: detected))
                 SPINFORAMIC_IN <= PRAMDAT[5] & SPMODE2;
                 // EC   32ドット左シフト (1: する, 0: しない)
+                // (32-dot left shift (1: do, 0: don't))
                 if ((PRAMDAT[7] == 1'b1)) begin
                   SPINFORAMX_IN <= SPINFORAMX_IN - 32;
                 end
@@ -775,7 +869,7 @@ module VDP_SPRITE (
               end
               3'b111: begin
                 SPPREPARELOCALPLANENUM <= SPPREPARELOCALPLANENUM + 1;
-                if(((SPPREPARELOCALPLANENUM == 7) || (SPMAXSPR == 1'b0 && (SPPREPARELOCALPLANENUM == 3 && SPMODE2 == 1'b0)))) begin
+                if (((SPPREPARELOCALPLANENUM == 7) || (SPMAXSPR == 1'b0 && (SPPREPARELOCALPLANENUM == 3 && SPMODE2 == 1'b0)))) begin
                   SPPREPAREEND <= 1'b1;
                 end
               end
@@ -824,15 +918,15 @@ module VDP_SPRITE (
     reg [8:0] VDPS5S6SPCOLLISIONYV;
 
     if ((RESET == 1'b1)) begin
-      SPLINEBUFDRAWWE <= 1'b0;
-      // JP: ラインバッファへの書き込みイネーブラ
+      SPLINEBUFDRAWWE <= 1'b0;  // JP: ラインバッファへの書き込みイネーブラ
+                                // (Write enable to the line buffer)
       SPPREDRAWEND <= 1'b0;
       SPDRAWPATTERN <= {16{1'b0}};
       SPLINEBUFDRAWCOLOR <= {8{1'b0}};
       SPLINEBUFDRAWX <= {8{1'b0}};
       SPDRAWCOLOR <= {4{1'b0}};
-      VDPS0SPCOLLISIONINCIDENCEV = 1'b0;
-      // JP: スプライトが衝突したかどうかを示すフラグ
+      VDPS0SPCOLLISIONINCIDENCEV = 1'b0;  // JP: スプライトが衝突したかどうかを示すフラグ
+                                          // (Flag indicating whether the sprite has collided)
       VDPS3S4SPCOLLISIONXV = {1{1'b0}};
       VDPS5S6SPCOLLISIONYV = {1{1'b0}};
       SPCC0FOUNDV = 1'b0;
@@ -842,10 +936,10 @@ module VDP_SPRITE (
         case (DOTSTATE)
           2'b10: begin
             // JP: 処理単位の始まり
+            // (Start of processing unit)
             SPLINEBUFDRAWWE <= 1'b0;
           end
           2'b00: begin
-            // JP:
             if ((DOTCOUNTERX[4:0] == 1)) begin
               SPDRAWPATTERN <= SPINFORAMPATTERN_OUT;
               SPDRAWXV = SPINFORAMX_OUT;
@@ -866,32 +960,44 @@ module VDP_SPRITE (
               LASTCC0LOCALPLANENUMV = SPPREDRAWLOCALPLANENUM;
               SPCC0FOUNDV = 1'b1;
             end
-            if(((SPDRAWPATTERN[15] == 1'b1) && (SPDRAWX[8] == 1'b0) && (SPPREDRAWEND == 1'b0) && ((REG_R8_COL0_ON == 1'b1) || (SPDRAWCOLOR != 0)))) begin
+            if (((SPDRAWPATTERN[15] == 1'b1) && (SPDRAWX[8] == 1'b0) && (SPPREDRAWEND == 1'b0) && ((REG_R8_COL0_ON == 1'b1) || (SPDRAWCOLOR != 0)))) begin
               // JP: スプライトのドットを描画
               // JP: ラインバッファの7ビット目は、何らかの色を描画した時に'1'になる。
               // JP: ラインバッファの6-4ビット目はそこに描画されているドットのローカルプレーン番号
               // JP: (色合成されているときは親となるCC='0'のスプライトのローカルプレーン番号)が入る。
               // JP: つまり、LASTCC0LOCALPLANENUMVがこの番号と等しいときはOR合成してよい事になる。
+              // Translation:
+              //   Drawing the dots of the sprite
+              //   The 7th bit of the line buffer becomes '1' when any color is drawn.
+              //   The 6-4th bits of the line buffer contain the local plane number of the dot drawn there
+              //   (When color-combined, the local plane number of the parent sprite with CC='0' is entered).
+              //   In other words, it is okay to OR-combine when LASTCC0LOCALPLANENUMV is equal to this number.
               if (((SPLINEBUFDRAWDATA_OUT[7] == 1'b0) && (SPCC0FOUNDV == 1'b1))) begin
                 // JP: 何も描かれていない(ビット7が'0')とき、このドットに初めての
                 // JP: スプライトが描画される。ただし、CC='0'のスプライトが同一ライン上にまだ
                 // JP: 現れていない時は描画しない
+                // Translation:
+                //   When nothing has been drawn yet (bit 7 is '0'), the first sprite is drawn on this dot.
+                //   However, it does not draw if a sprite with CC='0' has not yet appeared on the same line.
                 SPLINEBUFDRAWCOLOR <= {1'b1, LASTCC0LOCALPLANENUMV, SPDRAWCOLOR};
                 SPLINEBUFDRAWWE <= 1'b1;
-              end
-            else if(((SPLINEBUFDRAWDATA_OUT[7] == 1'b1) && (SPINFORAMCC_OUT == 1'b1) && (SPLINEBUFDRAWDATA_OUT[6:4] == LASTCC0LOCALPLANENUMV))) begin
+              end else if (((SPLINEBUFDRAWDATA_OUT[7] == 1'b1) && (SPINFORAMCC_OUT == 1'b1) && (SPLINEBUFDRAWDATA_OUT[6:4] == LASTCC0LOCALPLANENUMV))) begin
                 // JP: 既に絵が描かれているが、CCが'1'でかつこのドットに描かれているスプライトの
                 // JP: LOCALPLANENUMが LASTCC0LOCALPLANENUMVと等しい時は、ラインバッファから
                 // JP: 下地データを読み、書きたい色と論理和を取リ、書き戻す。
+                // Translation:
+                //   When a picture has already been drawn, but CC is '1' and the LOCALPLANENUM of the sprite drawn on this dot
+                //   is equal to LASTCC0LOCALPLANENUMV, read the base data from the line buffer, take the logical OR with the color
+                //   you want to write, and write it back.
                 SPLINEBUFDRAWCOLOR <= SPLINEBUFDRAWDATA_OUT | ({4'b0000, SPDRAWCOLOR});
                 SPLINEBUFDRAWWE <= 1'b1;
               end else if (((SPLINEBUFDRAWDATA_OUT[7] == 1'b1) && (SPINFORAMIC_OUT == 1'b0))) begin
                 SPLINEBUFDRAWCOLOR <= SPLINEBUFDRAWDATA_OUT;
                 // JP: スプライトが衝突。
-                // SPRITE COLISION OCCURED
+                // sprite colision occured
                 VDPS0SPCOLLISIONINCIDENCEV = 1'b1;
                 VDPS3S4SPCOLLISIONXV = SPDRAWX + 12;
-                // NOTE: DRAWING LINE IS PREVIOUS LINE.
+                // note: drawing line is previous line.
                 VDPS5S6SPCOLLISIONYV = FF_CUR_Y + 7;
               end
             end
@@ -903,7 +1009,7 @@ module VDP_SPRITE (
               SPCC0FOUNDV = 1'b0;
             end else if ((DOTCOUNTERX[4:0] == 0)) begin
               SPPREDRAWLOCALPLANENUM <= SPPREDRAWLOCALPLANENUM + 1;
-              if(((SPPREDRAWLOCALPLANENUM == 7) || (SPMAXSPR == 1'b0 && (SPPREDRAWLOCALPLANENUM == 3 && SPMODE2 == 1'b0)))) begin
+              if (((SPPREDRAWLOCALPLANENUM == 7) || (SPMAXSPR == 1'b0 && (SPPREDRAWLOCALPLANENUM == 3 && SPMODE2 == 1'b0)))) begin
                 SPPREDRAWEND <= 1'b1;
               end
             end
@@ -912,7 +1018,7 @@ module VDP_SPRITE (
           end
         endcase
       end
-      // STATUS REGISTER
+      // status register
       if ((PVDPS0RESETREQ != FF_VDPS0RESETACK)) begin
         FF_VDPS0RESETACK <= PVDPS0RESETREQ;
         VDPS0SPCOLLISIONINCIDENCEV = 1'b0;
@@ -931,6 +1037,8 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   // JP: 画面へのレンダリング。VDPエンティティがDOTSTATE="11"の時に値を取得できるように、
   // JP: "01"のタイミングで出力する。
+  // Rendering to the screen. To be able to get the value when the VDP entity is in DOTSTATE="11",
+  // output it at the "01" timing.
   //---------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -938,6 +1046,7 @@ module VDP_SPRITE (
     end else begin
       if ((DOTSTATE == 2'b10)) begin
         // JP: DOTCOUNTERと実際の表示(カラーコードの出力)は8ドットずれている
+        // (DOTCOUNTER and actual display (output of color code) are shifted by 8 dots)
         if ((DOTCOUNTERX == 8)) begin
           SPLINEBUFDISPX <= {5'b00000, REG_R27_H_SCROLL};
         end else begin
@@ -953,6 +1062,7 @@ module VDP_SPRITE (
     end else begin
       if ((DOTSTATE == 2'b10)) begin
         // JP: DOTCOUNTERと実際の表示(カラーコードの出力)は8ドットずれている
+        // (DOTCOUNTER and actual display (output of color code) are shifted by 8 dots)
         if ((DOTCOUNTERX == 8)) begin
           SPWINDOWX <= 1'b1;
         end else if ((SPLINEBUFDISPX == 8'hFF)) begin
@@ -969,19 +1079,22 @@ module VDP_SPRITE (
       if ((DOTSTATE == 2'b10)) begin
         SPLINEBUFDISPWE <= 1'b0;
       end else if ((DOTSTATE == 2'b11 && SPWINDOWX == 1'b1)) begin
-        // CLEAR DISPLAYED DOT
+        // clear displayed dot
         SPLINEBUFDISPWE <= 1'b1;
       end
     end
   end
 
   // JP: ウィンドウで表示をカットする
+  // (Cut the display with the window)
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPCOLOROUT  <= 1'b0;
       // JP:  0=透明, 1=スプライトドット
+      // (0=transparent, 1=sprite dot)
       SPCOLORCODE <= {4{1'b0}};
       // JP:  SPCOLOROUT=1 の時のスプライトドット色番号
+      // (Sprite dot color number when SPCOLOROUT=1)
     end else begin
       if ((DOTSTATE == 2'b01)) begin
         if ((SPWINDOWX == 1'b1)) begin
@@ -994,6 +1107,5 @@ module VDP_SPRITE (
       end
     end
   end
-
 
 endmodule

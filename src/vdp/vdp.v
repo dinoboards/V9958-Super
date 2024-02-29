@@ -139,66 +139,90 @@
 //
 // 16th,Aug,2005 modified by Kazuhiro Tsujikawa
 // JP: TMS9918モードでVRAMインクリメントを下位14ビットに限定
+// (Limited VRAM increment to lower 14 bits in TMS9918 mode)
 //
 // 8th,May,2005 modified by Kunihiko Ohnaka
 // JP: VGAコンポーネントにInerlaceMode信号を伝えるようにした
+// (Added InerlaceMode signal to VGA component)
 //
 // 26th,April,2005 modified by Kazuhiro Tsujikawa
 // JP: VRAMとのデータバス(pRamDbi/pRamDbo)を単方向バス化(SDRAM対応)
+// (Made the data bus to VRAM (pRamDbi/pRamDbo) unidirectional (for SDRAM))
 //
 // 8th,November,2004 modified by Kazuhiro Tsujikawa
 // JP: Vsync/Hsync割り込み修正ミス訂正
+// (Fixed a bug in Vsync/Hsync interrupt)
 //
 // 3rd,November,2004 modified by Kazuhiro Tsujikawa
 // JP: SCREEN6画面周辺色修正→MSX2タイトルロゴ対応
+// (Fixed the border color of SCREEN6)
 //
 // 19th,September,2004 modified by Kazuhiro Tsujikawa
 // JP: パターンネームテーブルのマスクを実装→ANMAデモ対応
+// (Implemented the mask of the pattern name table)
 // JP: MultiColorMode(SCREEN3)実装→マジラビデモ対応
+// (Implemented MultiColorMode(SCREEN3))
 //
 // 12th,September,2004 modified by Kazuhiro Tsujikawa
 // JP: VdpR0DispNum等をライン単位で反映→スペースマンボウでのチラツキ対策
+// (Reflected VdpR0DispNum etc. on a line-by-line basis)
 //
 // 11th,September,2004 modified by Kazuhiro Tsujikawa
 // JP: 水平帰線割り込み修正→MGSEL(テンポ早送り)対策
+// (Fixed horizontal retrace interrupt)
 //
 // 22nd,August,2004 modified by Kazuhiro Tsujikawa
 // JP: パレットのRead/Write衝突を修正→ガゼルでのチラツキ対策
+// (Fixed the Read/Write conflict of the palette)
 //
 // 21st,August,2004 modified by Kazuhiro Tsujikawa
 // JP: R1/IE0(垂直帰線割り込み許可)の動作を修正→GALAGA対策
+// (Fixed the operation of R1/IE0 (vertical retrace interrupt permission))
 //
 // 2nd,August,2004 modified by Kazuhiro Tsujikawa
 // JP: Screen7/8でのスプライト読み込みアドレスを修正→Snatcher対策
+// (Fixed the sprite read address in Screen7/8)
 //
 // 31st,July,2004 modified by Kazuhiro Tsujikawa
 // JP: Screen7/8でのVRAM読み込みアドレスを修正→Snatcher対策
+// (Fixed the VRAM read address in Screen7/8)
 //
 // 24th,July,2004 modified by Kazuhiro Tsujikawa
 // JP: スプライト32枚同時表示時の乱れを修正(248=256-8->preDotCounter_x_end)
+// (Fixed the disorder when displaying 32 sprites at the same time)
 //
 // 18th,July,2004 modified by Kazuhiro Tsujikawa
 // JP: Screen6のレンダリング部を作成
+// (Created the rendering part of Screen6)
 //
 // 17th,July,2004 modified by Kazuhiro Tsujikawa
 // JP: Screen7のレンダリング部を作成
+// (Created the rendering part of Screen7)
 //
 // 29th,June,2004 modified by Kazuhiro Tsujikawa
 // JP: Screen8のレンダリング部を修正
+// (Fixed the rendering part of Screen8)
 //
 // 26th,June,2004 modified by Kazuhiro Tsujikawa
 // JP: WebPackでコンパイルするとHMMC/LMMC/LMCMが動作しない不具合を修正
+// (Fixed a bug that HMMC/LMMC/LMCM does not work when compiled with WebPack)
 // JP: onehot sequencer(VdpCmdState) must be initialized by asyncronus RESET
 //
 // 22nd,June,2004 modified by Kazuhiro Tsujikawa
 // JP: R1/IE0(垂直帰線割り込み許可)の動作を修正
+// (Fixed the operation of R1/IE0 (vertical retrace interrupt permission))
 // JP: Ys2でバノアの家に入れる様になった
+// (Now you can enter the house of Banjo in Ys2)
 //
 // 13th,June,2004 modified by Kazuhiro Tsujikawa
 // JP: 拡大スプライトが右に1ドットずれる不具合を修正
+// (Fixed a bug that the enlarged sprite is shifted by 1 dot to the right)
 // JP: SCREEN5でスプライト右端32ドットが表示されない不具合を修正
+// (Fixed a bug that the rightmost 32 dots of the sprite are not displayed in SCREEN5)
 // JP: SCREEN5で211ライン(最下)のスプライトが表示されない不具合を修正
+// (Fixed a bug that the sprite on line 211 (bottom) is not displayed in SCREEN5)
 // JP: 画面消去フラグ(VdpR1DispOn)を1ライン単位で反映する様に修正
+// (Fixed to reflect the screen erase flag (VdpR1DispOn) on a line-by-line basis)
 //
 // 21st,March,2004 modified by Alex Wulms
 // Several enhancements to command engine:
@@ -208,24 +232,34 @@
 //
 // 15th,January,2004 modified by Kunihiko Ohnaka
 // JP: VDPコマンドの実装を開始
+// (Started the implementation of the VDP command)
 // JP: HMMC,HMMM,YMMM,HMMV,LMMC,LMMM,LMMVを実装.まだ不具合あり.
+// (Implemented HMMC,HMMM,YMMM,HMMV,LMMC,LMMM,LMMV. Still has bugs.)
 //
 // 12th,January,2004 modified by Kunihiko Ohnaka
 // JP: コメントの修正
+// (Fixed comments)
 //
 // 30th,December,2003 modified by Kazuhiro Tsujikawa
 // JP: 起動時の画面モードをVDP_NTSCと VGAのどちらにするかを，外部入力で切替
+// (Switch the startup screen mode to VDP_NTSC or VGA with an external input)
 // JP: DHClk/DLClkを一時的に復活させた
+// (Temporarily revived DHClk/DLClk)
 //
 // 16th,December,2003 modified by Kunihiko Ohnaka
 // JP: 起動時の画面モードをVDP_NTSCと VGAのどちらにするかを，vdp_package.vhd
+// (Switch the startup screen mode to VDP_NTSC or VGA with vdp_package.vhd)
 // JP: 内で定義された定数で切替えるようにした．
+// (Switch with the constants defined in vdp_package.vhd)
 //
 // 10th,December,2003 modified by Kunihiko Ohnaka
 // JP: TEXT MODE 2 (SCREEN0 WIDTH80)をサポート．
 // JP: 初の横方向倍解像度モードである．一応将来対応できるように作って
 // JP: きたつもりだったが，少し収まりが悪い部分があり，あまりきれいな
 // JP: 対応になっていない部分もあります．
+// (Support for TEXT MODE 2 (SCREEN0 WIDTH80))
+// (This is the first mode with double horizontal resolution. I intended to make it compatible for the future,)
+// (but there are some parts that don't fit well, and some parts that are not very clean.)
 //
 // 13th,October,2003 modified by Kunihiko Ohnaka
 // JP: ESE-MSX基板では 2S300Eを複数用いる事ができるようにり，VDP単体で
@@ -233,6 +267,10 @@
 // JP: これに伴い以下のような変更を行う．
 // JP: ・VGA出力対応(アップスキャンコンバート)
 // JP: ・SCREEN7,8のタイミングを実機と同じに
+// (With the ESE-MSX board, it is possible to use multiple 2S300Es and the VDP can occupy the 2S300E and SRAM.)
+// (With this, the following changes are made:)
+// (・Support for VGA output (upscan convert))
+// (・The timing of SCREEN7,8 is the same as the actual machine)
 //
 // 15th,June,2003 modified by Kunihiko Ohnaka
 // JP:水平帰線期間割り込みを実装してスペースマンボウを遊べるようにした．
@@ -241,6 +279,10 @@
 // JP:ただし，スペースマンボウで set adjust機能が動いていないような
 // JP:感じで，表示がガクガクしてしまう．横方向の同時表示スプライト数も
 // JP:足りていないように見える．原因不明．
+// (Implemented horizontal retrace interrupt to make Spaceman Bow playable.)
+// (Fixed the issue where the number of Y lines in GraphicMode3 (Screen4) did not become 212 lines.)
+// (However, it seems that the set adjust function is not working in Spaceman Bow,)
+// (and the display is jittery. It also seems that there are not enough sprites displayed simultaneously in the horizontal direction. Cause unknown.)
 //
 // 15th,June,2003 modified by Kunihiko Ohnaka
 // JP:長いブランクが空いてしまったが，Spartan-II E + IO基板でスプライトが
@@ -248,6 +290,10 @@
 // JP:バージョンアップしたら表示されるようになった．
 // JP:ついでに，スプライトモード2で横 8枚並ぶようにした(つもり)．
 // JP:その他細かな修正が入っています．
+// (There was a long blank, but with the Spartan-II E + IO board, the sprites are now displayed.)
+// (The cause is probably a compiler bug, and they started to be displayed when I upgraded to ISE 5.2.)
+// (By the way, I tried to make 8 sprites line up horizontally in sprite mode 2.)
+// (Other minor corrections have been made.)
 //
 // 15th,July,2002 modified by Kazuhiro Tsujikawa
 // no comment;
@@ -264,8 +310,10 @@
 // JP: ESE-VDPのトップエンティティです。CPUとのインターフェース、
 // JP: 画面描画タイミングの生成、VDPレジスタの実装などが含まれて
 // JP: います。
+// Translation:
+//   This is the top entity of ESE-VDP. It includes the interface with the CPU,
+//   the generation of screen drawing timing, and the implementation of VDP registers.
 //
-// no timescale needed
 
 `include "vdp_constants.vh"
 
@@ -308,183 +356,223 @@ module VDP (
     output wire [10:0] CY
 );
 
-import custom_timings::*;
+  import custom_timings::*;
 
   // VDP CLOCK ... 21.477MHZ
   // VIDEO OUTPUT
   // DISPLAY RESOLUTION (0=15kHz, 1=31kHz)
-  // DEBUG OUTPUT
-  //  DEBUG_OUTPUT        : OUT   STD_LOGIC_VECTOR( 15 DOWNTO 0 ) -- ★
-
-
 
   wire [10:0] H_CNT;
   wire [10:0] H_CNT_IN_FIELD;
-  wire [10:0] V_CNT;  // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
-  wire [6:0] ADJUST_X;  // DOT STATE REGISTER
-  wire [1:0] DOTSTATE;
-  wire [2:0] EIGHTDOTSTATE;  // DISPLAY FIELD SIGNAL
-  wire FIELD;
-  wire HD;
-  wire VD;
-  reg ACTIVE_LINE;
-  wire V_BLANKING_START;  // FOR VSYNC INTERRUPT
-  wire VSYNCINT_N;
-  wire CLR_VSYNC_INT;
-  wire REQ_VSYNC_INT_N;  // FOR HSYNC INTERRUPT
-  wire HSYNCINT_N;
-  wire CLR_HSYNC_INT;
-  wire REQ_HSYNC_INT_N;
-  wire DVIDEOHS_N;  // DISPLAY AREA FLAGS
-  wire WINDOW;
-  wire WINDOW_X;
-  reg PREWINDOW_X;
-  wire PREWINDOW_Y;
-  wire PREWINDOW_Y_SP;
-  wire PREWINDOW;
-  wire PREWINDOW_SP;  // FOR FRAME ZONE
-  reg BWINDOW_X;
-  reg BWINDOW_Y;
-  reg BWINDOW;  // DOT COUNTER - 8 ( READING ADDR )
-  wire [8:0] PREDOTCOUNTER_X;
-  wire [8:0] PREDOTCOUNTER_Y;  // Y COUNTERS INDEPENDENT OF VERTICAL SCROLL REGISTER
-  wire [8:0] PREDOTCOUNTER_YP;  // VDP REGISTER ACCESS
-  reg [16:0] VDPVRAMACCESSADDR;
-  wire DISPMODEVGA;
-  reg VDPVRAMREADINGR;
-  reg VDPVRAMREADINGA;
-  wire [3:1] VDPR0DISPNUM;
-  wire [7:0] VDPVRAMACCESSDATA;
+  wire [10:0] V_CNT;
+
+  // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
+  wire [ 6:0] ADJUST_X;
+
+  // DOT STATE REGISTER
+  wire [ 1:0] DOTSTATE;
+  wire [ 2:0] EIGHTDOTSTATE;
+
+  // DISPLAY FIELD SIGNAL
+  wire        FIELD;
+  wire        HD;
+  wire        VD;
+  reg         ACTIVE_LINE;
+  wire        V_BLANKING_START;
+
+  // FOR VSYNC INTERRUPT
+  wire        VSYNCINT_N;
+  wire        CLR_VSYNC_INT;
+  wire        REQ_VSYNC_INT_N;
+
+  // FOR HSYNC INTERRUPT
+  wire        HSYNCINT_N;
+  wire        CLR_HSYNC_INT;
+  wire        REQ_HSYNC_INT_N;
+  wire        DVIDEOHS_N;
+
+  // DISPLAY AREA FLAGS
+  wire        WINDOW;
+  wire        WINDOW_X;
+  reg         PREWINDOW_X;
+  wire        PREWINDOW_Y;
+  wire        PREWINDOW_Y_SP;
+  wire        PREWINDOW;
+  wire        PREWINDOW_SP;
+
+  // FOR FRAME ZONE
+  reg         BWINDOW_X;
+  reg         BWINDOW_Y;
+  reg         BWINDOW;
+
+  // DOT COUNTER - 8 ( READING ADDR )
+  wire [ 8:0] PREDOTCOUNTER_X;
+  wire [ 8:0] PREDOTCOUNTER_Y;
+
+  // Y COUNTERS INDEPENDENT OF VERTICAL SCROLL REGISTER
+  wire [ 8:0] PREDOTCOUNTER_YP;
+
+  // VDP REGISTER ACCESS
+  reg  [16:0] VDPVRAMACCESSADDR;
+  wire        DISPMODEVGA;
+  reg         VDPVRAMREADINGR;
+  reg         VDPVRAMREADINGA;
+  wire [ 3:1] VDPR0DISPNUM;
+  wire [ 7:0] VDPVRAMACCESSDATA;
   wire [16:0] VDPVRAMACCESSADDRTMP;
-  wire VDPVRAMADDRSETREQ;
-  reg VDPVRAMADDRSETACK;
-  wire VDPVRAMWRREQ;
-  reg VDPVRAMWRACK;
-  reg [7:0] VDPVRAMRDDATA;
-  wire VDPVRAMRDREQ;
-  reg VDPVRAMRDACK;
-  wire VDPR9PALMODE;
-  wire REG_R0_HSYNC_INT_EN;
-  wire REG_R1_SP_SIZE;
-  wire REG_R1_SP_ZOOM;
-  wire REG_R1_BL_CLKS;
-  wire REG_R1_VSYNC_INT_EN;
-  wire REG_R1_DISP_ON;
-  wire [6:0] REG_R2_PT_NAM_ADDR;
-  wire [5:0] REG_R4_PT_GEN_ADDR;
+  wire        VDPVRAMADDRSETREQ;
+  reg         VDPVRAMADDRSETACK;
+  wire        VDPVRAMWRREQ;
+  reg         VDPVRAMWRACK;
+  reg  [ 7:0] VDPVRAMRDDATA;
+  wire        VDPVRAMRDREQ;
+  reg         VDPVRAMRDACK;
+  wire        VDPR9PALMODE;
+
+  wire        REG_R0_HSYNC_INT_EN;
+  wire        REG_R1_SP_SIZE;
+  wire        REG_R1_SP_ZOOM;
+  wire        REG_R1_BL_CLKS;
+  wire        REG_R1_VSYNC_INT_EN;
+  wire        REG_R1_DISP_ON;
+  wire [ 6:0] REG_R2_PT_NAM_ADDR;
+  wire [ 5:0] REG_R4_PT_GEN_ADDR;
   wire [10:0] REG_R10R3_COL_ADDR;
-  wire [9:0] REG_R11R5_SP_ATR_ADDR;
-  wire [5:0] REG_R6_SP_GEN_ADDR;
-  wire [7:0] REG_R7_FRAME_COL;
-  wire REG_R8_SP_OFF;
-  wire REG_R8_COL0_ON;
-  wire REG_R9_PAL_MODE;
-  wire REG_R9_INTERLACE_MODE;
-  wire REG_R9_Y_DOTS;
-  wire [7:0] REG_R12_BLINK_MODE;
-  wire [7:0] REG_R13_BLINK_PERIOD;
-  wire [7:0] REG_R18_ADJ;
-  wire [7:0] REG_R19_HSYNC_INT_LINE;
-  wire [7:0] REG_R23_VSTART_LINE;
-  wire REG_R25_CMD;
-  wire REG_R25_YAE;
-  wire REG_R25_YJK;
-  wire REG_R25_MSK;
-  wire REG_R25_SP2;
-  wire [8:3] REG_R26_H_SCROLL;
-  wire [2:0] REG_R27_H_SCROLL;
-  wire TEXT_MODE;  // TEXT MODE 1, 2 or 1Q
-  wire VDPMODETEXT1;  // TEXT MODE 1      (SCREEN0 WIDTH 40)
-  wire VDPMODETEXT1Q;  // TEXT MODE 1      (??)
-  wire VDPMODETEXT2;  // TEXT MODE 2      (SCREEN0 WIDTH 80)
-  wire VDPMODEMULTI;  // MULTICOLOR MODE  (SCREEN3)
-  wire VDPMODEMULTIQ;  // MULTICOLOR MODE  (??)
-  wire VDPMODEGRAPHIC1;  // GRAPHIC MODE 1   (SCREEN1)
-  wire VDPMODEGRAPHIC2;  // GRAPHIC MODE 2   (SCREEN2)
-  wire VDPMODEGRAPHIC3;  // GRAPHIC MODE 2   (SCREEN4)
-  wire VDPMODEGRAPHIC4;  // GRAPHIC MODE 4   (SCREEN5)
-  wire VDPMODEGRAPHIC5;  // GRAPHIC MODE 5   (SCREEN6)
-  wire VDPMODEGRAPHIC6;  // GRAPHIC MODE 6   (SCREEN7)
-  wire VDPMODEGRAPHIC7;  // GRAPHIC MODE 7   (SCREEN8,10,11,12)
-  wire VDPMODEISHIGHRES;  // TRUE WHEN MODE GRAPHIC5, 6
-  wire VDPMODEISVRAMINTERLEAVE;  // TRUE WHEN MODE GRAPHIC6, 7
+  wire [ 9:0] REG_R11R5_SP_ATR_ADDR;
+  wire [ 5:0] REG_R6_SP_GEN_ADDR;
+  wire [ 7:0] REG_R7_FRAME_COL;
+  wire        REG_R8_SP_OFF;
+  wire        REG_R8_COL0_ON;
+  wire        REG_R9_PAL_MODE;
+  wire        REG_R9_INTERLACE_MODE;
+  wire        REG_R9_Y_DOTS;
+  wire [ 7:0] REG_R12_BLINK_MODE;
+  wire [ 7:0] REG_R13_BLINK_PERIOD;
+  wire [ 7:0] REG_R18_ADJ;
+  wire [ 7:0] REG_R19_HSYNC_INT_LINE;
+  wire [ 7:0] REG_R23_VSTART_LINE;
+  wire        REG_R25_CMD;
+  wire        REG_R25_YAE;
+  wire        REG_R25_YJK;
+  wire        REG_R25_MSK;
+  wire        REG_R25_SP2;
+  wire [ 8:3] REG_R26_H_SCROLL;
+  wire [ 2:0] REG_R27_H_SCROLL;
+
+  wire        TEXT_MODE;  // TEXT MODE 1, 2 or 1Q
+  wire        VDPMODETEXT1;  // TEXT MODE 1      (SCREEN0 WIDTH 40)
+  wire        VDPMODETEXT1Q;  // TEXT MODE 1      (??)
+  wire        VDPMODETEXT2;  // TEXT MODE 2      (SCREEN0 WIDTH 80)
+  wire        VDPMODEMULTI;  // MULTICOLOR MODE  (SCREEN3)
+  wire        VDPMODEMULTIQ;  // MULTICOLOR MODE  (??)
+  wire        VDPMODEGRAPHIC1;  // GRAPHIC MODE 1   (SCREEN1)
+  wire        VDPMODEGRAPHIC2;  // GRAPHIC MODE 2   (SCREEN2)
+  wire        VDPMODEGRAPHIC3;  // GRAPHIC MODE 2   (SCREEN4)
+  wire        VDPMODEGRAPHIC4;  // GRAPHIC MODE 4   (SCREEN5)
+  wire        VDPMODEGRAPHIC5;  // GRAPHIC MODE 5   (SCREEN6)
+  wire        VDPMODEGRAPHIC6;  // GRAPHIC MODE 6   (SCREEN7)
+  wire        VDPMODEGRAPHIC7;  // GRAPHIC MODE 7   (SCREEN8,10,11,12)
+  wire        VDPMODEISHIGHRES;  // TRUE WHEN MODE GRAPHIC5, 6
+  wire        VDPMODEISVRAMINTERLEAVE;  // TRUE WHEN MODE GRAPHIC6, 7
+
   // FOR TEXT 1 AND 2
   wire [16:0] PRAMADRT12;
-  wire [3:0] COLORCODET12;
-  wire TXVRAMREADEN;  // FOR GRAPHIC 1,2,3 AND MULTI COLOR
+  wire [ 3:0] COLORCODET12;
+  wire        TXVRAMREADEN;
+
+  // FOR GRAPHIC 1,2,3 AND MULTI COLOR
   wire [16:0] PRAMADRG123M;
-  wire [3:0] COLORCODEG123M;  // FOR GRAPHIC 4,5,6,7
+  wire [ 3:0] COLORCODEG123M;
+
+  // FOR GRAPHIC 4,5,6,7
   wire [16:0] PRAMADRG4567;
-  wire [7:0] COLORCODEG4567;
-  wire [5:0] YJK_R;
-  wire [5:0] YJK_G;
-  wire [5:0] YJK_B;
-  wire YJK_EN;  // SPRITE
-  wire SPMODE2;
-  wire SPVRAMACCESSING;
+  wire [ 7:0] COLORCODEG4567;
+  wire [ 5:0] YJK_R;
+  wire [ 5:0] YJK_G;
+  wire [ 5:0] YJK_B;
+  wire        YJK_EN;
+
+  // SPRITE
+  wire        SPMODE2;
+  wire        SPVRAMACCESSING;
   wire [16:0] PRAMADRSPRITE;
-  wire SPRITECOLOROUT;
-  wire [3:0] COLORCODESPRITE;
-  wire VDPS0SPCOLLISIONINCIDENCE;
-  wire VDPS0SPOVERMAPPED;
-  wire [4:0] VDPS0SPOVERMAPPEDNUM;
-  wire [8:0] VDPS3S4SPCOLLISIONX;
-  wire [8:0] VDPS5S6SPCOLLISIONY;
-  wire SPVDPS0RESETREQ;
-  wire SPVDPS0RESETACK;
-  wire SPVDPS5RESETREQ;
-  wire SPVDPS5RESETACK;  // PALETTE REGISTERS
-  wire [3:0] PALETTEADDR_OUT;
-  wire [7:0] PALETTEDATARB_OUT;
-  wire [7:0] PALETTEDATAG_OUT;  // VDP COMMAND SIGNALS - CAN BE READ & SET BY CPU
-  wire [7:0] VDPCMDCLR;  // R44, S#7
+  wire        SPRITECOLOROUT;
+  wire [ 3:0] COLORCODESPRITE;
+  wire        VDPS0SPCOLLISIONINCIDENCE;
+  wire        VDPS0SPOVERMAPPED;
+  wire [ 4:0] VDPS0SPOVERMAPPEDNUM;
+  wire [ 8:0] VDPS3S4SPCOLLISIONX;
+  wire [ 8:0] VDPS5S6SPCOLLISIONY;
+  wire        SPVDPS0RESETREQ;
+  wire        SPVDPS0RESETACK;
+  wire        SPVDPS5RESETREQ;
+  wire        SPVDPS5RESETACK;
+
+  // PALETTE REGISTERS
+  wire [ 3:0] PALETTEADDR_OUT;
+  wire [ 7:0] PALETTEDATARB_OUT;
+  wire [ 7:0] PALETTEDATAG_OUT;
+
+  // VDP COMMAND SIGNALS - CAN BE READ & SET BY CPU
+  wire [ 7:0] VDPCMDCLR;  // R44, S#7
+
   // VDP COMMAND SIGNALS - CAN BE READ BY CPU
-  wire VDPCMDCE;  // S#2 (BIT 0)
-  wire VDPCMDBD;  // S#2 (BIT 4)
-  wire VDPCMDTR;  // S#2 (BIT 7)
+  wire        VDPCMDCE;  // S#2 (BIT 0)
+  wire        VDPCMDBD;  // S#2 (BIT 4)
+  wire        VDPCMDTR;  // S#2 (BIT 7)
   wire [10:0] VDPCMDSXTMP;  // S#8, S#9
-  wire [3:0] VDPCMDREGNUM;
-  wire [7:0] VDPCMDREGDATA;
-  wire VDPCMDREGWRACK;
-  wire VDPCMDTRCLRACK;
-  reg VDPCMDVRAMWRACK;
-  reg VDPCMDVRAMRDACK;
-  reg VDPCMDVRAMREADINGR;
-  reg VDPCMDVRAMREADINGA;
-  reg [7:0] VDPCMDVRAMRDDATA;
-  wire VDPCMDREGWRREQ;
-  wire VDPCMDTRCLRREQ;
-  wire VDPCMDVRAMWRREQ;
-  wire VDPCMDVRAMRDREQ;
+
+  wire [ 3:0] VDPCMDREGNUM;
+  wire [ 7:0] VDPCMDREGDATA;
+  wire        VDPCMDREGWRACK;
+  wire        VDPCMDTRCLRACK;
+  reg         VDPCMDVRAMWRACK;
+  reg         VDPCMDVRAMRDACK;
+  reg         VDPCMDVRAMREADINGR;
+  reg         VDPCMDVRAMREADINGA;
+  reg  [ 7:0] VDPCMDVRAMRDDATA;
+  wire        VDPCMDREGWRREQ;
+  wire        VDPCMDTRCLRREQ;
+  wire        VDPCMDVRAMWRREQ;
+  wire        VDPCMDVRAMRDREQ;
   wire [16:0] VDPCMDVRAMACCESSADDR;
-  wire [7:0] VDPCMDVRAMWRDATA;
-  reg VDP_COMMAND_DRIVE;
-  wire VDP_COMMAND_ACTIVE;
-  wire [7:4] CUR_VDP_COMMAND;  // VIDEO OUTPUT SIGNALS
-  wire [5:0] IVIDEOR;
-  wire [5:0] IVIDEOG;
-  wire [5:0] IVIDEOB;
-  wire [5:0] IVIDEOR_VDP;
-  wire [5:0] IVIDEOG_VDP;
-  wire [5:0] IVIDEOB_VDP;
-  wire IVIDEOVS_N;
-  wire [5:0] IVIDEOR_NTSC_PAL;
-  wire [5:0] IVIDEOG_NTSC_PAL;
-  wire [5:0] IVIDEOB_NTSC_PAL;
-  wire IVIDEOHS_N_NTSC_PAL;
-  wire IVIDEOVS_N_NTSC_PAL;
-  wire [5:0] IVIDEOR_VGA;
-  wire [5:0] IVIDEOG_VGA;
-  wire [5:0] IVIDEOB_VGA;
-  wire IVIDEOHS_N_VGA;
-  wire IVIDEOVS_N_VGA;
-  reg [16:0] IRAMADR;
-  wire [7:0] PRAMDAT;
-  wire XRAMSEL;
-  wire [7:0] PRAMDATPAIR;
-  wire HSYNC;
-  wire ENAHSYNC;
-  wire FF_BWINDOW_Y_DL;
+  wire [ 7:0] VDPCMDVRAMWRDATA;
+
+  reg         VDP_COMMAND_DRIVE;
+  wire        VDP_COMMAND_ACTIVE;
+  wire [ 7:4] CUR_VDP_COMMAND;
+
+  // VIDEO OUTPUT SIGNALS
+  wire [ 5:0] IVIDEOR;
+  wire [ 5:0] IVIDEOG;
+  wire [ 5:0] IVIDEOB;
+
+  wire [ 5:0] IVIDEOR_VDP;
+  wire [ 5:0] IVIDEOG_VDP;
+  wire [ 5:0] IVIDEOB_VDP;
+  wire        IVIDEOVS_N;
+
+  wire [ 5:0] IVIDEOR_NTSC_PAL;
+  wire [ 5:0] IVIDEOG_NTSC_PAL;
+  wire [ 5:0] IVIDEOB_NTSC_PAL;
+  wire        IVIDEOHS_N_NTSC_PAL;
+  wire        IVIDEOVS_N_NTSC_PAL;
+
+  wire [ 5:0] IVIDEOR_VGA;
+  wire [ 5:0] IVIDEOG_VGA;
+  wire [ 5:0] IVIDEOB_VGA;
+  wire        IVIDEOHS_N_VGA;
+  wire        IVIDEOVS_N_VGA;
+
+  reg  [16:0] IRAMADR;
+  wire [ 7:0] PRAMDAT;
+  wire        XRAMSEL;
+  wire [ 7:0] PRAMDATPAIR;
+
+  wire        HSYNC;
+  wire        ENAHSYNC;
+  wire        FF_BWINDOW_Y_DL;
+
   parameter VRAM_ACCESS_IDLE = 0;
   parameter VRAM_ACCESS_DRAW = 1;
   parameter VRAM_ACCESS_CPUW = 2;
@@ -497,19 +585,23 @@ import custom_timings::*;
   assign CX = H_CNT;
   assign CY = V_CNT;
   assign PAL_MODE = VDPR9PALMODE;
+
   assign PRAMADR = IRAMADR;
   assign XRAMSEL = IRAMADR[16];
   assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI[7:0] : PRAMDBI[15:8];
   assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI[7:0] : PRAMDBI[15:8];
+
   //--------------------------------------------------------------
   // DISPLAY COMPONENTS
   //--------------------------------------------------------------
-  assign DISPMODEVGA = DISPRESO;
-  // DISPLAY RESOLUTION (0=15kHz, 1=31kHz)
+  assign DISPMODEVGA = DISPRESO;  // DISPLAY RESOLUTION (0=15kHz, 1=31kHz)
+
   assign VDPR9PALMODE = REG_R9_PAL_MODE;
+
   assign IVIDEOR = IVIDEOR_VDP;
   assign IVIDEOG = IVIDEOG_VDP;
   assign IVIDEOB = IVIDEOB_VDP;
+
   VDP_NTSC_PAL U_VDP_NTSC_PAL (
       .CLK21M(CLK21M),
       .RESET(RESET),
@@ -553,21 +645,28 @@ import custom_timings::*;
   assign PVIDEOR = (DISPMODEVGA == 1'b0) ? IVIDEOR_NTSC_PAL : IVIDEOR_VGA;
   assign PVIDEOG = (DISPMODEVGA == 1'b0) ? IVIDEOG_NTSC_PAL : IVIDEOG_VGA;
   assign PVIDEOB = (DISPMODEVGA == 1'b0) ? IVIDEOB_NTSC_PAL : IVIDEOB_VGA;
+
   // H SYNC SIGNAL
   assign PVIDEOHS_N = (DISPMODEVGA == 1'b0) ? IVIDEOHS_N_NTSC_PAL : IVIDEOHS_N_VGA;
+
   // V SYNC SIGNAL
   assign PVIDEOVS_N = (DISPMODEVGA == 1'b0) ? IVIDEOVS_N_NTSC_PAL : IVIDEOVS_N_VGA;
+
   // THESE SIGNALS BELOW ARE OUTPUT DIRECTLY REGARDLESS OF DISPLAY MODE.
   assign PVIDEOCS_N = ~(IVIDEOHS_N_NTSC_PAL ^ IVIDEOVS_N_NTSC_PAL);
+
   //---------------------------------------------------------------------------
   // INTERRUPT
   //---------------------------------------------------------------------------
+
   // VSYNC INTERRUPT
   assign VSYNCINT_N = (REG_R1_VSYNC_INT_EN == 1'b0) ? 1'b1 : REQ_VSYNC_INT_N;
+
   // HSYNC INTERRUPT
   assign HSYNCINT_N = (REG_R0_HSYNC_INT_EN == 1'b0 || ENAHSYNC == 1'b0) ? 1'b1 : REQ_HSYNC_INT_N;
+
   assign INT_N = (VSYNCINT_N == 1'b0 || HSYNCINT_N == 1'b0) ? 1'b0 : 1'b1;
-  // MIST board ( http://github.com/robinsonb5/OneChipMSX )
+
   VDP_INTERRUPT U_INTERRUPT (
       .RESET(RESET),
       .CLK21M(CLK21M),
@@ -594,8 +693,9 @@ import custom_timings::*;
   // SYNCHRONOUS SIGNAL GENERATOR
   //---------------------------------------------------------------------------
   VDP_SSG U_SSG (
-      .RESET(RESET),
+      .RESET (RESET),
       .CLK21M(CLK21M),
+
       .H_CNT(H_CNT),
       .H_CNT_IN_FIELD(H_CNT_IN_FIELD),
       .V_CNT(V_CNT),
@@ -611,11 +711,13 @@ import custom_timings::*;
       .PVIDEODHCLK(PVIDEODHCLK),
       .PVIDEODLCLK(PVIDEODLCLK),
       .IVIDEOVS_N(IVIDEOVS_N),
+
       .HD(HD),
       .VD(VD),
       .HSYNC(HSYNC),
       .ENAHSYNC(ENAHSYNC),
       .V_BLANKING_START(V_BLANKING_START),
+
       .VDPR9PALMODE(VDPR9PALMODE),
       .REG_R9_INTERLACE_MODE(REG_R9_INTERLACE_MODE),
       .REG_R9_Y_DOTS(REG_R9_Y_DOTS),
@@ -635,7 +737,6 @@ import custom_timings::*;
       BWINDOW_X <= 1'b0;
     end else begin
       if ((H_CNT == 200)) begin
-        //200) THEN
         BWINDOW_X <= 1'b1;
       end else if ((H_CNT == (CLOCKS_PER_LINE(VDPR9PALMODE) - 1 - 1))) begin
         BWINDOW_X <= 1'b0;
@@ -650,10 +751,9 @@ import custom_timings::*;
       if ((REG_R9_INTERLACE_MODE == 1'b0)) begin
         // NON-INTERLACE
         // 3+3+16 = 19
-        if(((V_CNT == (20 * 2)) || ((V_CNT == (524 + 20 * 2)) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == (626 + 20 * 2)) && (VDPR9PALMODE == 1'b1)))) begin
+        if (((V_CNT == (20 * 2)) || ((V_CNT == (524 + 20 * 2)) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == (626 + 20 * 2)) && (VDPR9PALMODE == 1'b1)))) begin
           BWINDOW_Y <= 1'b1;
-        end
-        else if((((V_CNT == 524) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == 626) && (VDPR9PALMODE == 1'b1)) || (V_CNT == 0))) begin
+        end else if ((((V_CNT == 524) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == 626) && (VDPR9PALMODE == 1'b1)) || (V_CNT == 0))) begin
           BWINDOW_Y <= 1'b0;
         end
       end else begin
@@ -662,10 +762,9 @@ import custom_timings::*;
         // BECAUSE ODD FIELD'S START IS DELAYED HALF LINE.
         // SO THE START POSITION OF DISPLAY TIME SHOULD BE
         // DELAYED MORE HALF LINE.
-        if(((V_CNT == (20 * 2)) || ((V_CNT == (525 + 20 * 2 + 1)) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == (625 + 20 * 2 + 1)) && (VDPR9PALMODE == 1'b1)))) begin
+        if (((V_CNT == (20 * 2)) || ((V_CNT == (525 + 20 * 2 + 1)) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == (625 + 20 * 2 + 1)) && (VDPR9PALMODE == 1'b1)))) begin
           BWINDOW_Y <= 1'b1;
-        end
-        else if((((V_CNT == 525) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == 625) && (VDPR9PALMODE == 1'b1)) || (V_CNT == 0))) begin
+        end else if ((((V_CNT == 525) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == 625) && (VDPR9PALMODE == 1'b1)) || (V_CNT == 0))) begin
           BWINDOW_Y <= 1'b0;
         end
       end
@@ -687,15 +786,12 @@ import custom_timings::*;
     if ((RESET == 1'b1)) begin
       PREWINDOW_X <= 1'b0;
     end else begin
-      //            IF( (H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '0') OR
-      //                (H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_NTSC - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '0') OR
-      //                (H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00") + 4) & "10") AND REG_R25_YJK = '1' AND CENTERYJK_R25_N = '1' AND VDPR9PALMODE = '1') OR
-      //                (H_CNT = ("00" & (`OFFSET_X + `LED_TV_X_PAL - ((REG_R25_MSK AND (NOT CENTERYJK_R25_N)) & "00")    ) & "10") AND (REG_R25_YJK = '0' OR CENTERYJK_R25_N = '0') AND VDPR9PALMODE = '1') )THEN
       if(((H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         // HOLD
       end else if ((H_CNT[1:0] == 2'b10)) begin
         if ((PREDOTCOUNTER_X == 9'b111111111)) begin
           // JP: PREDOTCOUNTER_X が -1から0にカウントアップする時にWINDOWを1にする
+          // (PREDOTCOUNTER_X is set to 0 when it counts up from -1 to 0)
           PREWINDOW_X <= 1'b1;
         end else if ((PREDOTCOUNTER_X == 9'b011111111)) begin
           PREWINDOW_X <= 1'b0;
@@ -757,22 +853,24 @@ import custom_timings::*;
       VDP_COMMAND_DRIVE <= 1'b0;
     end else begin
       //----------------------------------------
+
       // MAIN STATE
       //----------------------------------------
       //
       // VRAM ACCESS ARBITER.
       //
       // VRAMアクセスタイミングを、EIGHTDOTSTATE によって制御している
+      // (The VRAM access timing is controlled by EIGHTDOTSTATE)
       if ((DOTSTATE == 2'b10)) begin
         if(((PREWINDOW == 1'b1) && (REG_R1_DISP_ON == 1'b1) && ((EIGHTDOTSTATE == 3'b000) || (EIGHTDOTSTATE == 3'b001) || (EIGHTDOTSTATE == 3'b010) || (EIGHTDOTSTATE == 3'b011) || (EIGHTDOTSTATE == 3'b100)))) begin
           //  EIGHTDOTSTATE が 0～4 で、表示中の場合
+          //  (EIGHTDOTSTATE is 0 to 4, and it is displayed)
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
-        end
-        else if(((PREWINDOW == 1'b1) && (REG_R1_DISP_ON == 1'b1) && (TXVRAMREADEN == 1'b1))) begin
+        end else if (((PREWINDOW == 1'b1) && (REG_R1_DISP_ON == 1'b1) && (TXVRAMREADEN == 1'b1))) begin
           //  EIGHTDOTSTATE が 5～7 で、表示中で、テキストモードの場合
+          //  (EIGHTDOTSTATE is 5 to 7, and it is displayed, and it is in text mode)
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
-        end
-        else if(((PREWINDOW_X == 1'b1) && (PREWINDOW_Y_SP == 1'b1) && (SPVRAMACCESSING == 1'b1) && (EIGHTDOTSTATE == 3'b101) && (TEXT_MODE == 1'b0))) begin
+        end else if (((PREWINDOW_X == 1'b1) && (PREWINDOW_Y_SP == 1'b1) && (SPVRAMACCESSING == 1'b1) && (EIGHTDOTSTATE == 3'b101) && (TEXT_MODE == 1'b0))) begin
           // FOR SPRITE Y-TESTING
           VRAMACCESSSWITCH = VRAM_ACCESS_SPRT;
         end
@@ -785,7 +883,6 @@ import custom_timings::*;
         end else if ((VDPVRAMRDREQ != VDPVRAMRDACK)) begin
           // VRAM READ REQUEST BY CPU
           VRAMACCESSSWITCH = VRAM_ACCESS_CPUR;
-          //              ELSIF( EIGHTDOTSTATE="111" )THEN
         end else begin
           // VDP COMMAND
           if ((VDP_COMMAND_ACTIVE == 1'b1)) begin
@@ -803,11 +900,12 @@ import custom_timings::*;
       end else begin
         VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
       end
-      if((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW || VRAMACCESSSWITCH == VRAM_ACCESS_VDPR || VRAMACCESSSWITCH == VRAM_ACCESS_VDPS)) begin
+      if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW || VRAMACCESSSWITCH == VRAM_ACCESS_VDPR || VRAMACCESSSWITCH == VRAM_ACCESS_VDPS)) begin
         VDP_COMMAND_DRIVE <= 1'b1;
       end else begin
         VDP_COMMAND_DRIVE <= 1'b0;
       end
+
       //
       // VRAM ACCESS ADDRESS SWITCH
       //
@@ -815,6 +913,8 @@ import custom_timings::*;
         // VRAM WRITE BY CPU
         // JP: GRAPHIC6,7ではVRAM上のアドレスと RAM上のアドレスの関係が
         // JP: 他の画面モードと異るので注意
+        // (In GRAPHIC6,7, note that the relationship between the address on VRAM and the address on RAM)
+        // (is different from other screen modes.)
         if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
           IRAMADR <= {VDPVRAMACCESSADDR[0], VDPVRAMACCESSADDR[16:1]};
         end else begin
@@ -838,8 +938,11 @@ import custom_timings::*;
         end else begin
           VDPVRAMACCESSADDRV = VDPVRAMACCESSADDR;
         end
+
         // JP: GRAPHIC6,7ではVRAM上のアドレスと RAM上のアドレスの関係が
         // JP: 他の画面モードと異るので注意
+        // (In GRAPHIC6,7, note that the relationship between the address on VRAM and the address on RAM)
+        // (is different from other screen modes)
         if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
           IRAMADR <= {VDPVRAMACCESSADDRV[0], VDPVRAMACCESSADDRV[16:1]};
         end else begin
@@ -860,6 +963,8 @@ import custom_timings::*;
         // VDP COMMAND WRITE VRAM.
         // JP: GRAPHIC6,7ではアドレスと RAM上の位置が他の画面モードと
         // JP: 異るので注意
+        // (In GRAPHIC6,7, note that the relationship between the address and the position on RAM)
+        // (is different from other screen modes.)
         if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
           IRAMADR <= {VDPCMDVRAMACCESSADDR[0], VDPCMDVRAMACCESSADDR[16:1]};
         end else begin
@@ -873,6 +978,8 @@ import custom_timings::*;
         // VRAM READ BY VDP COMMAND
         // JP: GRAPHIC6,7ではアドレスと RAM上の位置が他の画面モードと
         // JP: 異るので注意
+        // (In GRAPHIC6,7, note that the relationship between the address and the position on RAM)
+        // (is different from other screen modes)
         if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
           IRAMADR <= {VDPCMDVRAMACCESSADDR[0], VDPCMDVRAMACCESSADDR[16:1]};
         end else begin
@@ -898,11 +1005,9 @@ import custom_timings::*;
             PRAMWE_N <= 1'b1;
             if ((TEXT_MODE == 1'b1)) begin
               IRAMADR <= PRAMADRT12;
-            end
-          else if(((VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1) || (VDPMODEGRAPHIC3 == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1))) begin
+            end else if (((VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1) || (VDPMODEGRAPHIC3 == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1))) begin
               IRAMADR <= PRAMADRG123M;
-            end
-          else if(((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC5 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
+            end else if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC5 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
               IRAMADR <= PRAMADRG4567;
             end
           end
@@ -975,7 +1080,6 @@ import custom_timings::*;
       .DOTSTATE(DOTSTATE),
       .DOTCOUNTERX(PREDOTCOUNTER_X),
       .DOTCOUNTERY(PREDOTCOUNTER_Y),
-      // 2021/July/1st Modified by t.hara
       .DOTCOUNTERYP(PREDOTCOUNTER_YP),
       .VDPMODETEXT1(VDPMODETEXT1),
       .VDPMODETEXT1Q(VDPMODETEXT1Q),
@@ -1183,8 +1287,6 @@ import custom_timings::*;
       .VDP_ID(VDP_ID)
   );
 
-  // ★
-  //  DEBUG_OUTPUT <= REG_R19_HSYNC_INT_LINE & REG_R23_VSTART_LINE;
   //---------------------------------------------------------------------------
   // VDP COMMAND
   //---------------------------------------------------------------------------
@@ -1232,6 +1334,5 @@ import custom_timings::*;
       .DRIVE(VDP_COMMAND_DRIVE),
       .ACTIVE(VDP_COMMAND_ACTIVE)
   );
-
 
 endmodule

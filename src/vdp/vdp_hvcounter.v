@@ -1,25 +1,3 @@
-// File src/vdp/vdp_hvcounter.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
 //
 //  vdp_hvcounter.vhd
 //   horizontal and vertical counter of ESE-VDP.
@@ -103,7 +81,6 @@ module VDP_HVCOUNTER (
 
 import custom_timings::*;
 
-  // FLIP FLOP
   reg [10:0] FF_H_CNT;
   reg [10:0] FF_H_CNT_IN_FIELD;
   reg [9:0] FF_V_CNT_IN_FIELD;
@@ -124,8 +101,7 @@ import custom_timings::*;
   wire [1:0] W_DISPLAY_MODE;
   wire [1:0] W_LINE_MODE;
   wire W_H_BLANK_START;
-  wire W_H_BLANK_END;  //    SIGNAL W_V_BLANKING_START       : STD_LOGIC;
-  //    SIGNAL W_V_BLANKING_END         : STD_LOGIC;
+  wire W_H_BLANK_END;
   wire [8:0] W_V_SYNC_INTR_START_LINE;
 
   assign H_CNT = FF_H_CNT;
@@ -136,6 +112,7 @@ import custom_timings::*;
   assign H_BLANK = FF_H_BLANK;
   assign V_BLANK = FF_V_BLANK;
   assign HDMI_RESET = FF_HDMI_RESET;
+
   //------------------------------------------------------------------------
   //  V SYNCHRONIZE MODE CHANGE
   //------------------------------------------------------------------------
@@ -158,23 +135,6 @@ import custom_timings::*;
       end
     end
   end
-
-  // always @(posedge RESET, posedge CLK21M) begin
-  //   if ((RESET == 1'b1)) begin
-  //     CLOCKS_PER_LINE = 1716;
-  //     CLOCKS_PER_HALF_LINE = 858;
-  //   end else begin
-  //     if ((HDMI_RESET == 1'b1)) begin
-  //       if ((PAL_MODE == 1'b0)) begin
-  //         CLOCKS_PER_LINE = 1716;
-  //         CLOCKS_PER_HALF_LINE = 858;
-  //       end else begin
-  //         CLOCKS_PER_LINE = 1728;
-  //         CLOCKS_PER_HALF_LINE = 864;
-  //       end
-  //     end
-  //   end
-  // end
 
   //------------------------------------------------------------------------
   //  HORIZONTAL COUNTER
@@ -208,15 +168,6 @@ import custom_timings::*;
   //------------------------------------------------------------------------
   //  VERTICAL COUNTER
   //------------------------------------------------------------------------
-  //    W_DISPLAY_MODE  <=  FF_INTERLACE_MODE & FF_PAL_MODE;
-  //    WITH( W_DISPLAY_MODE )SELECT W_FIELD_END_CNT <=
-  //        CONV_STD_LOGIC_VECTOR( 523, 10 )    WHEN "00",
-  //        CONV_STD_LOGIC_VECTOR( 524, 10 )    WHEN "10",
-  //        CONV_STD_LOGIC_VECTOR( 623, 10 )    WHEN "01",
-  //        CONV_STD_LOGIC_VECTOR( 624, 10 )    WHEN "11",
-  //        (OTHERS=>'X')                       WHEN OTHERS;
-  //    W_FIELD_END <=  '1' WHEN( FF_V_CNT_IN_FIELD = FF_FIELD_END_CNT )ELSE
-  //                    '0';
   assign W_FIELD_END = FF_FIELD_END;
   always @(posedge RESET or posedge CLK21M) begin
     if (RESET) begin
@@ -238,6 +189,7 @@ import custom_timings::*;
       end
     end
   end
+
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_V_CNT_IN_FIELD <= {10{1'b0}};
@@ -305,19 +257,6 @@ import custom_timings::*;
   //---------------------------------------------------------------------------
   // V BLANKING
   //---------------------------------------------------------------------------
-  //    W_LINE_MODE <= Y212_MODE & FF_PAL_MODE;
-  //    WITH W_LINE_MODE SELECT W_V_SYNC_INTR_START_LINE <=
-  //        CONV_STD_LOGIC_VECTOR( V_BLANKING_START_192_NTSC, 9 )   WHEN "00",
-  //        CONV_STD_LOGIC_VECTOR( V_BLANKING_START_212_NTSC, 9 )   WHEN "10",
-  //        CONV_STD_LOGIC_VECTOR( V_BLANKING_START_192_PAL, 9 )    WHEN "01",
-  //        CONV_STD_LOGIC_VECTOR( V_BLANKING_START_212_PAL, 9 )    WHEN "11",
-  //        (OTHERS => 'X')                                         WHEN OTHERS;
-  //    W_V_BLANKING_END    <=  '1' WHEN( (FF_V_CNT_IN_FIELD = ("00" & (OFFSET_Y + LED_TV_Y_NTSC) & (FF_FIELD AND FF_INTERLACE_MODE)) AND FF_PAL_MODE = '0') OR
-  //                                      (FF_V_CNT_IN_FIELD = ("00" & (OFFSET_Y + LED_TV_Y_PAL) & (FF_FIELD AND FF_INTERLACE_MODE)) AND FF_PAL_MODE = '1') )ELSE
-  //                            '0';
-  //    W_V_BLANKING_START  <=  '1' WHEN( (FF_V_CNT_IN_FIELD = ((W_V_SYNC_INTR_START_LINE + LED_TV_Y_NTSC) & (FF_FIELD AND FF_INTERLACE_MODE)) AND FF_PAL_MODE = '0') OR
-  //                                      (FF_V_CNT_IN_FIELD = ((W_V_SYNC_INTR_START_LINE + LED_TV_Y_PAL) & (FF_FIELD AND FF_INTERLACE_MODE)) AND FF_PAL_MODE = '1') )ELSE
-  //                            '0';
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_V_BLANK <= 1'b0;
@@ -331,6 +270,5 @@ import custom_timings::*;
       end
     end
   end
-
 
 endmodule

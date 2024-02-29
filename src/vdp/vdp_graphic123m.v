@@ -1,26 +1,3 @@
-// File src/vdp/vdp_graphic123m.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
-//
 //  vdp_graphic123M.vhd
 //    Imprementation of Graphic Mode 1,2,3 and Multicolor Mode.
 //
@@ -103,7 +80,6 @@
 // JP: GRAPHICモード1,2,3および MULTICOLORモードのメイン処理回路です。
 // (This is the main processing circuit of GRAPHIC mode 1,2,3 and MULTICOLOR mode.)
 //
-// no timescale needed
 
 module VDP_GRAPHIC123M (
     input wire CLK21M,
@@ -130,9 +106,6 @@ module VDP_GRAPHIC123M (
   //  21.477MHZ
   // CONTROL SIGNALS
   // REGISTERS
-  //
-
-
 
   reg [16:0] FF_REQ_ADDR;
   reg [3:0] FF_COL_CODE;
@@ -151,10 +124,12 @@ module VDP_GRAPHIC123M (
   wire [7:3] W_DOTCOUNTERX;
 
   assign W_DOTCOUNTERX = REG_R26_H_SCROLL[7:3] + DOTCOUNTERX[7:3];
+
   // ADDRESS DECODE
   assign REQ_PAT_NAME_TBL_ADDR = {REG_R2_PT_NAM_ADDR, DOTCOUNTERY[7:3], W_DOTCOUNTERX};
   assign REQ_PAT_GEN_TBL_ADDR = (VDPMODEGRAPHIC1 == 1'b1) ? {REG_R4_PT_GEN_ADDR,FF_PAT_NUM,DOTCOUNTERY[2:0]} : ({REG_R4_PT_GEN_ADDR[5:2],DOTCOUNTERY[7:6],FF_PAT_NUM,DOTCOUNTERY[2:0]}) & ({4'b1111,REG_R4_PT_GEN_ADDR[1:0],8'b11111111,3'b111});
   assign REQ_PAT_COL_TBL_ADDR = (VDPMODEMULTI == 1'b1 || VDPMODEMULTIQ == 1'b1) ? {REG_R4_PT_GEN_ADDR,FF_PAT_NUM,DOTCOUNTERY[4:2]} : (VDPMODEGRAPHIC1 == 1'b1) ? {REG_R10R3_COL_ADDR,1'b0,FF_PAT_NUM[7:3]} : ({REG_R10R3_COL_ADDR[10:7],DOTCOUNTERY[7:6],FF_PAT_NUM,DOTCOUNTERY[2:0]}) & ({4'b1111,REG_R10R3_COL_ADDR[6:0],6'b111111});
+
   // DRAM READ REQUEST
   always @(*) begin
     case (EIGHTDOTSTATE)
@@ -178,10 +153,11 @@ module VDP_GRAPHIC123M (
   // GENERATE PIXEL COLOR NUMBER
   assign COL_HL_SEL = (VDPMODEMULTI == 1'b1 || VDPMODEMULTIQ == 1'b1) ?  ~EIGHTDOTSTATE[2] : FF_PAT_GEN[7];
   assign COL_CODE = (COL_HL_SEL == 1'b1) ? FF_PAT_COL[7:4] : FF_PAT_COL[3:0];
+
   // OUT ASSIGNMENT
   assign PRAMADR = FF_REQ_ADDR;
   assign PCOLORCODE = FF_COL_CODE;
-  // FF
+
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PAT_COL <= {8{1'b0}};

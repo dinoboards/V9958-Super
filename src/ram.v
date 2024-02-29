@@ -51,8 +51,6 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// no timescale needed
-
 module RAM (
     input wire [7:0] ADR,
     input wire CLK,

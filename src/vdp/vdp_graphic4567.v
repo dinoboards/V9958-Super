@@ -1,26 +1,3 @@
-// File src/vdp/vdp_graphic4567.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
-//
 //  vdp_graphic4567.vhd
 //    Imprementation of Graphic Mode 4,5,6 and 7.
 //
@@ -87,6 +64,7 @@
 //
 // 12th,August,2006 created by Kunihiko Ohnaka
 // JP: VDPのコアの実装とスクリーンモードの実装を分離した
+// (Extracted the implementation of the VDP core and the implementation of the screen mode)
 //
 // 29th,October,2006 modified by Kunihiko Ohnaka
 //   - Insert the license text.
@@ -94,6 +72,7 @@
 //
 // 20th,March,2008 modified by t.hara
 // JP: リファクタリング, VDP_PACKAGE の参照を削除
+// (Refactoring, removed the reference to VDP_PACKAGE)
 //
 // 9th,April,2008 modified by t.hara
 // Supported YJK mode.
@@ -110,8 +89,8 @@
 // Document
 //
 // JP: GRAPHICモード4,5,6,7のメイン処理回路です。
+// (Main processing circuit of GRAPHIC mode 4,5,6,7.)
 //
-// no timescale needed
 
 module VDP_GRAPHIC4567 (
     input wire CLK21M,
@@ -143,10 +122,6 @@ module VDP_GRAPHIC4567 (
 );
 
   // VDP CLOCK ... 21.477MHZ
-  // REGISTERS
-  //
-
-
 
   wire [16:0] LOGICALVRAMADDRG45;
   wire [16:0] LOGICALVRAMADDRG67;
@@ -258,6 +233,7 @@ module VDP_GRAPHIC4567 (
     DOTCOUNTERY[2:0],
     LOCALDOTCOUNTERX[7:0]
   };
+
   // FIFO CONTROL
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -375,27 +351,21 @@ module VDP_GRAPHIC4567 (
   end
 
   // YJK COLOR CONVERT
-  assign W_Y = W_PIX[7:3];
-  //  Y ( 0...31)
-  assign W_J = {FF_PIX3[2:0], FF_PIX2[2:0]};
-  //  J (-32...31)
-  assign W_K = {FF_PIX1[2:0], FF_PIX0[2:0]};
-  //  K (-32...31)
-  assign W_R_YJK = ({2'b00, W_Y}) + ({W_J[5], W_J});
-  //  R (-32...62)
-  assign W_G_YJK = ({2'b00, W_Y}) + ({W_K[5], W_K});
-  //  B (-32...62)
-  assign W_B_Y = ({1'b0, W_Y, 2'b00}) + ({3'b000, W_Y});
-  //  Y * 5               ( 0...155 )
-  assign W_B_JK = ({W_J[5], W_J, 1'b0}) + ({W_K[5], W_K[5], W_K});
-  //  J * 2 + K           ( -96...93 )
-  assign W_B_YJKP = ({1'b0, W_B_Y}) - ({W_B_JK[7], W_B_JK}) + 9'b000000010;
-  //  (Y * 5 - (J * 2 + K) + 2)   (-91...253)
-  assign W_B_YJK = W_B_YJKP[8:2];
-  //  (Y * 5 - (J * 2 + K) + 2)/4 (-22...63)
+  assign W_Y = W_PIX[7:3];   //  Y ( 0...31)
+  assign W_J = {FF_PIX3[2:0], FF_PIX2[2:0]};  //  J (-32...31)
+  assign W_K = {FF_PIX1[2:0], FF_PIX0[2:0]};  //  K (-32...31)
+
+  assign W_R_YJK = ({2'b00, W_Y}) + ({W_J[5], W_J});  //  R (-32...62)
+  assign W_G_YJK = ({2'b00, W_Y}) + ({W_K[5], W_K});  //  B (-32...62)
+  assign W_B_Y = ({1'b0, W_Y, 2'b00}) + ({3'b000, W_Y});  //  Y * 5               ( 0...155 )
+  assign W_B_JK = ({W_J[5], W_J, 1'b0}) + ({W_K[5], W_K[5], W_K});  //  J * 2 + K           ( -96...93 )
+  assign W_B_YJKP = ({1'b0, W_B_Y}) - ({W_B_JK[7], W_B_JK}) + 9'b000000010;  //  (Y * 5 - (J * 2 + K) + 2)   (-91...253)
+  assign W_B_YJK = W_B_YJKP[8:2];  //  (Y * 5 - (J * 2 + K) + 2)/4 (-22...63)
+
   assign W_R = (W_R_YJK[6] == 1'b1) ? {6{1'b0}} : (W_R_YJK[5] == 1'b1) ? {6{1'b1}} : {W_R_YJK[4:0],1'b0};
   assign W_G = (W_G_YJK[6] == 1'b1) ? {6{1'b0}} : (W_G_YJK[5] == 1'b1) ? {6{1'b1}} : {W_G_YJK[4:0],1'b0};
   assign W_B = (W_B_YJK[6] == 1'b1) ? {6{1'b0}} : (W_B_YJK[5] == 1'b1) ? {6{1'b1}} : {W_B_YJK[4:0],1'b0};
+
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       P_YJK_R <= {6{1'b0}};
@@ -497,6 +467,5 @@ module VDP_GRAPHIC4567 (
       end
     end
   end
-
 
 endmodule

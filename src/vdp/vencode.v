@@ -1,26 +1,3 @@
-// File src/vdp/vencode.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
-//
 // vencode.vhd
 //   RGB to NTSC video encoder
 //   Revision 1.00
@@ -51,7 +28,6 @@
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// no timescale needed
 
 module VENCODE (
     input wire CLK21M,
@@ -69,8 +45,6 @@ module VENCODE (
   // VDP CLOCK ... 21.477MHZ
   // VIDEO INPUT
   // VIDEO OUTPUT
-
-
 
   reg [5:0] FF_VIDEOY;
   reg [5:0] FF_VIDEOC;
@@ -110,15 +84,44 @@ module VENCODE (
   parameter VREF = 8'h3B;
   parameter CENT = 8'h80;
   parameter [31:0] TABLE = {
-      8'h00, 8'hFA, 8'h0C, 8'hEE, 8'h18, 8'hE7, 8'h18, 8'hE7,
-      8'h18, 8'hE7, 8'h18, 8'hE7, 8'h18, 8'hE7, 8'h18, 8'hE7,
-      8'h18, 8'hE7, 8'h18, 8'hEE, 8'h0C, 8'hFA, 8'h00, 8'h00,
-      8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00, 8'h00
+    8'h00,
+    8'hFA,
+    8'h0C,
+    8'hEE,
+    8'h18,
+    8'hE7,
+    8'h18,
+    8'hE7,
+    8'h18,
+    8'hE7,
+    8'h18,
+    8'hE7,
+    8'h18,
+    8'hE7,
+    8'h18,
+    8'hE7,
+    8'h18,
+    8'hE7,
+    8'h18,
+    8'hEE,
+    8'h0C,
+    8'hFA,
+    8'h00,
+    8'h00,
+    8'h00,
+    8'h00,
+    8'h00,
+    8'h00,
+    8'h00,
+    8'h00,
+    8'h00,
+    8'h00
   };
 
   assign VIDEOY = FF_VIDEOY;
   assign VIDEOC = FF_VIDEOC;
   assign VIDEOV = FF_VIDEOV;
+
   //  Y = +0.299R +0.587G +0.114B
   // +U = +0.615R -0.518G -0.097B (  0)
   // +V = +0.179R -0.510G +0.331B ( 60)
@@ -126,36 +129,43 @@ module VENCODE (
   // -U = -0.615R +0.518G +0.097B (180)
   // -V = -0.179R +0.510G -0.331B (240)
   // -W = +0.435R -0.007G -0.428B (300)
+
   assign Y = ({1'b0, Y1[11:5]}) + (({1'b0, Y2[11:5]}) + ({1'b0, Y3[11:5]})) + VREF;
-  assign V = FF_SEQ == 3'b110 ? Y[7:0] + C0[7:0] : FF_SEQ == 3'b101 ? Y[7:0] + C0[7:0] : FF_SEQ == 3'b100 ? Y[7:0] + C0[7:0] : FF_SEQ == 3'b010 ? Y[7:0] - C0[7:0] : FF_SEQ == 3'b001 ? Y[7:0] - C0[7:0] : Y[7:0] - C0[7:0];
-  //  -W
-  assign C = FF_SEQ == 3'b110 ? CENT + C0[7:0] : FF_SEQ == 3'b101 ? CENT + C0[7:0] : FF_SEQ == 3'b100 ? CENT + C0[7:0] : FF_SEQ == 3'b010 ? CENT - C0[7:0] : FF_SEQ == 3'b001 ? CENT - C0[7:0] : CENT - C0[7:0];
-  //  -W
-  assign C0 = FF_SEQ[1] == 1'b1 ? 8'h00 + ({1'b0,U1[11:5]}) - ({1'b0,U2[11:5]}) - ({1'b0,U3[11:5]}) : FF_SEQ[0] == 1'b1 ? 8'h00 + ({1'b0,V1[11:5]}) - ({1'b0,V2[11:5]}) + ({1'b0,V3[11:5]}) : 8'h00 - ({1'b0,W1[11:5]}) + ({1'b0,W2[11:5]}) + ({1'b0,W3[11:5]});
-  assign Y1 = 8'h18 * FF_IVIDEOR;
-  // HEX(0.299*(2*0.714*256/3.3)*0.72*16) = $17.D
-  assign Y2 = 8'h2F * FF_IVIDEOG;
-  // HEX(0.587*(2*0.714*256/3.3)*0.72*16) = $2E.D
-  assign Y3 = 8'h09 * FF_IVIDEOB;
-  // HEX(0.114*(2*0.714*256/3.3)*0.72*16) = $09.1
-  assign U1 = 8'h32 * FF_IVIDEOR;
-  // HEX(0.615*(2*0.714*256/3.3)*0.72*16) = $31.0
-  assign U2 = 8'h29 * FF_IVIDEOG;
-  // HEX(0.518*(2*0.714*256/3.3)*0.72*16) = $29.5
-  assign U3 = 8'h08 * FF_IVIDEOB;
-  // HEX(0.097*(2*0.714*256/3.3)*0.72*16) = $07.B
-  assign V1 = 8'h0F * FF_IVIDEOR;
-  // HEX(0.179*(2*0.714*256/3.3)*0.72*16) = $0E.4
-  assign V2 = 8'h28 * FF_IVIDEOG;
-  // HEX(0.510*(2*0.714*256/3.3)*0.72*16) = $28.A
-  assign V3 = 8'h1A * FF_IVIDEOB;
-  // HEX(0.331*(2*0.714*256/3.3)*0.72*16) = $1A.6
-  assign W1 = 8'h24 * FF_IVIDEOR;
-  // HEX(0.435*(2*0.714*256/3.3)*0.72*16) = $22.B
-  assign W2 = 8'h01 * FF_IVIDEOG;
-  // HEX(0.007*(2*0.714*256/3.3)*0.72*16) = $00.8
-  assign W3 = 8'h22 * FF_IVIDEOB;
-  // HEX(0.428*(2*0.714*256/3.3)*0.72*16) = $22.2
+
+  assign V = FF_SEQ == 3'b110 ? Y[7:0] + C0[7:0] :  // +U
+      FF_SEQ == 3'b101 ? Y[7:0] + C0[7:0] :  // +V
+      FF_SEQ == 3'b100 ? Y[7:0] + C0[7:0] :  // +W
+      FF_SEQ == 3'b010 ? Y[7:0] - C0[7:0] :  // -U
+      FF_SEQ == 3'b001 ? Y[7:0] - C0[7:0] :  // -V
+      Y[7:0] - C0[7:0];  //  -W
+
+  assign C = FF_SEQ == 3'b110 ? CENT + C0[7:0] :  // +U
+      FF_SEQ == 3'b101 ? CENT + C0[7:0] :  // +V
+      FF_SEQ == 3'b100 ? CENT + C0[7:0] :  // +W
+      FF_SEQ == 3'b010 ? CENT - C0[7:0] :  // -U
+      FF_SEQ == 3'b001 ? CENT - C0[7:0] :  // -V
+      CENT - C0[7:0];  //  -W
+
+  assign C0 = FF_SEQ[1] == 1'b1 ? 8'h00 + ({1'b0,U1[11:5]}) - ({1'b0,U2[11:5]}) - ({1'b0,U3[11:5]}) :
+    FF_SEQ[0] == 1'b1 ? 8'h00 + ({1'b0,V1[11:5]}) - ({1'b0,V2[11:5]}) + ({1'b0,V3[11:5]}) :
+    8'h00 - ({1'b0,W1[11:5]}) + ({1'b0,W2[11:5]}) + ({1'b0,W3[11:5]});
+
+  assign Y1 = 8'h18 * FF_IVIDEOR;  // HEX(0.299*(2*0.714*256/3.3)*0.72*16) = $17.D
+  assign Y2 = 8'h2F * FF_IVIDEOG;  // HEX(0.587*(2*0.714*256/3.3)*0.72*16) = $2E.D
+  assign Y3 = 8'h09 * FF_IVIDEOB;  // HEX(0.114*(2*0.714*256/3.3)*0.72*16) = $09.1
+
+  assign U1 = 8'h32 * FF_IVIDEOR;  // HEX(0.615*(2*0.714*256/3.3)*0.72*16) = $31.0
+  assign U2 = 8'h29 * FF_IVIDEOG;  // HEX(0.518*(2*0.714*256/3.3)*0.72*16) = $29.5
+  assign U3 = 8'h08 * FF_IVIDEOB;  // HEX(0.097*(2*0.714*256/3.3)*0.72*16) = $07.B
+
+  assign V1 = 8'h0F * FF_IVIDEOR;  // HEX(0.179*(2*0.714*256/3.3)*0.72*16) = $0E.4
+  assign V2 = 8'h28 * FF_IVIDEOG;  // HEX(0.510*(2*0.714*256/3.3)*0.72*16) = $28.A
+  assign V3 = 8'h1A * FF_IVIDEOB;  // HEX(0.331*(2*0.714*256/3.3)*0.72*16) = $1A.6
+
+  assign W1 = 8'h24 * FF_IVIDEOR;  // HEX(0.435*(2*0.714*256/3.3)*0.72*16) = $22.B
+  assign W2 = 8'h01 * FF_IVIDEOG;  // HEX(0.007*(2*0.714*256/3.3)*0.72*16) = $00.8
+  assign W3 = 8'h22 * FF_IVIDEOB;  // HEX(0.428*(2*0.714*256/3.3)*0.72*16) = $22.2
+
   always @(posedge CLK21M) begin
     FF_IVIDEOVS_N <= VIDEOVS_N;
     FF_IVIDEOHS_N <= VIDEOHS_N;
@@ -195,8 +205,7 @@ module VENCODE (
       FF_BURPHASE <= 1'b0;
     end else if ((VIDEOHS_N == 1'b0 && FF_IVIDEOHS_N == 1'b1)) begin
       FF_VCOUNTER <= FF_VCOUNTER + 1;
-      FF_BURPHASE <= FF_BURPHASE ^ (~FF_HCOUNTER[1]);
-      // FF_HCOUNTER:1364/1367
+      FF_BURPHASE <= FF_BURPHASE ^ (~FF_HCOUNTER[1]);   // FF_HCOUNTER:1364/1367
     end
   end
 
@@ -206,8 +215,7 @@ module VENCODE (
   always @(posedge CLK21M) begin
     if ((FF_VCOUNTER == (8'h22 - 8'h10 - 1))) begin
       FF_WINDOW_V <= 1'b1;
-    end
-    else if((((FF_VCOUNTER == (262 - 7)) && (FF_PAL_MODE == 1'b0)) || ((FF_VCOUNTER == (312 - 7)) && (FF_PAL_MODE == 1'b1)))) begin
+    end else if ((((FF_VCOUNTER == (262 - 7)) && (FF_PAL_MODE == 1'b0)) || ((FF_VCOUNTER == (312 - 7)) && (FF_PAL_MODE == 1'b1)))) begin
       // JP: -7という数字にあまり根拠は無い。オリジナルのソースが
       // JP:  FF_VCOUNTER = X"FF"
       // JP: という条件判定をしていたのでそれを 262-7と表現し直した。
@@ -215,6 +223,11 @@ module VENCODE (
       // JP: 255が最大値だったのだろう。
       // JP: 大中的には 262-3= 259くらいで良いと思う(ボトムボーダ領域は
       // JP: 3ラインだから)
+      // Translation
+      //   There isn't much basis for the number -7. The original source had FF_VCOUNTER = X"FF"
+      //   as a condition, so I re-expressed it as 262-7. Probably, the original source had an 8-bit counter,
+      //   so 255 was the maximum value.  Personally, I think around 262-3=259 would be fine (since the
+      //   bottom border area is 3 lines).
       FF_WINDOW_V <= 1'b0;
     end
   end
@@ -315,6 +328,5 @@ module VENCODE (
       end
     end
   end
-
 
 endmodule

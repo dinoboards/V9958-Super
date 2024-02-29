@@ -1,26 +1,3 @@
-// File src/vdp/vdp_text12.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
-//
 //  vdp_text12.vhd
 //    Imprementation of Text Mode 1,2.
 //
@@ -97,12 +74,14 @@
 //
 // 12th,August,2006 created by Kunihiko Ohnaka
 // JP: VDPのコアの実装とスクリーンモードの実装を分離した
+// (Extracted the VDP core implementation and the screen mode implementation)
 //
 // 13th,March,2008
 // Fixed Blink by caro
 //
 // 22nd,March,2008
 // JP: タイミング緩和と、リファクタリング by t.hara
+// (Timing relaxation and refactoring by t.hara)
 //
 // 11th,September,2019 modified by Oduvaldo Pavan Junior
 // Fixed the lack of page flipping (R13) capability
@@ -114,10 +93,10 @@
 // Document
 //
 // JP: TEXTモード1,2のメイン処理回路です。
+// Main processing circuit of TEXT mode 1, 2.
 //
 //-----------------------------------------------------------------------------
 //
-// no timescale needed
 
 module VDP_TEXT12 (
     input wire CLK21M,
@@ -143,10 +122,6 @@ module VDP_TEXT12 (
 );
 
   // VDP CLOCK ... 21.477MHZ
-  // REGISTERS
-  //
-
-
 
   reg ITXVRAMREADEN;
   reg ITXVRAMREADEN2;
@@ -177,17 +152,24 @@ module VDP_TEXT12 (
   // JP:  0-1     READ PATTERN NUM.
   // JP:  1-2     READ PATTERN
   // JP: となる。
+  // Translation:
+  //   RAM outputs the address when DOTSTATE is "10", "00" and accesses it at "01".
+  //   When viewed with EIGHTDOTSTATE, it becomes:
+  //    0-1     READ PATTERN NUM.
+  //    1-2     READ PATTERN
   //
+
   //--------------------------------------------------------------
   //
   //--------------------------------------------------------------
   assign TXCHARCOUNTER = TXCHARCOUNTERSTARTOFLINE + TXCHARCOUNTERX;
-  assign LOGICALVRAMADDRNAM = (VDPMODETEXT1 == 1'b1 || VDPMODETEXT1Q == 1'b1) ? {REG_R2_PT_NAM_ADDR,TXCHARCOUNTER[9:0]} : {REG_R2_PT_NAM_ADDR[6:2],TXCHARCOUNTER};
+  assign LOGICALVRAMADDRNAM = (VDPMODETEXT1 == 1'b1 || VDPMODETEXT1Q == 1'b1) ? {REG_R2_PT_NAM_ADDR, TXCHARCOUNTER[9:0]} : {REG_R2_PT_NAM_ADDR[6:2], TXCHARCOUNTER};
   assign LOGICALVRAMADDRGEN = {REG_R4_PT_GEN_ADDR, PATTERNNUM, DOTCOUNTERY[2:0]};
   assign LOGICALVRAMADDRCOL = {REG_R10R3_COL_ADDR[10:3], TXCHARCOUNTER[11:3]};
   assign TXVRAMREADEN = (VDPMODETEXT1 == 1'b1 || VDPMODETEXT1Q == 1'b1) ? ITXVRAMREADEN : (VDPMODETEXT2 == 1'b1) ? ITXVRAMREADEN | ITXVRAMREADEN2 : 1'b0;
   assign TXCOLOR = ((VDPMODETEXT2 == 1'b1) && (FF_BLINK_STATE == 1'b1) && (BLINK[7] == 1'b1)) ? REG_R12_BLINK_MODE : REG_R7_FRAME_COL;
   assign PCOLORCODE = ((TXWINDOWX == 1'b1) && (TXCOLORCODE == 1'b1)) ? TXCOLOR[7:4] : ((TXWINDOWX == 1'b1) && (TXCOLORCODE == 1'b0)) ? TXCOLOR[3:0] : REG_R7_FRAME_COL[3:0];
+
   //-------------------------------------------------------------------------
   // TIMING GENERATOR
   //-------------------------------------------------------------------------
@@ -198,10 +180,9 @@ module VDP_TEXT12 (
       if ((DOTSTATE == 2'b10)) begin
         if ((DOTCOUNTERX == 12)) begin
           // JP: DOTCOUNTERは"10"のタイミングでは既にカウントアップしているので注意
+          // (Note that DOTCOUNTER has already been counted up at the timing of "10")
           DOTCOUNTER24 <= {5{1'b0}};
         end else begin
-          // THE DOTCOUNTER24(2 DOWNTO 0) COUNTS UP 0 TO 5,
-          // AND THE DOTCOUNTER24(4 DOWNTO 3) COUNTS UP 0 TO 3.
           if ((DOTCOUNTER24[2:0] == 3'b101)) begin
             DOTCOUNTER24[4:3] <= DOTCOUNTER24[4:3] + 1;
             DOTCOUNTER24[2:0] <= 3'b000;
@@ -360,11 +341,16 @@ module VDP_TEXT12 (
       TXCOLORCODE <= 1'b0;
       BLINK <= {8{1'b0}};
     end else begin
-      // COLOR CODE DECISION
+      // Color Code Decision
       // JP: "01"と"10"のタイミングでかラーコードを出力してあげれば、
       // JP: VDPエンティティの方でパレットをデコードして色を出力してくれる。
       // JP: "01"と"10"で同じ色を出力すれば横256ドットになり、違う色を
       // JP: 出力すれば横512ドット表示となる。
+      // Translation:
+      //   If you output the color code at the "01" and "10" timings,
+      //   the VDP entity will decode the palette and output the color.
+      //   If you output the same color at "01" and "10", it will be a 256-dot horizontal display,
+      //   and if you output different colors, it will be a 512-dot horizontal display.
       case (DOTSTATE)
         2'b00: begin
           if ((DOTCOUNTER24[2:0] == 3'b100)) begin
@@ -375,9 +361,17 @@ module VDP_TEXT12 (
             // JP:   "2:4"から"3:3"の6ドット
             // JP:   "3:4"から"0:3"の6ドット
             // JP: で行われるので"100"のタイミングでロードする
+            // Translation:
+            //   The character drawing is done when DOTCOUNTER24 is,
+            //     6 dots from "0:4" to "1:3"
+            //     6 dots from "1:4" to "2:3"
+            //     6 dots from "2:4" to "3:3"
+            //     6 dots from "3:4" to "0:3"
+            //   So load at the "100" timing
             PATTERN <= PREPATTERN;
           end else if (((DOTCOUNTER24[2:0] == 3'b001) && (VDPMODETEXT2 == 1'b1))) begin
             // JP: TEXT2では"001"のタイミングでもロードする。
+            // (In TEXT2, load at the "001" timing)
             PATTERN <= PREPATTERN;
           end
           if (((DOTCOUNTER24[2:0] == 3'b100) || (DOTCOUNTER24[2:0] == 3'b001))) begin
@@ -391,8 +385,11 @@ module VDP_TEXT12 (
         end
         2'b01: begin
           // パターンに応じてカラーコードを決定
+          // (Determine the color code according to the pattern)
           TXCOLORCODE <= PATTERN[7];
+
           // パターンをシフト
+          // (Shift the pattern)
           PATTERN <= {PATTERN[6:0], 1'b0};
         end
         2'b11: begin
@@ -400,7 +397,9 @@ module VDP_TEXT12 (
         2'b10: begin
           if ((VDPMODETEXT2 == 1'b1)) begin
             TXCOLORCODE <= PATTERN[7];
+
             // パターンをシフト
+            // (Shift the pattern)
             PATTERN <= {PATTERN[6:0], 1'b0};
           end
         end
@@ -444,6 +443,5 @@ module VDP_TEXT12 (
       end
     end
   end
-
 
 endmodule

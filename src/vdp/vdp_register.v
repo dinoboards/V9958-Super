@@ -1,26 +1,3 @@
-// File src/vdp/vdp_register.vhd translated with vhd2vl 3.0 VHDL to Verilog RTL translator
-// vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
-
-// vhd2vl is Free (libre) Software:
-//   Copyright (C) 2001-2023 Vincenzo Liguori - Ocean Logic Pty Ltd
-//     http://www.ocean-logic.com
-//   Modifications Copyright (C) 2006 Mark Gonzales - PMC Sierra Inc
-//   Modifications (C) 2010 Shankar Giri
-//   Modifications Copyright (C) 2002-2023 Larry Doolittle
-//     http://doolittle.icarus.com/~larry/vhd2vl/
-//   Modifications (C) 2017 Rodrigo A. Melo
-//
-//   vhd2vl comes with ABSOLUTELY NO WARRANTY.  Always check the resulting
-//   Verilog for correctness, ideally with a formal verification tool.
-//
-//   You are welcome to redistribute vhd2vl under certain conditions.
-//   See the license (GPLv2) file included with the source for details.
-
-// The result of translation follows.  Its copyright status should be
-// considered unchanged from the original VHDL.
-
-//
 //  vdp_register.vhd
 //
 //  Copyright (C) 2000-2006 Kunihiko Ohnaka
@@ -77,7 +54,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //----------------------------------------------------------------------------
 //  23rd,March,2008
-//      JP: VDP.VHD から分離 by t.hara
+//      JP: vdp.vhd から分離 by t.hara
+//      (Extracted from vdp.vhd by t.hara")
 //
 //  28th,March,2008
 //      added "S#0 bit6 5th sprite (9th sprite) flag support" by t.hara
@@ -102,7 +80,6 @@
 //      Fixed behavior of address auto-increment.
 //      Fixed the write operation to the invalid register.
 //
-// no timescale needed
 
 module VDP_REGISTER (
     input wire RESET,
@@ -216,8 +193,6 @@ module VDP_REGISTER (
   //  MODE
   // SWITCHED I/O SIGNALS
 
-
-
   reg FF_ACK;
   reg VDPP1IS1STBYTE;
   reg VDPP2IS1STBYTE;
@@ -256,21 +231,22 @@ module VDP_REGISTER (
 
   assign ACK = FF_ACK;
   assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;
-  assign VDPMODEGRAPHIC1 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b00000) ? 1'b1 : 1'b0;
-  assign VDPMODETEXT1 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b00001) ? 1'b1 : 1'b0;
-  assign VDPMODEMULTI = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b00010) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC2 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b00100) ? 1'b1 : 1'b0;
-  assign VDPMODETEXT1Q = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b00101) ? 1'b1 : 1'b0;
-  assign VDPMODEMULTIQ = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b00110) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC3 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b01000) ? 1'b1 : 1'b0;
-  assign VDPMODETEXT2 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b01001) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC4 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b01100) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC5 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b10000) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC6 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b10100) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC7 = (({REG_R0_DISP_MODE,REG_R1_DISP_MODE[0],REG_R1_DISP_MODE[1]}) == 5'b11100) ? 1'b1 : 1'b0;
+  assign VDPMODEGRAPHIC1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000) ? 1'b1 : 1'b0;
+  assign VDPMODETEXT1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001) ? 1'b1 : 1'b0;
+  assign VDPMODEMULTI = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00010) ? 1'b1 : 1'b0;
+  assign VDPMODEGRAPHIC2 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00100) ? 1'b1 : 1'b0;
+  assign VDPMODETEXT1Q = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00101) ? 1'b1 : 1'b0;
+  assign VDPMODEMULTIQ = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00110) ? 1'b1 : 1'b0;
+  assign VDPMODEGRAPHIC3 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01000) ? 1'b1 : 1'b0;
+  assign VDPMODETEXT2 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01001) ? 1'b1 : 1'b0;
+  assign VDPMODEGRAPHIC4 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01100) ? 1'b1 : 1'b0;
+  assign VDPMODEGRAPHIC5 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10000) ? 1'b1 : 1'b0;
+  assign VDPMODEGRAPHIC6 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10100) ? 1'b1 : 1'b0;
+  assign VDPMODEGRAPHIC7 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100) ? 1'b1 : 1'b0;
   assign VDPMODEISHIGHRES = (REG_R0_DISP_MODE[3:2] == 2'b10 && REG_R1_DISP_MODE == 2'b00) ? 1'b1 : 1'b0;
   assign SPMODE2 = (REG_R1_DISP_MODE == 2'b00 && (REG_R0_DISP_MODE[3] | REG_R0_DISP_MODE[2]) == 1'b1) ? 1'b1 : 1'b0;
   assign VDPMODEISVRAMINTERLEAVE = ((REG_R0_DISP_MODE[3] & REG_R0_DISP_MODE[1]) == 1'b1) ? 1'b1 : 1'b0;
+
   //--------------------------------------------------------------------------------------
   always @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -314,7 +290,7 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   // PALETTE REGISTER
   //------------------------------------------------------------------------
-  assign PALETTEADDR = (FF_PALETTE_IN == 1'b1) ? {4'b0000,PALETTEWRNUM} : {4'b0000,PALETTEADDR_OUT};
+  assign PALETTEADDR = (FF_PALETTE_IN == 1'b1) ? {4'b0000, PALETTEWRNUM} : {4'b0000, PALETTEADDR_OUT};
   assign PALETTEWE = (FF_PALETTE_IN == 1'b1) ? 1'b1 : 1'b0;
   assign W_EVEN_DOTSTATE = (DOTSTATE == 2'b00 || DOTSTATE == 2'b11) ? 1'b1 : 1'b0;
   always @(posedge RESET, posedge CLK21M) begin
@@ -369,56 +345,39 @@ module VDP_REGISTER (
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
         // READ REQUEST
         case (ADR[1:0])
-          2'b00: begin
-            // PORT#0 (0x98): READ VRAM
+          2'b00: begin  // PORT#0 (0x98): READ VRAM
             DBI <= VDPVRAMRDDATA;
           end
-          2'b01: begin
-            // PORT#1 (0x99): READ STATUS REGISTER
+          2'b01: begin  // PORT#1 (0x99): READ STATUS REGISTER
             case (VDPR15STATUSREGNUM)
-              4'b0000: begin
-                // READ S#0
-                DBI <= {
-                  ~REQ_VSYNC_INT_N,
-                  VDPS0SPOVERMAPPED,
-                  VDPS0SPCOLLISIONINCIDENCE,
-                  VDPS0SPOVERMAPPEDNUM
-                };
+              4'b0000: begin  // READ S#0
+                DBI <= {~REQ_VSYNC_INT_N, VDPS0SPOVERMAPPED, VDPS0SPCOLLISIONINCIDENCE, VDPS0SPOVERMAPPEDNUM};
               end
-              4'b0001: begin
-                // READ S#1
+              4'b0001: begin  // READ S#1
                 DBI <= {2'b00, VDP_ID, ~REQ_HSYNC_INT_N};
               end
-              4'b0010: begin
-                // READ S#2
+              4'b0010: begin  // READ S#2
                 DBI <= {VDPCMDTR, VD, HD, VDPCMDBD, 2'b11, FIELD, VDPCMDCE};
               end
-              4'b0011: begin
-                // READ S#3
+              4'b0011: begin  // READ S#3
                 DBI <= VDPS3S4SPCOLLISIONX[7:0];
               end
-              4'b0100: begin
-                // READ S#4
+              4'b0100: begin  // READ S#4
                 DBI <= {7'b0000000, VDPS3S4SPCOLLISIONX[8]};
               end
-              4'b0101: begin
-                // READ S#5
+              4'b0101: begin  // READ S#5
                 DBI <= VDPS5S6SPCOLLISIONY[7:0];
               end
-              4'b0110: begin
-                // READ S#6
+              4'b0110: begin  // READ S#6
                 DBI <= {7'b0000000, VDPS5S6SPCOLLISIONY[8]};
               end
-              4'b0111: begin
-                // READ S#7: THE COLOR REGISTER
+              4'b0111: begin  // READ S#7: THE COLOR REGISTER
                 DBI <= VDPCMDCLR;
               end
-              4'b1000: begin
-                // READ S#8: SXTMP LSB
+              4'b1000: begin  // READ S#8: SXTMP LSB
                 DBI <= VDPCMDSXTMP[7:0];
               end
-              4'b1001: begin
-                // READ S#9: SXTMP MSB
+              4'b1001: begin  // READ S#9: SXTMP MSB
                 DBI <= {7'b1111111, VDPCMDSXTMP[8]};
               end
               default: begin
@@ -537,36 +496,30 @@ module VDP_REGISTER (
       VDPCMDREGDATA <= {8{1'b0}};
       VDPCMDREGWRREQ <= 1'b0;
       VDPCMDTRCLRREQ <= 1'b0;
+
       // PALETTE
       PALETTEDATARB_IN <= {8{1'b0}};
       PALETTEDATAG_IN <= {8{1'b0}};
       FF_PALETTE_WR_REQ <= 1'b0;
       PALETTEWRNUM <= {4{1'b0}};
     end else begin
-      if ((REQ == 1'b1 && WRT == 1'b0)) begin
-        // READ REQUEST
+      if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
         case (ADR[1:0])
-          2'b00: begin
-            // PORT#0 (0x98): READ VRAM
+          2'b00: begin  // PORT#0 (0x98): READ VRAM
             VDPVRAMRDREQ <= ~VDPVRAMRDACK;
           end
-          2'b01: begin
-            // PORT#1 (0x99): READ STATUS REGISTER
+          2'b01: begin  // PORT#1 (0x99): READ STATUS REGISTER
             VDPP1IS1STBYTE <= 1'b1;
             case (VDPR15STATUSREGNUM)
-              4'b0000: begin
-                // READ S#0
+              4'b0000: begin  // READ S#0
                 FF_SPVDPS0RESETREQ <= ~SPVDPS0RESETACK;
               end
-              4'b0001: begin
-                // READ S#1
+              4'b0001: begin  // READ S#1
               end
-              4'b0101: begin
-                // READ S#5
+              4'b0101: begin  // READ S#5
                 SPVDPS5RESETREQ <= ~SPVDPS5RESETACK;
               end
-              4'b0111: begin
-                // READ S#7: THE COLOR REGISTER
+              4'b0111: begin  // READ S#7: THE COLOR REGISTER
                 VDPCMDTRCLRREQ <= ~VDPCMDTRCLRACK;
               end
               default: begin
@@ -577,16 +530,13 @@ module VDP_REGISTER (
             // PORT#3: NOT SUPPORTED IN READ MODE
           end
         endcase
-      end else if ((REQ == 1'b1 && WRT == 1'b1)) begin
-        // WRITE REQUEST
+      end else if ((REQ == 1'b1 && WRT == 1'b1)) begin  // WRITE REQUEST
         case (ADR[1:0])
-          2'b00: begin
-            // PORT#0 (0x98): WRITE VRAM
+          2'b00: begin  // PORT#0 (0x98): WRITE VRAM
             VDPVRAMACCESSDATA <= DBO;
             VDPVRAMWRREQ <= ~VDPVRAMWRACK;
           end
-          2'b01: begin
-            // PORT#1 (0x99): REGISTER WRITE OR VRAM ADDR SETUP
+          2'b01: begin  // PORT#1 (0x99): REGISTER WRITE OR VRAM ADDR SETUP
             if ((VDPP1IS1STBYTE == 1'b1)) begin
               // IT IS THE FIRST BYTE; BUFFER IT
               VDPP1IS1STBYTE <= 1'b0;
@@ -623,14 +573,14 @@ module VDP_REGISTER (
               endcase
             end
           end
-          2'b10: begin
-            // PORT#2: PALETTE WRITE
+          2'b10: begin  // PORT#2: PALETTE WRITE
             if ((VDPP2IS1STBYTE == 1'b1)) begin
               PALETTEDATARB_IN <= DBO;
               VDPP2IS1STBYTE   <= 1'b0;
             end else begin
-              // パレットはRGBのデータが揃った時に一度に書き換える。
+              // パレットはrgbのデータが揃った時に一度に書き換える。
               // (実機で動作を確認した)
+              // (The palette is rewritten all at once when the rgb data is ready. Confirmed operation on the actual machine)
               PALETTEDATAG_IN <= DBO;
               PALETTEWRNUM <= VDPR16PALNUM;
               FF_PALETTE_WR_REQ <= ~FF_PALETTE_WR_ACK;
@@ -638,8 +588,7 @@ module VDP_REGISTER (
               VDPR16PALNUM <= VDPR16PALNUM + 1;
             end
           end
-          2'b11: begin
-            // PORT#3: INDIRECT REGISTER WRITE
+          2'b11: begin  // PORT#3: INDIRECT REGISTER WRITE
             if ((VDPR17REGNUM != 6'b010001)) begin
               // REGISTER 17 CAN NOT BE MODIFIED. ALL OTHERS ARE OK
               VDPREGWRPULSE <= 1'b1;
@@ -659,13 +608,11 @@ module VDP_REGISTER (
         if ((VDPREGPTR[5] == 1'b0)) begin
           // IT IS A NOT A COMMAND ENGINE REGISTER:
           case (VDPREGPTR[4:0])
-            5'b00000: begin
-              // #00
+            5'b00000: begin  // #00
               FF_R0_DISP_MODE <= VDPP1DATA[3:1];
               REG_R0_HSYNC_INT_EN <= VDPP1DATA[4];
             end
-            5'b00001: begin
-              // #01
+            5'b00001: begin  // #01
               REG_R1_SP_ZOOM <= VDPP1DATA[0];
               REG_R1_SP_SIZE <= VDPP1DATA[1];
               REG_R1_BL_CLKS <= VDPP1DATA[2];
@@ -673,92 +620,72 @@ module VDP_REGISTER (
               REG_R1_VSYNC_INT_EN <= VDPP1DATA[5];
               FF_R1_DISP_ON <= VDPP1DATA[6];
             end
-            5'b00010: begin
-              // #02
+            5'b00010: begin  // #02
               FF_R2_PT_NAM_ADDR <= VDPP1DATA[6:0];
             end
-            5'b00011: begin
-              // #03
+            5'b00011: begin  // #03
               REG_R10R3_COL_ADDR[7:0] <= VDPP1DATA[7:0];
             end
-            5'b00100: begin
-              // #04
+            5'b00100: begin  // #04
               REG_R4_PT_GEN_ADDR <= VDPP1DATA[5:0];
             end
-            5'b00101: begin
-              // #05
+            5'b00101: begin  // #05
               REG_R11R5_SP_ATR_ADDR[7:0] <= VDPP1DATA;
             end
-            5'b00110: begin
-              // #06
+            5'b00110: begin  // #06
               REG_R6_SP_GEN_ADDR <= VDPP1DATA[5:0];
             end
-            5'b00111: begin
-              // #07
+            5'b00111: begin  // #07
               REG_R7_FRAME_COL <= VDPP1DATA[7:0];
             end
-            5'b01000: begin
-              // #08
+            5'b01000: begin  // #08
               REG_R8_SP_OFF  <= VDPP1DATA[1];
               REG_R8_COL0_ON <= VDPP1DATA[5];
             end
-            5'b01001: begin
-              // #09
+            5'b01001: begin  // #09
               REG_R9_PAL_MODE <= VDPP1DATA[1];
               FF_R9_2PAGE_MODE <= VDPP1DATA[2];
               REG_R9_INTERLACE_MODE <= VDPP1DATA[3];
               REG_R9_Y_DOTS <= VDPP1DATA[7];
             end
-            5'b01010: begin
-              // #10
+            5'b01010: begin  // #10
               REG_R10R3_COL_ADDR[10:8] <= VDPP1DATA[2:0];
             end
-            5'b01011: begin
-              // #11
+            5'b01011: begin  // #11
               REG_R11R5_SP_ATR_ADDR[9:8] <= VDPP1DATA[1:0];
             end
-            5'b01100: begin
-              // #12
+            5'b01100: begin  // #12
               REG_R12_BLINK_MODE <= VDPP1DATA;
             end
-            5'b01101: begin
-              // #13
+            5'b01101: begin  // #13
               REG_R13_BLINK_PERIOD <= VDPP1DATA;
             end
-            5'b01110: begin
-              // #14
+            5'b01110: begin  // #14
               VDPVRAMACCESSADDRTMP[16:14] <= VDPP1DATA[2:0];
               VDPVRAMADDRSETREQ <= ~VDPVRAMADDRSETACK;
             end
-            5'b01111: begin
-              // #15
+            5'b01111: begin  // #15
               VDPR15STATUSREGNUM <= VDPP1DATA[3:0];
             end
-            5'b10000: begin
-              // #16
+            5'b10000: begin  // #16
               VDPR16PALNUM   <= VDPP1DATA[3:0];
               VDPP2IS1STBYTE <= 1'b1;
             end
-            5'b10001: begin
-              // #17
+            5'b10001: begin  // #17
               VDPR17REGNUM <= VDPP1DATA[5:0];
               VDPR17INCREGNUM <= ~VDPP1DATA[7];
             end
-            5'b10010: begin
-              // #18
+            5'b10010: begin  // #18
               REG_R18_VERT <= VDPP1DATA[7:4];
               REG_R18_HORZ <= VDPP1DATA[3:0];
             end
-            5'b10011: begin
-              // #19
+            5'b10011: begin  // #19
               REG_R19_HSYNC_INT_LINE <= VDPP1DATA;
             end
-            5'b10111: begin
-              // #23
+            5'b10111: begin  // #23
               REG_R23_VSTART_LINE <= VDPP1DATA;
             end
-            5'b11001: begin
-              // #25
+            5'b11001: begin  // #25
               if ((VDP_ID != 5'b00000)) begin
                 REG_R25_CMD <= VDPP1DATA[6];
                 REG_R25_YAE <= VDPP1DATA[4];
@@ -767,14 +694,12 @@ module VDP_REGISTER (
                 FF_R25_SP2  <= VDPP1DATA[0];
               end
             end
-            5'b11010: begin
-              // #26
+            5'b11010: begin  // #26
               if ((VDP_ID != 5'b00000)) begin
                 FF_R26_H_SCROLL <= VDPP1DATA[5:0];
               end
             end
-            5'b11011: begin
-              // #27
+            5'b11011: begin  // #27
               if ((VDP_ID != 5'b00000)) begin
                 REG_R27_H_SCROLL <= VDPP1DATA[2:0];
               end
@@ -791,6 +716,5 @@ module VDP_REGISTER (
       end
     end
   end
-
 
 endmodule
