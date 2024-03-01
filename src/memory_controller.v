@@ -69,7 +69,9 @@ module memory_controller #(
       .SDRAM_nCAS(SDRAM_nCAS),
       .SDRAM_CLK(SDRAM_CLK),
       .SDRAM_CKE(SDRAM_CKE),
-      .SDRAM_DQM(SDRAM_DQM)
+      .SDRAM_DQM(SDRAM_DQM),
+
+      .dout32()
   );
 
   always @(posedge clk or negedge resetn) begin
