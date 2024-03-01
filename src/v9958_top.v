@@ -122,7 +122,7 @@ module v9958_top(
     );
 
     reg s1_n = 0;
-    always @(posedge clk_w) s1_n <= ~s1;
+    always_ff @(posedge clk_w) s1_n <= ~s1;
 
     BUFG rst_bufg_inst(
     .O(rst_n),

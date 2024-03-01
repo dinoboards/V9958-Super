@@ -48,7 +48,7 @@ wire [MSBI + 6:0] W_MUL5;
 wire [MSBI + 1:0] W_OUT;
 
   // 遅延ライン (Delay line)
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if((RESET == 1'b1)) begin
       FF_D2 <= {((MSBI)-(0)+1){1'b0}};
       FF_D1 <= {((MSBI)-(0)+1){1'b0}};
@@ -61,7 +61,7 @@ wire [MSBI + 1:0] W_OUT;
   end
 
   // 補間係数 (Interpolation coefficient)
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if((RESET == 1'b1)) begin
       FF_WEIGHT <= {3{1'b0}};
     end else begin
@@ -91,7 +91,7 @@ wire [MSBI + 1:0] W_OUT;
   assign W_MUL5 = ({W_OFF,2'b00}) + ({W_OFF[MSBI + 4],W_OFF[MSBI + 4],W_OFF});
   assign W_OUT = ({1'b0,FF_D1}) + W_MUL5[(MSBI + 6):5];
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if((RESET == 1'b1)) begin
       ODATA <= {((MSBI)-(0)+1){1'b0}};
     end else begin

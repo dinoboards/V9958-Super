@@ -143,7 +143,7 @@ module VDP_COLORDEC (
   assign W_EVEN_DOTSTATE = (DOTSTATE == 2'b00 || DOTSTATE == 2'b11) ? 1'b1 : 1'b0;
 
   // OUTPUT DATA LATCH
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_VIDEO_R <= 6'b000000;
       FF_VIDEO_G <= 6'b000000;

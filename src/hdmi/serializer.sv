@@ -61,7 +61,7 @@ module serializer
 
             // this is requried for OSERDESE2 to work
             logic internal_reset = 1'b1;
-            always @(posedge clk_pixel)
+            always_ff @(posedge clk_pixel)
             begin
                 internal_reset <= 1'b0;
             end

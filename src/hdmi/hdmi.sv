@@ -358,7 +358,6 @@ generate
 endgenerate
 
 // All logic below relates to the production and output of the 10-bit TMDS code.
-logic [9:0] tmds_channels [NUM_CHANNELS-1:0] /* verilator public_flat */ ;
 genvar i;
 generate
     // TMDS code production.
