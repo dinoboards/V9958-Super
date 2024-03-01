@@ -1,5 +1,7 @@
 `define GW_IDE
 
+`include "vdp_constants.vh"
+
 module v9958_top(
     output  led5_n,
     output  led4_n,
@@ -49,72 +51,69 @@ module v9958_top(
     output [10:0] O_sdram_addr,     // 11 bit multiplexed address bus
     output [1:0] O_sdram_ba,        // two banks
     output [3:0] O_sdram_dqm       // 32/4
+  );
 
+  localparam CLKFRQ = 27000;
+  localparam AUDIO_RATE=44100;
+  localparam AUDIO_BIT_WIDTH = 16;
+  localparam NUM_CHANNELS = 3;
 
-    );
+  wire    addr;
+  wire    csw_n;
+  wire    csr_n;
 
-    localparam CLKFRQ = 27000;
-    localparam AUDIO_RATE=44100;
-    localparam AUDIO_BIT_WIDTH = 16;
-    localparam NUM_CHANNELS = 3;
+  assign ADDR = A7 & ~A6 & ~A5 & A4 & A3 & ~A2;   // $98 TO $9B
+  assign cs_n = !(ADDR & (!iorq_n));
 
-    wire    addr;
-    wire    csw_n;
-    wire    csr_n;
-
-    assign ADDR = A7 & ~A6 & ~A5 & A4 & A3 & ~A2;   // $98 TO $9B
-    assign cs_n = !(ADDR & (!iorq_n));
-
-    assign csw_n = !((!cs_n) & (!wr_n));
-    assign csr_n = !((!cs_n) & (!rd_n));
+  assign csw_n = !((!cs_n) & (!wr_n));
+  assign csr_n = !((!cs_n) & (!rd_n));
 
 // VDP signals
-	wire			VdpReq;
-	wire	[7:0]	VdpDbi;
-	wire			VideoSC;
-	wire			VideoDLClk;
-	wire			VideoDHClk;
-	wire			WeVdp_n;
-    wire            ReVdp_n;
-	wire	[16:0]	VdpAdr;
-	wire	[7:0]	VrmDbo;
-	wire	[15:0]	VrmDbi;
-	wire			pVdpInt_n;
-	wire	[4:0]	VDP_ID;
-	wire	[6:0]	OFFSET_Y;
-    wire            blank_o;
+  wire          VdpReq;
+  wire  [7:0]   VdpDbi;
+  wire          VideoSC;
+  wire          VideoDLClk;
+  wire          VideoDHClk;
+  wire          WeVdp_n;
+  wire          ReVdp_n;
+  wire  [16:0]  VdpAdr;
+  wire  [7:0]   VrmDbo;
+  wire  [15:0]  VrmDbi;
+  wire          pVdpInt_n;
+  wire  [4:0]  VDP_ID;
+  wire            blank_o;
 
-    wire            r9palmode;
+  wire            r9palmode;
 
-	// Video signals
-	wire	[5:0]	VideoR;								// RGB Red
-	wire	[5:0]	VideoG;								// RGB Green
-	wire	[5:0]	VideoB;								// RGB Blue
-	wire			VideoHS_n;							// Horizontal Sync
-	wire			VideoVS_n;							// Vertical Sync
-	wire			VideoCS_n;							// Composite Sync
+  // Video signals
+  wire  [5:0]  VideoR;            // RGB Red
+  wire  [5:0]  VideoG;            // RGB Green
+  wire  [5:0]  VideoB;            // RGB Blue
+  wire    VideoHS_n;          // Horizontal Sync
+  wire    VideoVS_n;          // Vertical Sync
+  wire    VideoCS_n;          // Composite Sync
 
-    wire            scanlin;
-    wire            reset_n_w;
+  wire            scanlin;
+  wire            reset_n_w;
 
 
-    wire clk_bufg;
+  wire clk_bufg;
 
-    wire clk_135_w;
-    wire clk_135_lock_w;
+  wire clk_135_w;
+  wire clk_135_lock_w;
 
-    wire clk_sdram_w;
-    wire clk_sdramp_w;
-    wire clk_sdram_lock_w;
+  wire clk_sdram_w;
+  wire clk_sdramp_w;
+  wire clk_sdram_lock_w;
 
-    logic [9:0] cy;
-    logic [9:0] cx;
+  logic [9:0] cy;
+  logic [9:0] cx;
 
-    wire clk_w;
-    BUFG clk_bufg_inst(
-    .O(clk_w),
-    .I(clk)
-    );
+  wire clk_w;
+  BUFG clk_bufg_inst(
+  .O(clk_w),
+  .I(clk)
+  );
 
     wire clk_50_w;
     BUFG clk_50_bufg_inst(
@@ -146,11 +145,11 @@ module v9958_top(
     assign rst_n_w = rst_n & clk_135_lock_w & clk_sdram_lock_w;
 
     CLK_108P clk_sdramp_inst (
-        .clkout(clk_sdram), //output clkout
-        .lock(clk_sdram_lock_w), //output lock
-        .clkoutp(clk_sdramp), //output clkoutp
-        .reset(~rst_n), //input reset
-        .clkin(clk) //input clkin
+      .clkout(clk_sdram), //output clkout
+      .lock(clk_sdram_lock_w), //output lock
+      .clkoutp(clk_sdramp), //output clkoutp
+      .reset(~rst_n), //input reset
+      .clkin(clk) //input clkin
     );
 
     BUFG clk_sdram_bufg_inst(
@@ -168,57 +167,59 @@ module v9958_top(
 
     wire ram_busy, ram_fail;
 
-      wire [19:0] ram_total_written;
-      wire ram_enabled;
-      memory_controller #(.FREQ(108_000_000) )
-       vram(.clk(clk_sdramp_w),
-            .clk_sdram(clk_sdram_w),
-            .resetn(reset_n_w),
-            .read(WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
-            .write(~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
-            .refresh(~VideoDLClk & ~VideoDHClk & ~ram_busy),
-            .addr({ 5'b0 , VdpAdr[15:0] } ),
-            .din({ VrmDbo, VrmDbo }),
-            .wdm({ ~VdpAdr[16], VdpAdr[16] }),
-            .dout(VrmDbi),
-            .busy(ram_busy),
-            .fail(ram_fail),
-            .total_written(ram_total_written),
-            .enabled(ram_enabled),
+    wire [19:0] ram_total_written;
+    wire ram_enabled;
 
-            .SDRAM_DQ(IO_sdram_dq), .SDRAM_A(O_sdram_addr), .SDRAM_BA(O_sdram_ba), .SDRAM_nCS(O_sdram_cs_n),
-            .SDRAM_nWE(O_sdram_wen_n), .SDRAM_nRAS(O_sdram_ras_n), .SDRAM_nCAS(O_sdram_cas_n),
-            .SDRAM_CLK(O_sdram_clk), .SDRAM_CKE(O_sdram_cke), .SDRAM_DQM(O_sdram_dqm)
+    memory_controller #(
+      .FREQ(108_000_000)
+    )
+    vram(
+      .clk(clk_sdramp_w),
+      .clk_sdram(clk_sdram_w),
+      .resetn(reset_n_w),
+      .read(WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
+      .write(~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
+      .refresh(~VideoDLClk & ~VideoDHClk & ~ram_busy),
+      .addr({ 5'b0 , VdpAdr[15:0] } ),
+      .din({ VrmDbo, VrmDbo }),
+      .wdm({ ~VdpAdr[16], VdpAdr[16] }),
+      .dout(VrmDbi),
+      .busy(ram_busy),
+      .fail(ram_fail),
+      .total_written(ram_total_written),
+      .enabled(ram_enabled),
+
+      .SDRAM_DQ(IO_sdram_dq), .SDRAM_A(O_sdram_addr), .SDRAM_BA(O_sdram_ba), .SDRAM_nCS(O_sdram_cs_n),
+      .SDRAM_nWE(O_sdram_wen_n), .SDRAM_nRAS(O_sdram_ras_n), .SDRAM_nCAS(O_sdram_cas_n),
+      .SDRAM_CLK(O_sdram_clk), .SDRAM_CKE(O_sdram_cke), .SDRAM_DQM(O_sdram_dqm)
     );
 
 
-	// Internal bus signals (common)
+  // Internal bus signals (common)
 
-    reg io_state_r = 1'b0;
-    reg [1:0] cs_latch;
- 	wire [7:0]	CpuDbi;
+  reg io_state_r = 1'b0;
+  reg [1:0] cs_latch;
+   wire [7:0]  CpuDbi;
 
-    reg [1:0] csr_sync_r;
-    reg [1:0] csw_sync_r;
-    wire csr_next;
-    wire csw_next;
-    reg csrn_sdram_r;
-    reg cswn_sdram_r;
+  reg [1:0] csr_sync_r;
+  reg [1:0] csw_sync_r;
+  wire csr_next;
+  wire csw_next;
+  reg csrn_sdram_r;
+  reg cswn_sdram_r;
 
+  assign cd = csr_n == 0 ? CpuDbi : 8'bzzzzzzzz;
 
-    assign cd = csr_n == 0 ? CpuDbi : 8'bzzzzzzzz;
+  assign VDP_ID  =  5'b00010; // V9958
+  assign scanlin = 1'b0;
 
-    assign VDP_ID  =  5'b00010; // V9958
-    assign OFFSET_Y = 6'd16;
-    assign scanlin = 1'b0;
-
-    wire cswn_w;
-    PINFILTER cswn_filter (
-        .clk(clk_sdram_w),
-        .reset_n(reset_n_w),
-        .din(csw_n),
-        .dout(cswn_w)
-    );
+  wire cswn_w;
+  PINFILTER cswn_filter (
+      .clk(clk_sdram_w),
+      .reset_n(reset_n_w),
+      .din(csw_n),
+      .dout(cswn_w)
+  );
 
     wire csrn_w;
     PINFILTER csrn_filter (
@@ -228,9 +229,9 @@ module v9958_top(
         .dout(csrn_w)
     );
 
-	reg			    CpuReq;
-	reg 			CpuWrt;
-	reg   	[15:0]	CpuAdr;
+  reg        CpuReq;
+  reg     CpuWrt;
+  reg     [15:0]  CpuAdr;
     reg     [7:0]   CpuDbo;
 
      always @(posedge clk_w or negedge reset_n_w) begin
@@ -272,46 +273,45 @@ module v9958_top(
     wire [10:0] vdp_cx;
     wire [10:0] vdp_cy;
     VDP u_v9958 (
-		.CLK21M				( clk_w         					),
-		.RESET				( reset_w | ~ram_enabled       		),
-		.REQ				( CpuReq 							),
-		.ACK				( 									),
-		.WRT				( CpuWrt							),
-		.ADR				( CpuAdr							),
-		.DBI				( CpuDbi   							),
-		.DBO				( CpuDbo   						    ),
-		.INT_N				( pVdpInt_n							),
-		.PRAMOE_N			( ReVdp_n							),
-		.PRAMWE_N			( WeVdp_n							),
-		.PRAMADR			( VdpAdr							),
-		.PRAMDBI			( VrmDbi							),
-		.PRAMDBO			( VrmDbo							),
-		.VDPSPEEDMODE		( 1'b0                              ),	// for V9958 MSX2+/tR VDP
-		.RATIOMODE			( 3'b000						    ),	// for V9958 MSX2+/tR VDP
-		.CENTERYJK_R25_N 	( 1'b0          					),	// for V9958 MSX2+/tR VDP
-		.PVIDEOR			( VideoR							),
-		.PVIDEOG			( VideoG							),
-		.PVIDEOB			( VideoB							),
-		.PVIDEOHS_N			( VideoHS_n							),
-		.PVIDEOVS_N			( VideoVS_n							),
-		.PVIDEOCS_N			( VideoCS_n							),
-		.PVIDEODHCLK		( VideoDHClk						),
-		.PVIDEODLCLK		( VideoDLClk						),
-		.BLANK_o			( blank_o							),
-		.DISPRESO			( 1'b1      				        ),  // VGA 31Khz
-		.NTSC_PAL_TYPE		( 1'b1      						),
-		.LEGACY_VGA			( 1'b0      						),
-		.VDP_ID				( VDP_ID							),
-		.OFFSET_Y			( OFFSET_Y							),
-        .PAL_MODE           ( pal_mode                          ),
-        .SPMAXSPR           ( 1'b0                              ),
-        .CX                 ( vdp_cx                            ),
-        .CY                 ( vdp_cy                            )
-	);
+    .CLK21M      ( clk_w                 ),
+    .RESET      ( reset_w | ~ram_enabled           ),
+    .REQ      ( CpuReq           ),
+    .ACK      (             ),
+    .WRT      ( CpuWrt          ),
+    .ADR      ( CpuAdr          ),
+    .DBI      ( CpuDbi             ),
+    .DBO      ( CpuDbo               ),
+    .INT_N      ( pVdpInt_n          ),
+    .PRAMOE_N    ( ReVdp_n          ),
+    .PRAMWE_N    ( WeVdp_n          ),
+    .PRAMADR    ( VdpAdr          ),
+    .PRAMDBI    ( VrmDbi          ),
+    .PRAMDBO    ( VrmDbo          ),
+    .VDPSPEEDMODE    ( 1'b0                              ),  // for V9958 MSX2+/tR VDP
+    .RATIOMODE    ( 3'b000            ),  // for V9958 MSX2+/tR VDP
+    .CENTERYJK_R25_N   ( 1'b0                  ),  // for V9958 MSX2+/tR VDP
+    .PVIDEOR    ( VideoR          ),
+    .PVIDEOG    ( VideoG          ),
+    .PVIDEOB    ( VideoB          ),
+    .PVIDEOHS_N    ( VideoHS_n          ),
+    .PVIDEOVS_N    ( VideoVS_n          ),
+    .PVIDEOCS_N    ( VideoCS_n          ),
+    .PVIDEODHCLK    ( VideoDHClk        ),
+    .PVIDEODLCLK    ( VideoDLClk        ),
+    .BLANK_o    ( blank_o          ),
+    .DISPRESO    ( 1'b1                    ),  // VGA 31Khz
+    .NTSC_PAL_TYPE    ( 1'b1              ),
+    .LEGACY_VGA    ( 1'b0              ),
+    .VDP_ID      ( VDP_ID          ),
+    .PAL_MODE           ( pal_mode                          ),
+    .SPMAXSPR           ( 1'b0                              ),
+    .CX                 ( vdp_cx                            ),
+    .CY                 ( vdp_cy                            )
+  );
 
-	//--------------------------------------------------------------
-	// Video output
-	//--------------------------------------------------------------
+  //--------------------------------------------------------------
+  // Video output
+  //--------------------------------------------------------------
 
 
     wire [7:0] dvi_r;
@@ -329,8 +329,6 @@ module v9958_top(
 
     reg ff_video_reset;
 
-    localparam NTSC_Y = 525-45;
-    localparam PAL_Y  = 625-60;
     logic [9:0] cy_ntsc;
     logic [9:0] cx_ntsc;
     logic [9:0] cy_pal;
@@ -344,8 +342,8 @@ module v9958_top(
         ff_video_reset <= 1'b0;
 
         if (vdp_cx == 11'd0 && vdp_cy == 11'd0) begin
-            if ((pal_mode == 1'b0 && (cx_ntsc != 10'd0 || cy_ntsc != NTSC_Y)) ||
-                (pal_mode == 1'b1 && (cx_pal != 10'd0 || cy_pal != PAL_Y)))
+            if ((pal_mode == 1'b0 && (cx_ntsc != 10'd0 || cy_ntsc != `NTSC_Y)) ||
+                (pal_mode == 1'b1 && (cx_pal != 10'd0 || cy_pal != `PAL_Y)))
                 ff_video_reset <= 1'b1;
         end
     end
@@ -396,7 +394,7 @@ module v9958_top(
             .PRODUCT_DESCRIPTION({"FPGA", 96'd0}), // Must be 16 bytes null-padded 7-bit ASCII
             .SOURCE_DEVICE_INFORMATION(8'h00), // See README.md or CTA-861-G for the list of valid codes
             .START_X(0),
-            .START_Y(NTSC_Y) //(525-49),
+            .START_Y(`NTSC_Y)
             )
 
     hdmi_ntsc ( .clk_pixel_x5(clk_135_w),
@@ -420,7 +418,7 @@ module v9958_top(
             .PRODUCT_DESCRIPTION({"FPGA", 96'd0}), // Must be 16 bytes null-padded 7-bit ASCII
             .SOURCE_DEVICE_INFORMATION(8'h00), // See README.md or CTA-861-G for the list of valid codes
             .START_X(0), //(0),
-            .START_Y(PAL_Y) //(147),
+            .START_Y(`PAL_Y) //(147),
             )
 
     hdmi_pal ( .clk_pixel_x5(clk_135_w),
@@ -463,19 +461,19 @@ module v9958_top(
     wire sck_enable;
     wire [11:0] audio_sample;
     SPI_MCP3202 #(
-	.SGL(1),        // sets ADC to single ended mode
-	.ODD(0)         // sets sample input to channel 0
-	)
+  .SGL(1),        // sets ADC to single ended mode
+  .ODD(0)         // sets sample input to channel 0
+  )
     SPI_MCP3202 (
-	.clk(clk_135_w),                 // 125  MHz
-	.EN(reset_n_w),                  // Enable the SPI core (ACTIVE HIGH)
-	.MISO(adc_miso),                // data out of ADC (Dout pin)
-	.MOSI(adc_mosi),               // Data into ADC (Din pin)
+  .clk(clk_135_w),                 // 125  MHz
+  .EN(reset_n_w),                  // Enable the SPI core (ACTIVE HIGH)
+  .MISO(adc_miso),                // data out of ADC (Dout pin)
+  .MOSI(adc_mosi),               // Data into ADC (Din pin)
     .SCK_ENABLE(sck_enable),
-	.o_DATA(audio_sample),      // 12 bit word (for other modules)
+  .o_DATA(audio_sample),      // 12 bit word (for other modules)
     .CS(adc_cs),                 // Chip Select
-	.DATA_VALID(sample_valid)          // is high when there is a full 12 bit word.
-	);
+  .DATA_VALID(sample_valid)          // is high when there is a full 12 bit word.
+  );
 
     localparam SCKCLK_SRCFRQ = 135.0;
     localparam SCKCLK_FRQ = 0.9;

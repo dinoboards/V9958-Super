@@ -73,7 +73,6 @@ module VDP_HVCOUNTER (
     input wire PAL_MODE,
     input wire INTERLACE_MODE,
     input wire Y212_MODE,
-    input wire [6:0] OFFSET_Y,
     input wire BLANKING_START,
     input wire BLANKING_END
 );
