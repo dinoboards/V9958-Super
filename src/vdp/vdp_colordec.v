@@ -171,25 +171,25 @@ module VDP_COLORDEC (
   end
 
   // FOR GRAPHIC7
-  always @(*) begin
+  always_comb  begin
     case (COLORCODESPRITE)
-      4'b0000: W_GRP7_SPRITE_COLOR <= {3'b000, 3'b000, 2'b00};
-      4'b0001: W_GRP7_SPRITE_COLOR <= {3'b000, 3'b000, 2'b01};
-      4'b0010: W_GRP7_SPRITE_COLOR <= {3'b000, 3'b011, 2'b00};
-      4'b0011: W_GRP7_SPRITE_COLOR <= {3'b000, 3'b011, 2'b01};
-      4'b0100: W_GRP7_SPRITE_COLOR <= {3'b011, 3'b000, 2'b00};
-      4'b0101: W_GRP7_SPRITE_COLOR <= {3'b011, 3'b000, 2'b01};
-      4'b0110: W_GRP7_SPRITE_COLOR <= {3'b011, 3'b011, 2'b00};
-      4'b0111: W_GRP7_SPRITE_COLOR <= {3'b011, 3'b011, 2'b01};
-      4'b1000: W_GRP7_SPRITE_COLOR <= {3'b100, 3'b111, 2'b01};
-      4'b1001: W_GRP7_SPRITE_COLOR <= {3'b000, 3'b000, 2'b11};
-      4'b1010: W_GRP7_SPRITE_COLOR <= {3'b000, 3'b111, 2'b00};
-      4'b1011: W_GRP7_SPRITE_COLOR <= {3'b000, 3'b111, 2'b11};
-      4'b1100: W_GRP7_SPRITE_COLOR <= {3'b111, 3'b000, 2'b00};
-      4'b1101: W_GRP7_SPRITE_COLOR <= {3'b111, 3'b000, 2'b11};
-      4'b1110: W_GRP7_SPRITE_COLOR <= {3'b111, 3'b111, 2'b00};
-      4'b1111: W_GRP7_SPRITE_COLOR <= {3'b111, 3'b111, 2'b11};
-      default: W_GRP7_SPRITE_COLOR <= {8{1'b0}};
+      4'b0000: W_GRP7_SPRITE_COLOR = {3'b000, 3'b000, 2'b00};
+      4'b0001: W_GRP7_SPRITE_COLOR = {3'b000, 3'b000, 2'b01};
+      4'b0010: W_GRP7_SPRITE_COLOR = {3'b000, 3'b011, 2'b00};
+      4'b0011: W_GRP7_SPRITE_COLOR = {3'b000, 3'b011, 2'b01};
+      4'b0100: W_GRP7_SPRITE_COLOR = {3'b011, 3'b000, 2'b00};
+      4'b0101: W_GRP7_SPRITE_COLOR = {3'b011, 3'b000, 2'b01};
+      4'b0110: W_GRP7_SPRITE_COLOR = {3'b011, 3'b011, 2'b00};
+      4'b0111: W_GRP7_SPRITE_COLOR = {3'b011, 3'b011, 2'b01};
+      4'b1000: W_GRP7_SPRITE_COLOR = {3'b100, 3'b111, 2'b01};
+      4'b1001: W_GRP7_SPRITE_COLOR = {3'b000, 3'b000, 2'b11};
+      4'b1010: W_GRP7_SPRITE_COLOR = {3'b000, 3'b111, 2'b00};
+      4'b1011: W_GRP7_SPRITE_COLOR = {3'b000, 3'b111, 2'b11};
+      4'b1100: W_GRP7_SPRITE_COLOR = {3'b111, 3'b000, 2'b00};
+      4'b1101: W_GRP7_SPRITE_COLOR = {3'b111, 3'b000, 2'b11};
+      4'b1110: W_GRP7_SPRITE_COLOR = {3'b111, 3'b111, 2'b00};
+      4'b1111: W_GRP7_SPRITE_COLOR = {3'b111, 3'b111, 2'b11};
+      default: W_GRP7_SPRITE_COLOR = {8{1'b0}};
     endcase
   end
 
