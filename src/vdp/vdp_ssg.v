@@ -328,7 +328,9 @@ module VDP_SSG (
   // Y
   //---------------------------------------------------------------------------
   assign W_HSYNC = (W_H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
+
   assign W_Y_ADJ = {REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7:4]};
+
   always_ff @(posedge CLK21M, posedge RESET) begin : P1
     reg [8:0] PREDOTCOUNTER_YP_V;
     reg [8:0] PREDOTCOUNTERYPSTART;
@@ -382,13 +384,18 @@ module VDP_SSG (
   // -----------------------------------------------------------------------------
   assign W_LINE_MODE = {REG_R9_Y_DOTS, VDPR9PALMODE};
 
+  // take the screen height as set by RG_R9_Y_DOTS(LN), and NTSC/PAL and get a intra start line
   assign W_V_SYNC_INTR_START_LINE = (W_LINE_MODE == 2'b00) ? (9'd192 + `OFFSET_Y + `LED_TV_Y_NTSC) :
-                                    (W_LINE_MODE == 2'b10) ? (9'd212 + `OFFSET_Y + `LED_TV_Y_NTSC) :
-                                    (W_LINE_MODE == 2'b01) ? (9'd192 + `OFFSET_Y + `LED_TV_Y_PAL) :
-                                    (W_LINE_MODE == 2'b11) ? (9'd212 + `OFFSET_Y + `LED_TV_Y_PAL) :
-                                    9'bxxxxxxxxx;
+      (W_LINE_MODE == 2'b10) ? (9'd212 + `OFFSET_Y + `LED_TV_Y_NTSC) :
+      (W_LINE_MODE == 2'b01) ? (9'd192 + `OFFSET_Y + `LED_TV_Y_PAL) :
+      (W_LINE_MODE == 2'b11) ? (9'd212 + `OFFSET_Y + `LED_TV_Y_PAL) :
+      9'bxxxxxxxxx;
 
-  assign W_V_BLANKING_END = ((W_V_CNT_IN_FIELD == ({2'b00,`OFFSET_Y + `LED_TV_Y_NTSC,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b0) || (W_V_CNT_IN_FIELD == ({2'b00,`OFFSET_Y + `LED_TV_Y_PAL,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
+  wire [9:0] v_blanking_end_ntsc = ({2'b00, `OFFSET_Y + `LED_TV_Y_NTSC, W_FIELD & REG_R9_INTERLACE_MODE});
+  wire [9:0] v_blanking_end_pal = ({2'b00, `OFFSET_Y + `LED_TV_Y_PAL, W_FIELD & REG_R9_INTERLACE_MODE});
+  assign W_V_BLANKING_END = ((W_V_CNT_IN_FIELD == v_blanking_end_ntsc && VDPR9PALMODE == 1'b0) || (W_V_CNT_IN_FIELD == v_blanking_end_pal && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
+
+
   assign W_V_BLANKING_START = ((W_V_CNT_IN_FIELD == ({W_V_SYNC_INTR_START_LINE + FF_TOP_BORDER_LINES,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b0) || (W_V_CNT_IN_FIELD == ({W_V_SYNC_INTR_START_LINE + FF_TOP_BORDER_LINES,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
 
 endmodule
