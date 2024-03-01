@@ -244,12 +244,14 @@ module VDP_COMMAND (
       VDPVRAMACCESSY = {1{1'b0}};
       VDPVRAMACCESSX = {1{1'b0}};
       VRAMACCESSADDR <= {17{1'b0}};
+
     end else begin
       if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1))) begin
         GRAPHIC4_OR_6 = 1'b1;
       end else begin
         GRAPHIC4_OR_6 = 1'b0;
       end
+
       case (CMR[7:6])
         2'b11: begin
           // BYTE COMMAND
@@ -261,6 +263,7 @@ module VDP_COMMAND (
             end else begin
               XCOUNTDELTA = 11'b11111111110;  // -2
             end
+
           end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
             // GRAPHIC5 (SCREEN 6)
             NXCOUNT = {2'b00, NX[9:2]};
@@ -269,6 +272,7 @@ module VDP_COMMAND (
             end else begin
               XCOUNTDELTA = 11'b11111111100;  // -4;
             end
+
           end else begin
             // GRAPHIC7 (SCREEN 8) AND OTHER
             NXCOUNT = NX;
@@ -280,6 +284,7 @@ module VDP_COMMAND (
           end
           COLMASK = {1{1'b1}};
         end
+
         default: begin
           // DOT COMMAND
           NXCOUNT = NX;
@@ -297,17 +302,20 @@ module VDP_COMMAND (
           end
         end
       endcase
+
       if ((DIY == 1'b0)) begin
         YCOUNTDELTA = 10'b0000000001;
       end else begin
         YCOUNTDELTA = 10'b1111111111;
       end
+
       if ((VDPMODEISHIGHRES == 1'b1)) begin
         // GRAPHIC 5,6 (SCREEN 6, 7)
         MAXXMASK = 2'b10;
       end else begin
         MAXXMASK = 2'b01;
       end
+
       // DETERMINE IF X-LOOP IS FINISHED
       case (CMR[7:4])
         HMMV, HMMC, LMMV, LMMC: begin
@@ -349,6 +357,7 @@ module VDP_COMMAND (
           NXLOOPEND = 1'b1;
         end
       endcase
+
       // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
       if ((GRAPHIC4_OR_6 == 1'b1)) begin
         // SCREEN 5, 7
@@ -357,6 +366,7 @@ module VDP_COMMAND (
         end else begin
           RDPOINT = {4'b0000, VRAMRDDATA[3:0]};
         end
+
       end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
         // SCREEN 6
         case (RDXLOW)
@@ -379,6 +389,7 @@ module VDP_COMMAND (
         // SCREEN 8 AND OTHER MODES
         RDPOINT = VRAMRDDATA;
       end
+
       // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
       // ON THE POINT TO BE WRITTEN.
       if (((CMR[3] == 1'b0) || ((VRAMWRDATA & COLMASK) != 8'b00000000))) begin
@@ -405,6 +416,7 @@ module VDP_COMMAND (
       end else begin
         LOGOPDESTCOL = RDPOINT;
       end
+
       // PROCESS REGISTER UPDATE REQUEST, CLEAR 'TRANSFER READY' REQUEST
       // OR PROCESS ANY ONGOING COMMAND.
       if ((REGWRREQ != REGWRACK)) begin
@@ -472,10 +484,12 @@ module VDP_COMMAND (
           default: begin
           end
         endcase
+
       end else if ((TRCLRREQ != TRCLRACK)) begin
         // RESET THE DATA TRANSFER REGISTER (CPU HAS JUST READ THE COLOR REGISTER)
         TRCLRACK <= ~TRCLRACK;
         TR <= 1'b0;
+
       end else begin
         // PROCESS THE VDP COMMAND STATE
         case (STATE)
@@ -509,6 +523,7 @@ module VDP_COMMAND (
               STATE <= STCHKLOOP;
             end
           end
+
           STRDCPU: begin
             // APPLICABLE TO HMMC, LMMC
             if ((TR == 1'b0)) begin
@@ -525,6 +540,7 @@ module VDP_COMMAND (
               end
             end
           end
+
           STWAITCPU: begin
             // APPLICABLE TO LMCM
             if ((TR == 1'b0)) begin
@@ -533,6 +549,7 @@ module VDP_COMMAND (
               STATE <= STRDVRAM;
             end
           end
+
           STRDVRAM: begin
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM, SRCH, POINT
             VDPVRAMACCESSY = SY;
@@ -551,6 +568,7 @@ module VDP_COMMAND (
               end
             endcase
           end
+
           STPOINTWAITRDVRAM: begin
             // APPLICABLE TO POINT
             if ((VRAMRDREQ == VRAMRDACK)) begin
@@ -558,6 +576,7 @@ module VDP_COMMAND (
               STATE <= STEXECEND;
             end
           end
+
           STSRCHWAITRDVRAM: begin
             // APPLICABLE TO SRCH
             if ((VRAMRDREQ == VRAMRDACK)) begin
@@ -575,6 +594,7 @@ module VDP_COMMAND (
               end
             end
           end
+
           STWAITRDVRAM: begin
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM
             if ((VRAMRDREQ == VRAMRDACK)) begin
@@ -598,6 +618,7 @@ module VDP_COMMAND (
               endcase
             end
           end
+
           STPRERDVRAM: begin
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
             VDPVRAMACCESSY = DY;
@@ -606,6 +627,7 @@ module VDP_COMMAND (
             VRAMRDREQ <= ~VRAMRDACK;
             STATE <= STWAITPRERDVRAM;
           end
+
           STWAITPRERDVRAM: begin
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
             if ((VRAMRDREQ == VRAMRDACK)) begin
@@ -641,6 +663,7 @@ module VDP_COMMAND (
               STATE <= STWRVRAM;
             end
           end
+
           STWRVRAM: begin
             // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMMM, LMMV, LINE, PSET
             VDPVRAMACCESSY = DY;
@@ -648,6 +671,7 @@ module VDP_COMMAND (
             VRAMWRREQ <= ~VRAMWRACK;
             STATE <= STWAITWRVRAM;
           end
+
           STWAITWRVRAM: begin
             // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMMM, LMMV, LINE, PSET
             if ((VRAMWRREQ == VRAMWRACK)) begin
@@ -672,6 +696,7 @@ module VDP_COMMAND (
               endcase
             end
           end
+
           STLINENEWPOS: begin
             // APPLICABLE TO LINE
             if ((SXTMP[10] == 1'b1)) begin
@@ -684,6 +709,7 @@ module VDP_COMMAND (
             end
             STATE <= STLINECHKLOOP;
           end
+
           STLINECHKLOOP: begin
             // APPLICABLE TO LINE
             if (((NXTMP == NX) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
@@ -696,6 +722,7 @@ module VDP_COMMAND (
             end
             NXTMP <= NXTMP + 1;
           end
+
           STSRCHCHKLOOP: begin
             // APPLICABLE TO SRCH
             if ((NXLOOPEND == 1'b1)) begin
@@ -706,6 +733,7 @@ module VDP_COMMAND (
               STATE <= STRDVRAM;
             end
           end
+
           STCHKLOOP: begin
             // WHEN INITIALIZING = '1':
             //   APPLICABLE TO ALL COMMANDS
@@ -800,12 +828,16 @@ module VDP_COMMAND (
           end
         endcase
       end
+
       if ((VDPMODEGRAPHIC4 == 1'b1)) begin
         VRAMACCESSADDR <= {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[7:1]};
+
       end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
         VRAMACCESSADDR <= {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[8:2]};
+
       end else if ((VDPMODEGRAPHIC6 == 1'b1)) begin
         VRAMACCESSADDR <= {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[8:1]};
+
       end else begin
         VRAMACCESSADDR <= {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[7:0]};
       end
