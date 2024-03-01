@@ -349,7 +349,6 @@ module VDP (
     input wire LEGACY_VGA,
     input wire [4:0] VDP_ID,
     input wire [6:0] OFFSET_Y,
-    output wire HDMI_RESET,
     output wire PAL_MODE,
     input wire SPMAXSPR,
     output wire [10:0] CX,
@@ -727,8 +726,7 @@ module VDP (
       .REG_R27_H_SCROLL(REG_R27_H_SCROLL),
       .REG_R25_YJK(REG_R25_YJK),
       .CENTERYJK_R25_N(CENTERYJK_R25_N),
-      .OFFSET_Y(OFFSET_Y),
-      .HDMI_RESET(HDMI_RESET)
+      .OFFSET_Y(OFFSET_Y)
   );
 
   // GENERATE BWINDOW

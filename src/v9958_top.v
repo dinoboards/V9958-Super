@@ -2,6 +2,7 @@
 
 module v9958_top(
     output  led5_n,
+    output  led4_n,
 
     input   A7,
     input   A6,
@@ -268,7 +269,6 @@ module v9958_top(
     end
 
     wire pal_mode;
-    wire vdp_hdmi_reset;
     wire [10:0] vdp_cx;
     wire [10:0] vdp_cy;
     VDP u_v9958 (
@@ -303,7 +303,6 @@ module v9958_top(
 		.LEGACY_VGA			( 1'b0      						),
 		.VDP_ID				( VDP_ID							),
 		.OFFSET_Y			( OFFSET_Y							),
-        .HDMI_RESET         ( vdp_hdmi_reset                    ),
         .PAL_MODE           ( pal_mode                          ),
         .SPMAXSPR           ( 1'b0                              ),
         .CX                 ( vdp_cx                            ),
@@ -337,10 +336,12 @@ module v9958_top(
     logic [9:0] cy_pal;
     logic [9:0] cx_pal;
 
+    wire hdmi_reset;
+
     always_ff@(posedge clk_w)
     begin
 
-        ff_video_reset <= vdp_hdmi_reset;
+        ff_video_reset <= 1'b0;
 
         if (vdp_cx == 11'd0 && vdp_cy == 11'd0) begin
             if ((pal_mode == 1'b0 && (cx_ntsc != 10'd0 || cy_ntsc != NTSC_Y)) ||
@@ -349,11 +350,10 @@ module v9958_top(
         end
     end
 
-    wire video_reset;
-    assign video_reset = ff_video_reset;
+    assign hdmi_reset = ff_video_reset | reset_w | ~ram_enabled;
 
-    wire hdmi_reset;
-    assign hdmi_reset = video_reset | reset_w | ~ram_enabled;
+    assign led5_n = ~ff_video_reset;
+    // assign led4_n = ~video_reset;
 
     wire clk_audio;
     CLOCK_DIV #(
@@ -433,8 +433,6 @@ module v9958_top(
           .cy(cy_pal),
           .tmds_channels(tmds_channels_pal)
         );
-
-    assign led5_n = ~blank_o;
 
     assign cx = pal_mode ? cx_pal :cx_ntsc;
     assign cy = pal_mode ? cy_pal :cy_ntsc;

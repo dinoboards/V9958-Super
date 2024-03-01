@@ -92,8 +92,7 @@ module VDP_SSG (
     input wire [2:0] REG_R27_H_SCROLL,
     input wire REG_R25_YJK,
     input wire CENTERYJK_R25_N,
-    input wire [6:0] OFFSET_Y,
-    output wire HDMI_RESET
+    input wire [6:0] OFFSET_Y
 );
 
   import custom_timings::*;
@@ -165,7 +164,6 @@ module VDP_SSG (
       .INTERLACE_MODE(REG_R9_INTERLACE_MODE),
       .Y212_MODE(REG_R9_Y_DOTS),
       .OFFSET_Y(OFFSET_Y),
-      .HDMI_RESET(HDMI_RESET),
       .BLANKING_START(W_V_BLANKING_START),
       .BLANKING_END(W_V_BLANKING_END)
   );

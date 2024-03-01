@@ -74,7 +74,6 @@ module VDP_HVCOUNTER (
     input wire INTERLACE_MODE,
     input wire Y212_MODE,
     input wire [6:0] OFFSET_Y,
-    output wire HDMI_RESET,
     input wire BLANKING_START,
     input wire BLANKING_END
 );
@@ -88,11 +87,8 @@ import custom_timings::*;
   reg [10:0] FF_V_CNT_IN_FRAME;
   reg FF_H_BLANK;
   reg FF_V_BLANK;
-  reg FF_PAL_MODE;
-  reg FF_INTERLACE_MODE;
   wire [9:0] FF_FIELD_END_CNT;
   reg FF_FIELD_END;
-  reg FF_HDMI_RESET;  // WIRE
   wire W_FIELD;
   wire W_H_CNT_HALF;
   wire W_H_CNT_END;
@@ -111,30 +107,7 @@ import custom_timings::*;
   assign V_CNT_IN_FRAME = FF_V_CNT_IN_FRAME;
   assign H_BLANK = FF_H_BLANK;
   assign V_BLANK = FF_V_BLANK;
-  assign HDMI_RESET = FF_HDMI_RESET;
 
-  //------------------------------------------------------------------------
-  //  V SYNCHRONIZE MODE CHANGE
-  //------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_PAL_MODE <= 1'b0;
-      FF_INTERLACE_MODE <= 1'b0;
-      FF_HDMI_RESET <= 1'b0;
-    end else begin
-      if ((((W_H_CNT_HALF | W_H_CNT_END) & W_FIELD_END & FF_FIELD) == 1'b1)) begin
-        FF_PAL_MODE <= PAL_MODE;
-        FF_INTERLACE_MODE <= INTERLACE_MODE;
-        if ((FF_PAL_MODE == PAL_MODE)) begin
-          FF_HDMI_RESET <= 1'b0;
-        end else begin
-          FF_HDMI_RESET <= 1'b1;
-        end
-      end else begin
-        FF_HDMI_RESET <= 1'b0;
-      end
-    end
-  end
 
   //------------------------------------------------------------------------
   //  HORIZONTAL COUNTER
@@ -145,7 +118,7 @@ import custom_timings::*;
     if ((RESET == 1'b1)) begin
       FF_H_CNT <= {11{1'b0}};
     end else begin
-      if((W_H_CNT_END == 1'b1 || (W_FIELD_END == 1'b1 && W_H_CNT_HALF == 1'b1 && FF_INTERLACE_MODE == 1'b0))) begin
+      if((W_H_CNT_END == 1'b1 || (W_FIELD_END == 1'b1 && W_H_CNT_HALF == 1'b1 && INTERLACE_MODE == 1'b0))) begin
         FF_H_CNT <= {11{1'b0}};
       end else begin
         FF_H_CNT <= FF_H_CNT + 1;
@@ -174,14 +147,14 @@ import custom_timings::*;
       FF_FIELD_END <= 1'b0;
     end else if (CLK21M) begin
       if (
-            (FF_FIELD == 1'b0 && FF_INTERLACE_MODE == 1'b0 && FF_PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-            (FF_FIELD == 1'b0 && FF_INTERLACE_MODE == 1'b0 && FF_PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
-            (FF_FIELD == 1'b1 && FF_INTERLACE_MODE == 1'b0 && FF_PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-            (FF_FIELD == 1'b1 && FF_INTERLACE_MODE == 1'b0 && FF_PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
-            (FF_FIELD == 1'b0 && FF_INTERLACE_MODE == 1'b1 && FF_PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-            (FF_FIELD == 1'b0 && FF_INTERLACE_MODE == 1'b1 && FF_PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
-            (FF_FIELD == 1'b1 && FF_INTERLACE_MODE == 1'b1 && FF_PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-            (FF_FIELD == 1'b1 && FF_INTERLACE_MODE == 1'b1 && FF_PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624)
+            (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
+            (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
+            (FF_FIELD == 1'b1 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
+            (FF_FIELD == 1'b1 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
+            (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b1 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
+            (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b1 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
+            (FF_FIELD == 1'b1 && INTERLACE_MODE == 1'b1 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
+            (FF_FIELD == 1'b1 && INTERLACE_MODE == 1'b1 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624)
         ) begin
         FF_FIELD_END <= 1'b1;
       end else begin
@@ -228,7 +201,7 @@ import custom_timings::*;
       FF_V_CNT_IN_FRAME <= {11{1'b0}};
     end else begin
       if (((W_H_CNT_HALF | W_H_CNT_END) == 1'b1)) begin
-        if ((W_FIELD_END == 1'b1 && (FF_FIELD == 1'b1 || FF_INTERLACE_MODE == 1'b0))) begin
+        if ((W_FIELD_END == 1'b1 && (FF_FIELD == 1'b1 || INTERLACE_MODE == 1'b0))) begin
           FF_V_CNT_IN_FRAME <= {11{1'b0}};
         end else begin
           FF_V_CNT_IN_FRAME <= FF_V_CNT_IN_FRAME + 1;
