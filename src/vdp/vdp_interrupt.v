@@ -84,7 +84,7 @@ module VDP_INTERRUPT (
   // VSYNC INTERRUPT REQUEST
   //---------------------------------------------------------------------------
   assign W_VSYNC_INTR_TIMING = (H_CNT == `LEFT_BORDER) ? 1'b1 : 1'b0;
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_VSYNC_INT_N <= 1'b1;
     end else begin
@@ -101,7 +101,7 @@ module VDP_INTERRUPT (
   //------------------------------------------------------------------------
   //  W_HSYNC INTERRUPT REQUEST
   //------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_HSYNC_INT_N <= 1'b1;
     end else begin

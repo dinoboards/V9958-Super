@@ -166,7 +166,7 @@ module VENCODE (
   assign W2 = 8'h01 * FF_IVIDEOG;  // HEX(0.007*(2*0.714*256/3.3)*0.72*16) = $00.8
   assign W3 = 8'h22 * FF_IVIDEOB;  // HEX(0.428*(2*0.714*256/3.3)*0.72*16) = $22.2
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     FF_IVIDEOVS_N <= VIDEOVS_N;
     FF_IVIDEOHS_N <= VIDEOHS_N;
   end
@@ -175,7 +175,7 @@ module VENCODE (
   // CLOCK PHASE : 3.58MHZ(1FSC) = 21.48MHZ(6FSC) / 6
   // FF_SEQ : (7) 654 (3) 210
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if (((VIDEOHS_N == 1'b0 && FF_IVIDEOHS_N == 1'b1))) begin
       FF_SEQ <= 3'b110;
     end else if ((FF_SEQ[1:0] == 2'b00)) begin
@@ -188,7 +188,7 @@ module VENCODE (
   //------------------------------------------------------------------------
   // HORIZONTAL COUNTER : MSX_X=0[FF_HCOUNTER=100H], MSX_X=511[FF_HCOUNTER=4FF]
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((VIDEOHS_N == 1'b0 && FF_IVIDEOHS_N == 1'b1)) begin
       FF_HCOUNTER <= 12'h000;
     end else begin
@@ -199,7 +199,7 @@ module VENCODE (
   //------------------------------------------------------------------------
   // VERTICAL COUNTER : MSX_Y=0[FF_VCOUNTER=22H], MSX_Y=211[FF_VCOUNTER=F5H]
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((VIDEOVS_N == 1'b1 && FF_IVIDEOVS_N == 1'b0)) begin
       FF_VCOUNTER <= {9{1'b0}};
       FF_BURPHASE <= 1'b0;
@@ -212,7 +212,7 @@ module VENCODE (
   //------------------------------------------------------------------------
   // VERTICAL DISPLAY WINDOW
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((FF_VCOUNTER == (8'h22 - 8'h10 - 1))) begin
       FF_WINDOW_V <= 1'b1;
     end else if ((((FF_VCOUNTER == (262 - 7)) && (FF_PAL_MODE == 1'b0)) || ((FF_VCOUNTER == (312 - 7)) && (FF_PAL_MODE == 1'b1)))) begin
@@ -235,7 +235,7 @@ module VENCODE (
   //------------------------------------------------------------------------
   // HORIZONTAL DISPLAY WINDOW
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((FF_HCOUNTER == (12'h100 - 12'h030 - 1))) begin
       FF_WINDOW_H <= 1'b1;
     end else if ((FF_HCOUNTER == (12'h4FF + 12'h030 - 1))) begin
@@ -246,7 +246,7 @@ module VENCODE (
   //------------------------------------------------------------------------
   // COLOR BURST WINDOW
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if (((FF_WINDOW_V == 1'b0) || (FF_HCOUNTER == 12'h0CC))) begin
       FF_WINDOW_C <= 1'b0;
     end else if ((FF_WINDOW_V == 1'b1 && (FF_HCOUNTER == 12'h06C))) begin
@@ -257,7 +257,7 @@ module VENCODE (
   //------------------------------------------------------------------------
   // COLOR BURST TABLE POINTER
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((FF_WINDOW_C == 1'b0)) begin
       FF_TABLEADR <= {5{1'b0}};
     end else if ((FF_SEQ == 3'b101 || FF_SEQ == 3'b001)) begin
@@ -265,14 +265,14 @@ module VENCODE (
     end
   end
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     FF_TABLEDAT <= TABLE[FF_TABLEADR];
   end
 
   //------------------------------------------------------------------------
   // VIDEO ENCODE
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if (((VIDEOVS_N ^ VIDEOHS_N) == 1'b1)) begin
       FF_VIDEOY <= {6{1'b0}};
       FF_VIDEOC <= CENT[7:2];
@@ -296,7 +296,7 @@ module VENCODE (
     end
   end
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if (((VIDEOVS_N ^ VIDEOHS_N) == 1'b1)) begin
       // HOLD
     end else if ((FF_WINDOW_V == 1'b1 && FF_WINDOW_H == 1'b1)) begin
@@ -311,7 +311,7 @@ module VENCODE (
   //------------------------------------------------------------------------
   // PAL AUTO DETECTION
   //------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((VIDEOVS_N == 1'b1 && FF_IVIDEOVS_N == 1'b0)) begin
       FF_PAL_DET_CNT <= {9{1'b0}};
     end else if ((VIDEOHS_N == 1'b0 && FF_IVIDEOHS_N == 1'b1)) begin
@@ -319,7 +319,7 @@ module VENCODE (
     end
   end
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((VIDEOVS_N == 1'b1 && FF_IVIDEOVS_N == 1'b0)) begin
       if ((FF_PAL_DET_CNT > 300)) begin
         FF_PAL_MODE <= 1'b1;

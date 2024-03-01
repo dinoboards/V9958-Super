@@ -131,22 +131,22 @@ module VDP_GRAPHIC123M (
   assign REQ_PAT_COL_TBL_ADDR = (VDPMODEMULTI == 1'b1 || VDPMODEMULTIQ == 1'b1) ? {REG_R4_PT_GEN_ADDR,FF_PAT_NUM,DOTCOUNTERY[4:2]} : (VDPMODEGRAPHIC1 == 1'b1) ? {REG_R10R3_COL_ADDR,1'b0,FF_PAT_NUM[7:3]} : ({REG_R10R3_COL_ADDR[10:7],DOTCOUNTERY[7:6],FF_PAT_NUM,DOTCOUNTERY[2:0]}) & ({4'b1111,REG_R10R3_COL_ADDR[6:0],6'b111111});
 
   // DRAM READ REQUEST
-  always @(*) begin
+  always_comb begin
     case (EIGHTDOTSTATE)
-      3'b000:  EIGHTDOTSTATE_DEC <= 4'b0001;
-      3'b001:  EIGHTDOTSTATE_DEC <= 4'b0010;
-      3'b010:  EIGHTDOTSTATE_DEC <= 4'b0100;
-      3'b011:  EIGHTDOTSTATE_DEC <= 4'b1000;
-      default: EIGHTDOTSTATE_DEC <= 4'b0000;
+      3'b000:  EIGHTDOTSTATE_DEC = 4'b0001;
+      3'b001:  EIGHTDOTSTATE_DEC = 4'b0010;
+      3'b010:  EIGHTDOTSTATE_DEC = 4'b0100;
+      3'b011:  EIGHTDOTSTATE_DEC = 4'b1000;
+      default: EIGHTDOTSTATE_DEC = 4'b0000;
     endcase
   end
 
-  always @(*) begin
+  always_comb begin
     case (EIGHTDOTSTATE)
-      3'b000:  REQ_ADDR <= REQ_PAT_NAME_TBL_ADDR;
-      3'b001:  REQ_ADDR <= REQ_PAT_GEN_TBL_ADDR;
-      3'b010:  REQ_ADDR <= REQ_PAT_COL_TBL_ADDR;
-      default: REQ_ADDR <= FF_REQ_ADDR;
+      3'b000:  REQ_ADDR = REQ_PAT_NAME_TBL_ADDR;
+      3'b001:  REQ_ADDR = REQ_PAT_GEN_TBL_ADDR;
+      3'b010:  REQ_ADDR = REQ_PAT_COL_TBL_ADDR;
+      default: REQ_ADDR = FF_REQ_ADDR;
     endcase
   end
 
@@ -158,7 +158,7 @@ module VDP_GRAPHIC123M (
   assign PRAMADR = FF_REQ_ADDR;
   assign PCOLORCODE = FF_COL_CODE;
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PAT_COL <= {8{1'b0}};
     end else begin
@@ -168,7 +168,7 @@ module VDP_GRAPHIC123M (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PAT_GEN <= {8{1'b0}};
     end else begin
@@ -180,7 +180,7 @@ module VDP_GRAPHIC123M (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PAT_NUM <= {8{1'b0}};
     end else begin
@@ -190,7 +190,7 @@ module VDP_GRAPHIC123M (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PRE_PAT_GEN <= {8{1'b0}};
     end else begin
@@ -200,7 +200,7 @@ module VDP_GRAPHIC123M (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PRE_PAT_COL <= {8{1'b0}};
     end else begin
@@ -210,7 +210,7 @@ module VDP_GRAPHIC123M (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_COL_CODE <= {4{1'b0}};
     end else begin
@@ -220,7 +220,7 @@ module VDP_GRAPHIC123M (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_REQ_ADDR <= {17{1'b0}};
     end else begin

@@ -178,7 +178,7 @@ module VDP_GRAPHIC4567 (
       .DBI(FIFODATA_OUT)
   );
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((DOTSTATE == 2'b01)) begin
       case (EIGHTDOTSTATE[1:0])
         2'b00: begin
@@ -197,7 +197,7 @@ module VDP_GRAPHIC4567 (
     end
   end
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((DOTSTATE == 2'b00 && EIGHTDOTSTATE[1:0] == 2'b00)) begin
       FF_PIX0 <= FF_FIFO0;
       FF_PIX1 <= FF_FIFO1;
@@ -206,13 +206,13 @@ module VDP_GRAPHIC4567 (
     end
   end
 
-  always @(*) begin
+  always_comb begin
     case (EIGHTDOTSTATE[1:0])
-      2'b00:   W_PIX <= FF_PIX0;
-      2'b01:   W_PIX <= FF_PIX1;
-      2'b10:   W_PIX <= FF_PIX2;
-      2'b11:   W_PIX <= FF_PIX3;
-      default: W_PIX <= {8{1'bX}};
+      2'b00:   W_PIX = FF_PIX0;
+      2'b01:   W_PIX = FF_PIX1;
+      2'b10:   W_PIX = FF_PIX2;
+      2'b11:   W_PIX = FF_PIX3;
+      default: W_PIX = {8{1'bX}};
     endcase
   end
 
@@ -235,7 +235,7 @@ module VDP_GRAPHIC4567 (
   };
 
   // FIFO CONTROL
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FIFOADDR_IN <= {8{1'b0}};
     end else begin
@@ -249,7 +249,7 @@ module VDP_GRAPHIC4567 (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FIFOADDR_OUT <= {8{1'b0}};
     end else begin
@@ -277,7 +277,7 @@ module VDP_GRAPHIC4567 (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FIFOIN <= 1'b0;
     end else begin
@@ -308,7 +308,7 @@ module VDP_GRAPHIC4567 (
   end
 
   // FIFO OUT LATCH
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       COLORDATA  <= {8{1'b0}};
       PCOLORCODE <= {8{1'b0}};
@@ -366,7 +366,7 @@ module VDP_GRAPHIC4567 (
   assign W_G = (W_G_YJK[6] == 1'b1) ? {6{1'b0}} : (W_G_YJK[5] == 1'b1) ? {6{1'b1}} : {W_G_YJK[4:0],1'b0};
   assign W_B = (W_B_YJK[6] == 1'b1) ? {6{1'b0}} : (W_B_YJK[5] == 1'b1) ? {6{1'b1}} : {W_B_YJK[4:0],1'b0};
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       P_YJK_R <= {6{1'b0}};
       P_YJK_G <= {6{1'b0}};
@@ -380,7 +380,7 @@ module VDP_GRAPHIC4567 (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       P_YJK_EN <= 1'b0;
     end else begin
@@ -396,7 +396,7 @@ module VDP_GRAPHIC4567 (
   end
 
   // VRAM READ ADDRESS
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       PRAMADR <= {17{1'b0}};
     end else begin
@@ -410,7 +410,7 @@ module VDP_GRAPHIC4567 (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       LATCHEDPTNNAMETBLBASEADDR <= {7{1'b0}};
     end else begin
@@ -421,7 +421,7 @@ module VDP_GRAPHIC4567 (
   end
 
   assign W_DOTCOUNTERX = {DOTCOUNTERX[8:3] + REG_R26_H_SCROLL, 3'b000};
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       LOCALDOTCOUNTERX <= {9{1'b0}};
     end else begin
@@ -438,7 +438,7 @@ module VDP_GRAPHIC4567 (
 
   assign W_BLINK_CNT_MAX = (FF_BLINK_STATE == 1'b0) ? REG_R13_BLINK_PERIOD[3:0] : REG_R13_BLINK_PERIOD[7:4];
   assign W_BLINK_SYNC = ((DOTCOUNTERX == 0) && (DOTCOUNTERY == 0) && (DOTSTATE == 2'b00) && (REG_R1_BL_CLKS == 1'b0)) ? 1'b1 : ((DOTCOUNTERX == 0) && (DOTSTATE == 2'b00) && (REG_R1_BL_CLKS == 1'b1)) ? 1'b1 : 1'b0;
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_BLINK_CLK_CNT <= {4{1'b0}};
       FF_BLINK_STATE <= 1'b0;

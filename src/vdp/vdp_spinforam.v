@@ -92,7 +92,7 @@ module VDP_SPINFORAM (
   reg [31:0] IMEM[7:0];
   reg [2:0] IADDRESS;
 
-  always @(posedge INCLOCK) begin
+  always_ff @(posedge INCLOCK) begin
     if ((WE == 1'b1)) begin
       IMEM[ADDRESS] <= DATA;
     end

@@ -29,7 +29,8 @@ module serializer_diplexer
     .clk_pixel_x5(clk_pixel_x5),
     .reset(reset),
     .tmds_internal(tmds_channels),
-    .tmds(tmds)
+    .tmds(tmds),
+    .tmds_clock()
   );
 
 

@@ -18,7 +18,7 @@ module v9958_top(
     input   iorq_n,
 
     input   clk,
-    input   clk_50,
+    // input   clk_50,
 
     input   s1,
 
@@ -115,11 +115,11 @@ module v9958_top(
   .I(clk)
   );
 
-    wire clk_50_w;
-    BUFG clk_50_bufg_inst(
-    .O(clk_50_w),
-    .I(clk_50)
-    );
+    // wire clk_50_w;
+    // BUFG clk_50_bufg_inst(
+    // .O(clk_50_w),
+    // .I(clk_50)
+    // );
 
     reg s1_n = 0;
     always_ff @(posedge clk_w) s1_n <= ~s1;
@@ -180,7 +180,7 @@ module v9958_top(
       .read(WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
       .write(~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
       .refresh(~VideoDLClk & ~VideoDHClk & ~ram_busy),
-      .addr({ 5'b0 , VdpAdr[15:0] } ),
+      .addr({ 6'b0 , VdpAdr[15:0] } ),
       .din({ VrmDbo, VrmDbo }),
       .wdm({ ~VdpAdr[16], VdpAdr[16] }),
       .dout(VrmDbi),
@@ -404,7 +404,11 @@ module v9958_top(
           .audio_sample_word(audio_sample_word_w),
           .cx(cx_ntsc),
           .cy(cy_ntsc),
-          .tmds_channels(tmds_channels_ntsc)
+          .tmds_channels(tmds_channels_ntsc),
+          .frame_width(),
+          .frame_height(),
+          .screen_width(),
+          .screen_height()
         );
 
     hdmi #( .VIDEO_ID_CODE(17),
@@ -428,7 +432,11 @@ module v9958_top(
           .audio_sample_word(audio_sample_word_w),
           .cx(cx_pal),
           .cy(cy_pal),
-          .tmds_channels(tmds_channels_pal)
+          .tmds_channels(tmds_channels_pal),
+          .frame_width(),
+          .frame_height(),
+          .screen_width(),
+          .screen_height()
         );
 
     assign cx = pal_mode ? cx_pal :cx_ntsc;
@@ -436,7 +444,7 @@ module v9958_top(
 
     // Select the tmds_channels based on video mode (pal/ntsc)
     // encode it with the serializer
-    serializer_diplexer #( )
+    serializer_diplexer serializer_diplexer_inst
     (
         .clk_pixel(clk_w),
         .clk_pixel_x5(clk_135_w),
@@ -468,19 +476,17 @@ module v9958_top(
   .EN(reset_n_w),                  // Enable the SPI core (ACTIVE HIGH)
   .MISO(adc_miso),                // data out of ADC (Dout pin)
   .MOSI(adc_mosi),               // Data into ADC (Din pin)
-    .SCK_ENABLE(sck_enable),
+  .SCK_ENABLE(sck_enable),
   .o_DATA(audio_sample),      // 12 bit word (for other modules)
-    .CS(adc_cs),                 // Chip Select
+   .CS(adc_cs),                 // Chip Select
   .DATA_VALID(sample_valid)          // is high when there is a full 12 bit word.
   );
 
     localparam SCKCLK_SRCFRQ = 135.0;
     localparam SCKCLK_FRQ = 0.9;
-    localparam integer SCKCLK_DELAY0 = $floor(SCKCLK_SRCFRQ / SCKCLK_FRQ / 2.0);
-    localparam integer SCKCLK_DELAY1 = SCKCLK_DELAY0 + $floor((SCKCLK_SRCFRQ / SCKCLK_FRQ) - SCKCLK_DELAY0 + 0.5);
+    localparam integer SCKCLK_DELAY0 = $rtoi($floor(SCKCLK_SRCFRQ / SCKCLK_FRQ / 2.0));
+    localparam integer SCKCLK_DELAY1 = $rtoi(SCKCLK_DELAY0 + $floor((SCKCLK_SRCFRQ / SCKCLK_FRQ) - SCKCLK_DELAY0 + 0.5));
     logic [$clog2(SCKCLK_DELAY1)-1:0] sckclk_divider;
-    logic clk_sck;
-
 
     wire clk_sck;
     CLOCK_DIV #(

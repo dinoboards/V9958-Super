@@ -248,7 +248,7 @@ module VDP_REGISTER (
   assign VDPMODEISVRAMINTERLEAVE = ((REG_R0_DISP_MODE[3] & REG_R0_DISP_MODE[1]) == 1'b1) ? 1'b1 : 1'b0;
 
   //--------------------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_ACK <= 1'b0;
     end else begin
@@ -257,7 +257,7 @@ module VDP_REGISTER (
   end
 
   //--------------------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       REG_R1_DISP_ON <= 1'b0;
       REG_R0_DISP_MODE <= 3'b000;
@@ -279,7 +279,7 @@ module VDP_REGISTER (
 
   //--------------------------------------------------------------------------------------
   assign W_IS_BITMAP_MODE = (REG_R0_DISP_MODE[3] == 1'b1 || REG_R0_DISP_MODE == 3'b011) ? 1'b1 : 1'b0;
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((W_IS_BITMAP_MODE == 1'b1 && FF_R9_2PAGE_MODE == 1'b1)) begin
       REG_R2_PT_NAM_ADDR <= (FF_R2_PT_NAM_ADDR & 7'b1011111) | ({1'b0, FIELD, 5'b00000});
     end else begin
@@ -293,7 +293,7 @@ module VDP_REGISTER (
   assign PALETTEADDR = (FF_PALETTE_IN == 1'b1) ? {4'b0000, PALETTEWRNUM} : {4'b0000, PALETTEADDR_OUT};
   assign PALETTEWE = (FF_PALETTE_IN == 1'b1) ? 1'b1 : 1'b0;
   assign W_EVEN_DOTSTATE = (DOTSTATE == 2'b00 || DOTSTATE == 2'b11) ? 1'b1 : 1'b0;
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PALETTE_IN <= 1'b0;
     end else begin
@@ -307,7 +307,7 @@ module VDP_REGISTER (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PALETTE_WR_ACK <= 1'b0;
     end else begin
@@ -338,7 +338,7 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   // PROCESS OF CPU READ REQUEST
   //------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       DBI <= {8{1'b0}};
     end else begin
@@ -397,7 +397,7 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   // HSYNC INTERRUPT RESET CONTROL
   //------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       CLR_HSYNC_INT <= 1'b0;
     end else begin
@@ -425,7 +425,7 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   // VSYNC INTERRUPT RESET CONTROL
   //------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       CLR_VSYNC_INT <= 1'b0;
     end else begin
@@ -447,7 +447,7 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   // PROCESS OF CPU WRITE REQUEST
   //------------------------------------------------------------------------
-  always @(posedge RESET or posedge CLK21M) begin
+  always_ff @(posedge RESET or posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       VDPP1DATA <= {8{1'b0}};
       VDPP1IS1STBYTE <= 1'b1;

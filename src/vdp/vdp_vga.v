@@ -169,7 +169,7 @@ import custom_timings::*;
   assign WE_BUF = 1'b1;
 
   // GENERATE H-SYNC SIGNAL
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_HSYNC_N <= 1'b1;
     end else begin
@@ -183,7 +183,7 @@ import custom_timings::*;
 
   // GENERATE V-SYNC SIGNAL
   // THE VIDEOVSIN_N SIGNAL IS NOT USED
-  always @(posedge RESET, posedge CLK21M) begin : P1
+  always_ff @(posedge RESET, posedge CLK21M) begin : P1
     parameter CENTER_Y = 12;  // based on HDMI AV output
 
     if ((RESET == 1'b1)) begin
@@ -226,7 +226,7 @@ import custom_timings::*;
   end
 
   // GENERATE DATA READ TIMING
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       XPOSITIONR <= {10{1'b0}};
     end else begin
@@ -239,7 +239,7 @@ import custom_timings::*;
   end
 
   // GENERATE VIDEO OUTPUT TIMING
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       VIDEOOUTX <= 1'b0;
     end else begin

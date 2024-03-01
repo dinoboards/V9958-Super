@@ -113,7 +113,7 @@ import custom_timings::*;
   //------------------------------------------------------------------------
   assign W_H_CNT_HALF = (FF_H_CNT == ((CLOCKS_PER_HALF_LINE(PAL_MODE)) - 1)) ? 1'b1 : 1'b0;
   assign W_H_CNT_END  = (FF_H_CNT == (CLOCKS_PER_LINE(PAL_MODE) - 1)) ? 1'b1 : 1'b0;
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_H_CNT <= {11{1'b0}};
     end else begin
@@ -125,7 +125,7 @@ import custom_timings::*;
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_H_CNT_IN_FIELD <= {11{1'b0}};
     end else begin
@@ -144,7 +144,7 @@ import custom_timings::*;
   always_ff @(posedge RESET or posedge CLK21M) begin
     if (RESET) begin
       FF_FIELD_END <= 1'b0;
-    end else if (CLK21M) begin
+    end else begin
       if (
             (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
             (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
@@ -162,7 +162,7 @@ import custom_timings::*;
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_V_CNT_IN_FIELD <= {10{1'b0}};
     end else begin
@@ -179,7 +179,7 @@ import custom_timings::*;
   //------------------------------------------------------------------------
   //  FIELD ID
   //------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_FIELD <= 1'b0;
     end else begin
@@ -194,7 +194,7 @@ import custom_timings::*;
   //------------------------------------------------------------------------
   //  VERTICAL COUNTER IN FRAME
   //------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_V_CNT_IN_FRAME <= {11{1'b0}};
     end else begin
@@ -213,7 +213,7 @@ import custom_timings::*;
   //---------------------------------------------------------------------------
   assign W_H_BLANK_START = W_H_CNT_END;
   assign W_H_BLANK_END   = (FF_H_CNT == `LEFT_BORDER) ? 1'b1 : 1'b0;
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_H_BLANK <= 1'b0;
     end else begin
@@ -228,7 +228,7 @@ import custom_timings::*;
   //---------------------------------------------------------------------------
   // V BLANKING
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_V_BLANK <= 1'b0;
     end else begin

@@ -152,48 +152,48 @@ module VDP_NTSC_PAL (
 
   // MODE
   assign W_MODE = {PALMODE, INTERLACEMODE};
-  always @(*) begin
+  always_comb begin
     case (W_MODE)
-      2'b00:   W_STATE_A1_FULL <= 11'b01000001100;  // 524
-      2'b01:   W_STATE_A1_FULL <= 11'b01000001101;  // 525
-      2'b10:   W_STATE_A1_FULL <= 11'b01001110010;  // 626
-      2'b11:   W_STATE_A1_FULL <= 11'b01001110001;  // 625
-      default: W_STATE_A1_FULL <= {11{1'bX}};
+      2'b00:   W_STATE_A1_FULL = 11'b01000001100;  // 524
+      2'b01:   W_STATE_A1_FULL = 11'b01000001101;  // 525
+      2'b10:   W_STATE_A1_FULL = 11'b01001110010;  // 626
+      2'b11:   W_STATE_A1_FULL = 11'b01001110001;  // 625
+      default: W_STATE_A1_FULL = {11{1'bX}};
     endcase
   end
 
-  always @(*) begin
+  always_comb begin
     case (W_MODE)
-      2'b00:   W_STATE_A2_FULL <= 11'b01000011000;  // 524+12
-      2'b01:   W_STATE_A2_FULL <= 11'b01000011001;  // 525+12
-      2'b10:   W_STATE_A2_FULL <= 11'b01001111110;  // 626+12
-      2'b11:   W_STATE_A2_FULL <= 11'b01001111101;  // 625+12
-      default: W_STATE_A2_FULL <= {11{1'bX}};
+      2'b00:   W_STATE_A2_FULL = 11'b01000011000;  // 524+12
+      2'b01:   W_STATE_A2_FULL = 11'b01000011001;  // 525+12
+      2'b10:   W_STATE_A2_FULL = 11'b01001111110;  // 626+12
+      2'b11:   W_STATE_A2_FULL = 11'b01001111101;  // 625+12
+      default: W_STATE_A2_FULL = {11{1'bX}};
     endcase
   end
 
-  always @(*) begin
+  always_comb begin
     case (W_MODE)
-      2'b00:   W_STATE_B_FULL <= 11'b01000010010;  // 524+6
-      2'b01:   W_STATE_B_FULL <= 11'b01000010011;  // 525+6
-      2'b10:   W_STATE_B_FULL <= 11'b01001111000;  // 626+6
-      2'b11:   W_STATE_B_FULL <= 11'b01001110111;  // 625+6
-      default: W_STATE_B_FULL <= {11{1'bX}};
+      2'b00:   W_STATE_B_FULL = 11'b01000010010;  // 524+6
+      2'b01:   W_STATE_B_FULL = 11'b01000010011;  // 525+6
+      2'b10:   W_STATE_B_FULL = 11'b01001111000;  // 626+6
+      2'b11:   W_STATE_B_FULL = 11'b01001110111;  // 625+6
+      default: W_STATE_B_FULL = {11{1'bX}};
     endcase
   end
 
-  always @(*) begin
+  always_comb begin
     case (W_MODE)
-      2'b00:   W_STATE_C_FULL <= 11'b01000011110;  // 524+18
-      2'b01:   W_STATE_C_FULL <= 11'b01000011111;  // 525+18
-      2'b10:   W_STATE_C_FULL <= 11'b01010000100;  // 626+18
-      2'b11:   W_STATE_C_FULL <= 11'b01010000011;  // 625+18
-      default: W_STATE_C_FULL <= {11{1'bX}};
+      2'b00:   W_STATE_C_FULL = 11'b01000011110;  // 524+18
+      2'b01:   W_STATE_C_FULL = 11'b01000011111;  // 525+18
+      2'b10:   W_STATE_C_FULL = 11'b01010000100;  // 626+18
+      2'b11:   W_STATE_C_FULL = 11'b01010000011;  // 625+18
+      default: W_STATE_C_FULL = {11{1'bX}};
     endcase
   end
 
   // STATE
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_SSTATE <= SSTATE_A;
     end else begin
@@ -208,7 +208,7 @@ module VDP_NTSC_PAL (
   end
 
   // GENERATE H SYNC PULSE
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_HSYNC_N <= 1'b0;
     end else begin

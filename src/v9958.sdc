@@ -4,7 +4,7 @@
 //GOWIN Version: 1.9.8.11 Education
 //Created Time: 2023-06-21 01:16:09
 create_clock -name clk -period 37.037 -waveform {0 18.518} [get_ports {clk}] -add
-create_clock -name clk_50 -period 20 -waveform {0 10} [get_ports {clk_50}] -add
+# create_clock -name clk_50 -period 20 -waveform {0 10} [get_ports {clk_50}] -add
 
 create_generated_clock -name clk_135 -source [get_ports {clk}] -master_clock clk -divide_by 1 -multiply_by 5 -add [get_nets {clk_135}]
 # disable to enable both pal and ntsc configs to use only DVI - so no audio clock established

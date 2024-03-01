@@ -679,7 +679,7 @@ module VDP (
       .REG_R19_HSYNC_INT_LINE(REG_R19_HSYNC_INT_LINE)
   );
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((PREDOTCOUNTER_X == (255 + 25) || PREDOTCOUNTER_X == 9'b111111111)) begin
       ACTIVE_LINE <= 1'b1;
     end else begin
@@ -728,7 +728,7 @@ module VDP (
   );
 
   // GENERATE BWINDOW
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       BWINDOW_X <= 1'b0;
     end else begin
@@ -740,7 +740,7 @@ module VDP (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       BWINDOW_Y <= 1'b0;
     end else begin
@@ -767,7 +767,7 @@ module VDP (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       BWINDOW <= 1'b0;
     end else begin
@@ -778,7 +778,7 @@ module VDP (
   // GENERATE PREWINDOW, WINDOW
   assign WINDOW = WINDOW_X & PREWINDOW_Y;
   assign PREWINDOW = PREWINDOW_X & PREWINDOW_Y;
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       PREWINDOW_X <= 1'b0;
     end else begin
@@ -799,7 +799,7 @@ module VDP (
   //----------------------------------------------------------------------------
   // main process
   //----------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       VDPVRAMRDDATA   <= {8{1'b0}};
       VDPVRAMREADINGA <= 1'b0;
@@ -813,7 +813,7 @@ module VDP (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       VDPCMDVRAMRDDATA <= {8{1'b0}};
       VDPCMDVRAMRDACK <= 1'b0;
@@ -830,7 +830,7 @@ module VDP (
   end
 
   assign TEXT_MODE = VDPMODETEXT1 | VDPMODETEXT1Q | VDPMODETEXT2;
-  always @(posedge RESET, posedge CLK21M) begin : P1
+  always_ff @(posedge RESET, posedge CLK21M) begin : P1
     reg [16:0] VDPVRAMACCESSADDRV;
     reg [31:0] VRAMACCESSSWITCH;
 

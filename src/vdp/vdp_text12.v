@@ -173,7 +173,7 @@ module VDP_TEXT12 (
   //-------------------------------------------------------------------------
   // TIMING GENERATOR
   //-------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       DOTCOUNTER24 <= {5{1'b0}};
     end else begin
@@ -194,7 +194,7 @@ module VDP_TEXT12 (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       TXPREWINDOWX <= 1'b0;
     end else begin
@@ -208,7 +208,7 @@ module VDP_TEXT12 (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       TXWINDOWX <= 1'b0;
     end else begin
@@ -225,7 +225,7 @@ module VDP_TEXT12 (
   //-------------------------------------------------------------------------
   //
   //-------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       PATTERNNUM <= {8{1'b0}};
       PRAMADR <= {17{1'b0}};
@@ -335,7 +335,7 @@ module VDP_TEXT12 (
   //--------------------------------------------------------------
   //
   //--------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       PATTERN <= {8{1'b0}};
       TXCOLORCODE <= 1'b0;
@@ -414,7 +414,7 @@ module VDP_TEXT12 (
   //------------------------------------------------------------------------
   assign W_BLINK_CNT_MAX = (FF_BLINK_STATE == 1'b0) ? REG_R13_BLINK_PERIOD[3:0] : REG_R13_BLINK_PERIOD[7:4];
   assign W_BLINK_SYNC = ((DOTCOUNTERX == 0) && (DOTCOUNTERYP == 0) && (DOTSTATE == 2'b00) && (REG_R1_BL_CLKS == 1'b0)) ? 1'b1 : ((DOTCOUNTERX == 0) && (DOTSTATE == 2'b00) && (REG_R1_BL_CLKS == 1'b1)) ? 1'b1 : 1'b0;
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_BLINK_CLK_CNT <= {4{1'b0}};
       FF_BLINK_STATE <= 1'b0;

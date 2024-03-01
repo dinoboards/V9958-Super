@@ -126,7 +126,7 @@ module VDP_WAIT_CONTROL (
     16'h8000, 16'h8000, 16'h8000, 16'h8000, 16'h8000, 16'h8000, 16'h0DAD, 16'h069E, 16'h09E1, 16'h0B18, 16'h8000, 16'h8000, 16'h09CA, 16'h0D4E, 16'h0EAF, 16'h8000
   };
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_WAIT_CNT <= {16{1'b0}};
     end else begin

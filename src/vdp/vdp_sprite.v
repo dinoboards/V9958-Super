@@ -392,7 +392,7 @@ module VDP_SPRITE (
   // スプライトを表示するか否かを示す信号
   // (Signal indicating whether to display the sprite)
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_SP_EN <= 1'b0;
     end else begin
@@ -462,7 +462,7 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   // STATE MACHINE
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPSTATE <= SPSTATE_IDLE;
     end else begin
@@ -495,14 +495,14 @@ module VDP_SPRITE (
   // 現ラインのライン番号
   // (Line number of the current line)
   //---------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if (((DOTSTATE == 2'b01) && (DOTCOUNTERX == 0))) begin
       // +1 SHOULD BE NEEDED. BECAUSE IT WILL BE DRAWN IN THE NEXT LINE.
       FF_CUR_Y <= DOTCOUNTERYP + ({1'b0, REG_R23_VSTART_LINE}) + 1;
     end
   end
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if (((DOTSTATE == 2'b01) && (DOTCOUNTERX == 0))) begin
       FF_PREV_CUR_Y <= FF_CUR_Y;
     end
@@ -514,7 +514,7 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   // VRAM ADDRESS GENERATOR
   //---------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     // LATCHING ADDRESS SIGNALS
     if (((DOTSTATE == 2'b01) && (DOTCOUNTERX == 0))) begin
       SPPTNGENETBLBASEADDR <= REG_R6_SP_GEN_ADDR;
@@ -529,7 +529,7 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   // VRAM ACCESS MASK
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPVRAMACCESSING <= 1'b0;
     end else begin
@@ -582,7 +582,7 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   // [SPWINDOW_Y]
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPWINDOW_Y <= 1'b0;
     end else begin
@@ -598,7 +598,7 @@ module VDP_SPRITE (
   // [Y_TEST]Yテストステートでないことを示す信号
   // (Signal indicating that it is not a Y test state)
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_Y_TEST_EN <= 1'b0;
     end else begin
@@ -618,7 +618,7 @@ module VDP_SPRITE (
   // [Y_TEST]テスト対象のスプライト番号 (0～31)
   // (Sprite number to be tested (0-31))
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_Y_TEST_SP_NUM <= {5{1'b0}};
     end else begin
@@ -638,7 +638,7 @@ module VDP_SPRITE (
   // [Y_TEST]表示するスプライトをリストアップするためのリストアップメモリアドレス 0～8
   // (List-up memory address for listing the sprite to be displayed 0-8)
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_Y_TEST_LISTUP_ADDR <= {4{1'b0}};
     end else begin
@@ -660,7 +660,7 @@ module VDP_SPRITE (
   // [Y_TEST]表示するスプライトをリストアップするためのリストアップメモリへの書き込み
   // (Write to the list-up memory for listing the sprite to be displayed)
   //---------------------------------------------------------------------------
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((DOTSTATE == 2'b01)) begin
       if ((DOTCOUNTERX == 0)) begin
         // INITIALIZE
@@ -677,7 +677,7 @@ module VDP_SPRITE (
   // [Y_TEST]４つ目（８つ目）のスプライトが並んだかどうかの信号
   // (Signal indicating whether the fourth (eighth) sprite is lined up)
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_SP_OVERMAP <= 1'b0;
     end else begin
@@ -701,7 +701,7 @@ module VDP_SPRITE (
   // [Y_TEST]処理をあきらめたスプライト信号
   // (Signal of the sprite that gave up the process)
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_SP_OVERMAP_NUM <= {5{1'b1}};
     end else begin
@@ -727,7 +727,7 @@ module VDP_SPRITE (
   // Yテスト用の VRAM読み出しアドレス
   // (VRAM read address for Y test)
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_Y_TEST_VRAM_ADDR <= {17{1'b0}};
     end else begin
@@ -761,7 +761,7 @@ module VDP_SPRITE (
     {SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:2],SPPREPAREXPOS,SPPREPARELINENUM[3:0]};    // 16X16 MODE
   assign READVRAMADDRCREAD = (SPMODE2 == 1'b0) ? {SPATTRIB_ADDR, 2'b11} : {SPATTRTBLBASEADDR[9:3], ~SPATTRTBLBASEADDR[2], SPPREPAREPLANENUM, SPPREPARELINENUM};
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       IRAMADRPREPARE <= {17{1'b0}};
     end else begin
@@ -790,7 +790,7 @@ module VDP_SPRITE (
     end
   end
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     case (DOTSTATE)
       2'b11: begin
         SPINFORAMWE <= 1'b0;
@@ -809,7 +809,7 @@ module VDP_SPRITE (
     endcase
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPPREPARELOCALPLANENUM <= {3{1'b0}};
       SPPREPAREEND <= 1'b0;
@@ -887,7 +887,7 @@ module VDP_SPRITE (
     end
   end
 
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     if ((DOTSTATE == 2'b01)) begin
       if ((SPSTATE == SPSTATE_PREPARE)) begin
         if ((EIGHTDOTSTATE == 3'b111)) begin
@@ -908,7 +908,7 @@ module VDP_SPRITE (
   //     :                         :
   // 224...255    DRAW LOCAL PLANE#7 TO LINE BUFFER
   //---------------------------------------------------------------------------
-  always @(posedge CLK21M, posedge RESET) begin : P1
+  always_ff @(posedge CLK21M, posedge RESET) begin : P1
     reg SPCC0FOUNDV;
     reg [2:0] LASTCC0LOCALPLANENUMV;
     reg [8:0] SPDRAWXV;
@@ -925,12 +925,14 @@ module VDP_SPRITE (
       SPLINEBUFDRAWCOLOR <= {8{1'b0}};
       SPLINEBUFDRAWX <= {8{1'b0}};
       SPDRAWCOLOR <= {4{1'b0}};
+
       VDPS0SPCOLLISIONINCIDENCEV = 1'b0;  // JP: スプライトが衝突したかどうかを示すフラグ
                                           // (Flag indicating whether the sprite has collided)
       VDPS3S4SPCOLLISIONXV = {1{1'b0}};
       VDPS5S6SPCOLLISIONYV = {1{1'b0}};
       SPCC0FOUNDV = 1'b0;
       LASTCC0LOCALPLANENUMV = {1{1'b0}};
+
     end else begin
       if ((SPSTATE == SPSTATE_YTEST_DRAW)) begin
         case (DOTSTATE)
@@ -1040,7 +1042,7 @@ module VDP_SPRITE (
   // Rendering to the screen. To be able to get the value when the VDP entity is in DOTSTATE="11",
   // output it at the "01" timing.
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPLINEBUFDISPX <= {8{1'b0}};
     end else begin
@@ -1056,7 +1058,7 @@ module VDP_SPRITE (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPWINDOWX <= 1'b0;
     end else begin
@@ -1072,7 +1074,7 @@ module VDP_SPRITE (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPLINEBUFDISPWE <= 1'b0;
     end else begin
@@ -1087,7 +1089,7 @@ module VDP_SPRITE (
 
   // JP: ウィンドウで表示をカットする
   // (Cut the display with the window)
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       SPCOLOROUT  <= 1'b0;
       // JP:  0=透明, 1=スプライトドット

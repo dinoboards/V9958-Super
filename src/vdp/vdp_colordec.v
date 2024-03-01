@@ -196,7 +196,7 @@ module VDP_COLORDEC (
   // FOR OTHERS
   assign W_FORE_COLOR = ((VDPMODETEXT1 | VDPMODETEXT1Q | VDPMODETEXT2) == 1'b1) ? COLORCODET12 : (SPRITECOLOROUT == 1'b1) ? COLORCODESPRITE : ((VDPMODEGRAPHIC1 | VDPMODEGRAPHIC2 | VDPMODEGRAPHIC3 | VDPMODEMULTI | VDPMODEMULTIQ) == 1'b1) ? COLORCODEG123M : COLORCODEG4567[3:0];
   assign W_BACK_COLOR = REG_R7_FRAME_COL[3:0];
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PALETTE_ADDR <= {4{1'b0}};
     end else begin
@@ -210,7 +210,7 @@ module VDP_COLORDEC (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PALETTE_ADDR_G5 <= {2{1'b0}};
     end else begin
@@ -232,7 +232,7 @@ module VDP_COLORDEC (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_GRP7_COLOR_CODE <= {8{1'b0}};
     end else begin
@@ -246,7 +246,7 @@ module VDP_COLORDEC (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_SPRITECOLOROUT <= 1'b0;
       FF_YJK_R <= {6{1'b0}};

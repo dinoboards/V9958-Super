@@ -169,7 +169,7 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   //  DOT STATE
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_DOTSTATE <= 2'b00;
       FF_VIDEO_DH_CLK <= 1'b0;
@@ -211,7 +211,7 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   //  8DOT STATE
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_EIGHTDOTSTATE <= 3'b000;
     end else begin
@@ -230,7 +230,7 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   assign W_PRE_X_CNT_START0 = {REG_R18_ADJ[3], REG_R18_ADJ[3:0]} + 5'b11000;  //  (-8...7) - 8 = (-16...-1)
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PRE_X_CNT_START1 <= {6{1'b0}};
     end else begin
@@ -241,7 +241,7 @@ module VDP_SSG (
 
   assign W_PRE_X_CNT_START2[8:6] = {3{FF_PRE_X_CNT_START1[5]}};
   assign W_PRE_X_CNT_START2[5:0] = FF_PRE_X_CNT_START1;
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_PRE_X_CNT <= {9{1'b0}};
     end else begin
@@ -253,7 +253,7 @@ module VDP_SSG (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_X_CNT <= {9{1'b0}};
     end else begin
@@ -274,7 +274,7 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   // GENERATE V-SYNC PULSE
   //---------------------------------------------------------------------------
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       IVIDEOVS_N <= 1'b1;
     end else begin
@@ -301,7 +301,7 @@ module VDP_SSG (
   // H_SCROLL = 6 --> 2
   // H_SCROLL = 7 --> 1
   assign W_LEFT_MASK = (REG_R25_MSK == 1'b0) ? {9{1'b0}} : {5'b00000, {1'b0, ~REG_R27_H_SCROLL} + 1};
-  always @(posedge CLK21M) begin
+  always_ff @(posedge CLK21M) begin
     // MAIN WINDOW
     if ((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
       // WHEN DOTCOUNTER_X = 0
@@ -309,7 +309,7 @@ module VDP_SSG (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_WINDOW_X <= 1'b0;
     end else begin
@@ -329,7 +329,7 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   assign W_HSYNC = (W_H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
   assign W_Y_ADJ = {REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7:4]};
-  always @(posedge CLK21M, posedge RESET) begin : P1
+  always_ff @(posedge CLK21M, posedge RESET) begin : P1
     reg [8:0] PREDOTCOUNTER_YP_V;
     reg [8:0] PREDOTCOUNTERYPSTART;
 

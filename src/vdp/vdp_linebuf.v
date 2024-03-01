@@ -100,15 +100,15 @@ module VDP_LINEBUF (
   reg [4:0] IMEM[0:639];
   reg [9:0] IADDRESS;
 
-  always @(posedge INCLOCK) begin
+  always_ff @(posedge INCLOCK) begin
     if (WE) begin
       IMEM[ADDRESS] <= DATA[5:1];  // data range required by YJK mode
     end
     IADDRESS <= ADDRESS;
   end
 
-  always @(*) begin
-    Q <= {IMEM[IADDRESS], 1'b0};
+  always_comb begin
+    Q = {IMEM[IADDRESS], 1'b0};
   end
 
 endmodule
