@@ -228,12 +228,12 @@ import custom_timings::*;
   // GENERATE DATA READ TIMING
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      XPOSITIONR <= {10{1'b0}};
+      XPOSITIONR <= 0;
     end else begin
       if(((HCOUNTERIN == DISP_START_X) || (HCOUNTERIN == (DISP_START_X + (CLOCKS_PER_HALF_LINE(PALMODE)))))) begin
-        XPOSITIONR <= {10{1'b0}};
+        XPOSITIONR <= 0;
       end else begin
-        XPOSITIONR <= XPOSITIONR + 1;
+        XPOSITIONR <= 10'(XPOSITIONR + 1);
       end
     end
   end

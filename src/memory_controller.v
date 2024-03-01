@@ -99,7 +99,7 @@ module memory_controller #(
           cycles <= 3'd1;
           r_read <= read;
 
-          if (write) total_written <= total_written + 1;
+          if (write) total_written <= 20'(total_written + 1);
         end
       end else if (MemInitializing) begin
         if (~MemBusy) begin

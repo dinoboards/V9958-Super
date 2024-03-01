@@ -115,24 +115,24 @@ import custom_timings::*;
   assign W_H_CNT_END  = (FF_H_CNT == (CLOCKS_PER_LINE(PAL_MODE) - 1)) ? 1'b1 : 1'b0;
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_H_CNT <= {11{1'b0}};
+      FF_H_CNT <= 0;
     end else begin
       if((W_H_CNT_END == 1'b1 || (W_FIELD_END == 1'b1 && W_H_CNT_HALF == 1'b1 && INTERLACE_MODE == 1'b0))) begin
-        FF_H_CNT <= {11{1'b0}};
+        FF_H_CNT <= 0;
       end else begin
-        FF_H_CNT <= FF_H_CNT + 1;
+        FF_H_CNT <= 11'(FF_H_CNT + 1);
       end
     end
   end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_H_CNT_IN_FIELD <= {11{1'b0}};
+      FF_H_CNT_IN_FIELD <= 0;
     end else begin
       if ((W_H_CNT_END == 1'b1 || W_H_CNT_HALF == 1'b1)) begin
-        FF_H_CNT_IN_FIELD <= {11{1'b0}};
+        FF_H_CNT_IN_FIELD <= 0;
       end else begin
-        FF_H_CNT_IN_FIELD <= FF_H_CNT_IN_FIELD + 1;
+        FF_H_CNT_IN_FIELD <= 11'(FF_H_CNT_IN_FIELD + 1);
       end
     end
   end
@@ -164,13 +164,13 @@ import custom_timings::*;
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_V_CNT_IN_FIELD <= {10{1'b0}};
+      FF_V_CNT_IN_FIELD <= 0;
     end else begin
       if (((W_H_CNT_HALF | W_H_CNT_END) == 1'b1)) begin
         if ((W_FIELD_END == 1'b1)) begin
-          FF_V_CNT_IN_FIELD <= {10{1'b0}};
+          FF_V_CNT_IN_FIELD <= 0;
         end else begin
-          FF_V_CNT_IN_FIELD <= FF_V_CNT_IN_FIELD + 1;
+          FF_V_CNT_IN_FIELD <= 10'(FF_V_CNT_IN_FIELD + 1);
         end
       end
     end
@@ -196,13 +196,13 @@ import custom_timings::*;
   //------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_V_CNT_IN_FRAME <= {11{1'b0}};
+      FF_V_CNT_IN_FRAME <= 0;
     end else begin
       if (((W_H_CNT_HALF | W_H_CNT_END) == 1'b1)) begin
         if ((W_FIELD_END == 1'b1 && (FF_FIELD == 1'b1 || INTERLACE_MODE == 1'b0))) begin
-          FF_V_CNT_IN_FRAME <= {11{1'b0}};
+          FF_V_CNT_IN_FRAME <= 0;
         end else begin
-          FF_V_CNT_IN_FRAME <= FF_V_CNT_IN_FRAME + 1;
+          FF_V_CNT_IN_FRAME <= 11'(FF_V_CNT_IN_FRAME + 1);
         end
       end
     end
