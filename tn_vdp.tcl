@@ -25,7 +25,7 @@ add_file src\\hdmi\\source_product_description_info_frame.sv
 add_file src\\hdmi\\tmds_channel.sv
 
 add_file src\\vdp\\vdp_colordec.v
-add_file src\\vdp\\vdp_command.v
+add_file src\\vdp\\vdp_command.vhd
 add_file src\\vdp\\vdp_doublebuf.v
 add_file src\\vdp\\vdp_graphic123m.v
 add_file src\\vdp\\vdp_graphic4567.v

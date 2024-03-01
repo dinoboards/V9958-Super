@@ -133,25 +133,26 @@ module VDP_COMMAND (
   reg  [10:0] SXTMP;  // S#8, S#9
   wire        W_VDPCMD_EN;  // VDP COMMAND STATE REGISTER
 
-  parameter [3:0]
-  STIDLE = 0,
-  STCHKLOOP = 1,
-  STRDCPU = 2,
-  STWAITCPU = 3,
-  STRDVRAM = 4,
-  STWAITRDVRAM = 5,
-  STPOINTWAITRDVRAM = 6,
-  STSRCHWAITRDVRAM = 7,
-  STPRERDVRAM = 8,
-  STWAITPRERDVRAM = 9,
-  STWRVRAM = 10,
-  STWAITWRVRAM = 11,
-  STLINENEWPOS = 12,
-  STLINECHKLOOP = 13,
-  STSRCHCHKLOOP = 14,
-  STEXECEND = 15;
+  typedef enum logic [3:0] {
+    STIDLE,
+    STCHKLOOP,
+    STRDCPU,
+    STWAITCPU,
+    STRDVRAM,
+    STWAITRDVRAM,
+    STPOINTWAITRDVRAM,
+    STSRCHWAITRDVRAM,
+    STPRERDVRAM,
+    STWAITPRERDVRAM,
+    STWRVRAM,
+    STWAITWRVRAM,
+    STLINENEWPOS,
+    STLINECHKLOOP,
+    STSRCHCHKLOOP,
+    STEXECEND
+  } type_state;
 
-  reg [3:0] STATE;
+  type_state STATE;
   parameter HMMC = 4'b1111;
   parameter YMMM = 4'b1110;
   parameter HMMM = 4'b1101;
@@ -188,7 +189,8 @@ module VDP_COMMAND (
   // 0 = NORMAL
   // 1 = VDP COMMAND ON TEXT/GRAPHIC1/GRAPHIC2/GRAPHIC3/MOSAIC MODE
   assign W_VDPCMD_EN = ((VDPMODEGRAPHIC4 | VDPMODEGRAPHIC5 | VDPMODEGRAPHIC6) == 1'b0) ? VDPMODEGRAPHIC7 | REG_R25_CMD : VDPMODEGRAPHIC4 | VDPMODEGRAPHIC5 | VDPMODEGRAPHIC6;
-  always @(posedge RESET, posedge CLK21M) begin : P1
+
+  always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
     reg [9:0] NXCOUNT;
     reg [10:0] XCOUNTDELTA;
@@ -218,32 +220,32 @@ module VDP_COMMAND (
       YCOUNTDELTA = {1{1'b0}};
       COLMASK = {1{1'b1}};
       RDXLOW = 2'b00;
-      SX         <= {9{1'b0}};  // R32
-      SY         <= {10{1'b0}};  // R34
-      DX         <= {9{1'b0}};  // R36
-      DY         <= {10{1'b0}};  // R38
-      NX         <= {10{1'b0}};  // R40
-      NY         <= {10{1'b0}};  // R42
-      CLR        <= {8{1'b0}};  // R44
-      MM         <= 1'b0;  // R45 BIT 0
-      EQ         <= 1'b0;  // R45 BIT 1
-      DIX        <= 1'b0;  // R45 BIT 2
-      DIY        <= 1'b0;  // R45 BIT 3
-      CMR        <= {8{1'b0}};  // R46
-      SXTMP      <= {11{1'b0}};
-      DXTMP      <= {10{1'b0}};
-      CMRWR      <= 1'b0;
-      REGWRACK   <= 1'b0;
-      VRAMWRREQ  <= 1'b0;
-      VRAMRDREQ  <= 1'b0;
-      VRAMWRDATA <= {8{1'b0}};
-      TR         <= 1'b1;  // TRANSFER READY
-      CE         <= 1'b0;  // COMMAND EXECUTING
-      BD         <= 1'b0;  // BORDER COLOR FOUND
-      TRCLRACK   <= 1'b0;
+      SX         = {9{1'b0}};  // R32
+      SY         = {10{1'b0}};  // R34
+      DX         = {9{1'b0}};  // R36
+      DY         = {10{1'b0}};  // R38
+      NX         = {10{1'b0}};  // R40
+      NY         = {10{1'b0}};  // R42
+      CLR        = {8{1'b0}};  // R44
+      MM         = 1'b0;  // R45 BIT 0
+      EQ         = 1'b0;  // R45 BIT 1
+      DIX        = 1'b0;  // R45 BIT 2
+      DIY        = 1'b0;  // R45 BIT 3
+      CMR        = {8{1'b0}};  // R46
+      SXTMP      = {11{1'b0}};
+      DXTMP      = {10{1'b0}};
+      CMRWR      = 1'b0;
+      REGWRACK   = 1'b0;
+      VRAMWRREQ  = 1'b0;
+      VRAMRDREQ  = 1'b0;
+      VRAMWRDATA = {8{1'b0}};
+      TR         = 1'b1;  // TRANSFER READY
+      CE         = 1'b0;  // COMMAND EXECUTING
+      BD         = 1'b0;  // BORDER COLOR FOUND
+      TRCLRACK   = 1'b0;
       VDPVRAMACCESSY = {1{1'b0}};
       VDPVRAMACCESSX = {1{1'b0}};
-      VRAMACCESSADDR <= {17{1'b0}};
+      VRAMACCESSADDR = {17{1'b0}};
 
     end else begin
       if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1))) begin
@@ -333,7 +335,7 @@ module VDP_COMMAND (
           end
         end
         HMMM, LMMM: begin
-          if(((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
+          if (((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
             NXLOOPEND = 1'b1;
           end else begin
             NXLOOPEND = 1'b0;
