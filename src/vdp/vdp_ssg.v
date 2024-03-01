@@ -107,7 +107,7 @@ module VDP_SSG (
   reg FF_VIDEO_DL_CLK;
   reg [5:0] FF_PRE_X_CNT_START1;
   reg [8:0] FF_RIGHT_MASK;
-  reg FF_WINDOW_X;  // WIRE
+  reg FF_WINDOW_X;
   wire [10:0] W_H_CNT;
   wire [10:0] W_H_CNT_IN_FIELD;
   wire [10:0] W_V_CNT_IN_FRAME;

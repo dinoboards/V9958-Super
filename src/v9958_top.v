@@ -336,16 +336,15 @@ module v9958_top(
 
     wire hdmi_reset;
 
-    always_ff@(posedge clk_w)
-    begin
+    always_ff@(posedge clk_w) begin
 
-        ff_video_reset <= 1'b0;
+      ff_video_reset <= 1'b0;
 
-        if (vdp_cx == 11'd0 && vdp_cy == 11'd0) begin
-            if ((pal_mode == 1'b0 && (cx_ntsc != 10'd0 || cy_ntsc != `NTSC_Y)) ||
-                (pal_mode == 1'b1 && (cx_pal != 10'd0 || cy_pal != `PAL_Y)))
-                ff_video_reset <= 1'b1;
-        end
+      if (vdp_cx == 11'd0 && vdp_cy == 11'd0) begin
+        if ((pal_mode == 1'b0 && !(cx_ntsc == 10'd0 && cy_ntsc == `NTSC_Y)) ||
+            (pal_mode == 1'b1 && !(cx_pal == 10'd0 && cy_pal == `PAL_Y)))
+            ff_video_reset <= 1'b1;
+      end
     end
 
     assign hdmi_reset = ff_video_reset | reset_w | ~ram_enabled;
@@ -417,8 +416,8 @@ module v9958_top(
             .VENDOR_NAME({"Unknown", 8'd0}), // Must be 8 bytes null-padded 7-bit ASCII
             .PRODUCT_DESCRIPTION({"FPGA", 96'd0}), // Must be 16 bytes null-padded 7-bit ASCII
             .SOURCE_DEVICE_INFORMATION(8'h00), // See README.md or CTA-861-G for the list of valid codes
-            .START_X(0), //(0),
-            .START_Y(`PAL_Y) //(147),
+            .START_X(0),
+            .START_Y(`PAL_Y)
             )
 
     hdmi_pal ( .clk_pixel_x5(clk_135_w),

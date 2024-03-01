@@ -141,7 +141,7 @@ import custom_timings::*;
   //  VERTICAL COUNTER
   //------------------------------------------------------------------------
   assign W_FIELD_END = FF_FIELD_END;
-  always @(posedge RESET or posedge CLK21M) begin
+  always_ff @(posedge RESET or posedge CLK21M) begin
     if (RESET) begin
       FF_FIELD_END <= 1'b0;
     end else if (CLK21M) begin
@@ -183,7 +183,6 @@ import custom_timings::*;
     if ((RESET == 1'b1)) begin
       FF_FIELD <= 1'b0;
     end else begin
-      // GENERATE FF_FIELD SIGNAL
       if (((W_H_CNT_HALF | W_H_CNT_END) == 1'b1)) begin
         if ((W_FIELD_END == 1'b1)) begin
           FF_FIELD <= ~FF_FIELD;

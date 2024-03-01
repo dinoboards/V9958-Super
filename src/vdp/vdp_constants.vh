@@ -16,7 +16,6 @@
 `define LED_TV_X_NTSC  -20
 `define LED_TV_X_PAL  -20
 
-`define PAL_Y 565 //= 625-60;
 
 // Vertical Display Parameters (NTSC)
 //                            [192 Lines]  [212 Lines]
@@ -34,3 +33,4 @@
 `define LED_TV_Y_PAL  3
 
 `define NTSC_Y 480 // (525-45)
+`define PAL_Y 576 // (625-60??????);
