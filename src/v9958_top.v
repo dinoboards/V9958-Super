@@ -290,12 +290,9 @@ module v9958_top(
     .PVIDEOB    ( VideoB          ),
     .PVIDEOHS_N    ( VideoHS_n          ),
     .PVIDEOVS_N    ( VideoVS_n          ),
-    .PVIDEOCS_N    ( VideoCS_n          ),
     .PVIDEODHCLK    ( VideoDHClk        ),
     .PVIDEODLCLK    ( VideoDLClk        ),
-    .DISPRESO    ( 1'b1                    ),  // VGA 31Khz
     .NTSC_PAL_TYPE    ( 1'b1              ),
-    .LEGACY_VGA    ( 1'b0              ),
     .VDP_ID      ( VDP_ID          ),
     .PAL_MODE           ( pal_mode                          ),
     .SPMAXSPR           ( 1'b0                              ),

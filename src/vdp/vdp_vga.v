@@ -114,7 +114,6 @@ module VDP_VGA (
     input wire [10:0] VCOUNTERIN,
     input wire PALMODE,
     input wire INTERLACEMODE,
-    input wire LEGACY_VGA,
     output wire [5:0] VIDEOROUT,
     output wire [5:0] VIDEOGOUT,
     output wire [5:0] VIDEOBOUT,

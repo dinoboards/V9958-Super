@@ -340,12 +340,9 @@ module VDP (
     output wire [5:0] PVIDEOB,
     output wire PVIDEOHS_N,
     output wire PVIDEOVS_N,
-    output wire PVIDEOCS_N,
     output wire PVIDEODHCLK,
     output wire PVIDEODLCLK,
-    input wire DISPRESO,
     input wire NTSC_PAL_TYPE,
-    input wire LEGACY_VGA,
     input wire [4:0] VDP_ID,
     output wire PAL_MODE,
     input wire SPMAXSPR,
@@ -411,7 +408,6 @@ module VDP (
 
   // VDP REGISTER ACCESS
   reg  [16:0] VDPVRAMACCESSADDR;
-  wire        DISPMODEVGA;
   reg         VDPVRAMREADINGR;
   reg         VDPVRAMREADINGA;
   wire [ 3:1] VDPR0DISPNUM;
@@ -549,12 +545,6 @@ module VDP (
   wire [ 5:0] IVIDEOB_VDP;
   wire        IVIDEOVS_N;
 
-  wire [ 5:0] IVIDEOR_NTSC_PAL;
-  wire [ 5:0] IVIDEOG_NTSC_PAL;
-  wire [ 5:0] IVIDEOB_NTSC_PAL;
-  wire        IVIDEOHS_N_NTSC_PAL;
-  wire        IVIDEOVS_N_NTSC_PAL;
-
   wire [ 5:0] IVIDEOR_VGA;
   wire [ 5:0] IVIDEOG_VGA;
   wire [ 5:0] IVIDEOB_VGA;
@@ -591,31 +581,11 @@ module VDP (
   //--------------------------------------------------------------
   // DISPLAY COMPONENTS
   //--------------------------------------------------------------
-  assign DISPMODEVGA = DISPRESO;  // DISPLAY RESOLUTION (0=15kHz, 1=31kHz)
-
   assign VDPR9PALMODE = REG_R9_PAL_MODE;
 
   assign IVIDEOR = IVIDEOR_VDP;
   assign IVIDEOG = IVIDEOG_VDP;
   assign IVIDEOB = IVIDEOB_VDP;
-
-  VDP_NTSC_PAL U_VDP_NTSC_PAL (
-      .CLK21M(CLK21M),
-      .RESET(RESET),
-      .PALMODE(VDPR9PALMODE),
-      .INTERLACEMODE(REG_R9_INTERLACE_MODE),
-      .VIDEORIN(IVIDEOR),
-      .VIDEOGIN(IVIDEOG),
-      .VIDEOBIN(IVIDEOB),
-      .VIDEOVSIN_N(IVIDEOVS_N),
-      .HCOUNTERIN(H_CNT),
-      .VCOUNTERIN(V_CNT),
-      .VIDEOROUT(IVIDEOR_NTSC_PAL),
-      .VIDEOGOUT(IVIDEOG_NTSC_PAL),
-      .VIDEOBOUT(IVIDEOB_NTSC_PAL),
-      .VIDEOHSOUT_N(IVIDEOHS_N_NTSC_PAL),
-      .VIDEOVSOUT_N(IVIDEOVS_N_NTSC_PAL)
-  );
 
   VDP_VGA U_VDP_VGA (
       .CLK21M(CLK21M),
@@ -628,7 +598,6 @@ module VDP (
       .VCOUNTERIN(V_CNT),
       .PALMODE(VDPR9PALMODE),
       .INTERLACEMODE(REG_R9_INTERLACE_MODE),
-      .LEGACY_VGA(LEGACY_VGA),
       .VIDEOROUT(IVIDEOR_VGA),
       .VIDEOGOUT(IVIDEOG_VGA),
       .VIDEOBOUT(IVIDEOB_VGA),
@@ -638,18 +607,15 @@ module VDP (
   );
 
   // CHANGE DISPLAY MODE BY EXTERNAL INPUT PORT.
-  assign PVIDEOR = (DISPMODEVGA == 1'b0) ? IVIDEOR_NTSC_PAL : IVIDEOR_VGA;
-  assign PVIDEOG = (DISPMODEVGA == 1'b0) ? IVIDEOG_NTSC_PAL : IVIDEOG_VGA;
-  assign PVIDEOB = (DISPMODEVGA == 1'b0) ? IVIDEOB_NTSC_PAL : IVIDEOB_VGA;
+  assign PVIDEOR = IVIDEOR_VGA;
+  assign PVIDEOG = IVIDEOG_VGA;
+  assign PVIDEOB = IVIDEOB_VGA;
 
   // H SYNC SIGNAL
-  assign PVIDEOHS_N = (DISPMODEVGA == 1'b0) ? IVIDEOHS_N_NTSC_PAL : IVIDEOHS_N_VGA;
+  assign PVIDEOHS_N = IVIDEOHS_N_VGA;
 
   // V SYNC SIGNAL
-  assign PVIDEOVS_N = (DISPMODEVGA == 1'b0) ? IVIDEOVS_N_NTSC_PAL : IVIDEOVS_N_VGA;
-
-  // THESE SIGNALS BELOW ARE OUTPUT DIRECTLY REGARDLESS OF DISPLAY MODE.
-  assign PVIDEOCS_N = ~(IVIDEOHS_N_NTSC_PAL ^ IVIDEOVS_N_NTSC_PAL);
+  assign PVIDEOVS_N = IVIDEOVS_N_VGA;
 
   //---------------------------------------------------------------------------
   // INTERRUPT

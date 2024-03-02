@@ -32,7 +32,6 @@ add_file src\\vdp\\vdp_graphic4567.v
 add_file src\\vdp\\vdp_hvcounter.v
 add_file src\\vdp\\vdp_interrupt.v
 add_file src\\vdp\\vdp_linebuf.v
-add_file src\\vdp\\vdp_ntsc_pal.v
 add_file src\\vdp\\vdp_package.v
 add_file src\\vdp\\vdp_register.v
 add_file src\\vdp\\vdp_spinforam.v
