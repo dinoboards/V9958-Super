@@ -1,5 +1,5 @@
-add_file src\\clocks.v
 add_file src\\clockdiv.v
+add_file src\\clocks.v
 add_file src\\interpo_mul.v
 add_file src\\interpo.v
 add_file src\\lpf1.v
@@ -12,6 +12,7 @@ add_file src\\ram.v
 add_file src\\sdram.v
 add_file src\\SPI_MCP3202.v
 add_file src\\v9958_top.v
+add_file src\\video_output.v
 add_file src\\vram.v
 
 add_file src\\hdmi\\audio_clock_regeneration_packet.sv
