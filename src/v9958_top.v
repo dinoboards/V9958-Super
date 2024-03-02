@@ -77,7 +77,6 @@ module v9958_top (
   wire  [ 7:0] VrmDbo;
   wire  [15:0] VrmDbi;
   wire         pVdpInt_n;
-  wire  [ 4:0] VDP_ID;
 
   wire         r9palmode;
 
@@ -181,7 +180,6 @@ module v9958_top (
 
   assign cd = csr_n == 0 ? CpuDbi : 8'bzzzzzzzz;
 
-  assign VDP_ID = 5'b00010;  // V9958
   assign scanlin = 1'b0;
 
   wire cswn_w;
@@ -268,7 +266,6 @@ module v9958_top (
       .PVIDEODHCLK    (VideoDHClk),
       .PVIDEODLCLK    (VideoDLClk),
       .NTSC_PAL_TYPE  (1'b1),
-      .VDP_ID         (VDP_ID),
       .PAL_MODE       (pal_mode),
       .SPMAXSPR       (1'b0),
       .CX             (vdp_cx),
@@ -327,7 +324,7 @@ module v9958_top (
 
   logic [2:0] tmds;
   logic [9:0] tmds_channels_ntsc[NUM_CHANNELS-1:0];
-  logic [9:0] tmds_channels_pal[NUM_CHANNELS-1:0];
+  logic [9:0] tmds_channels_pal [NUM_CHANNELS-1:0];
 
   video_output #(
       .VIDEO_ID_CODE(2),

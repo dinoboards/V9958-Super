@@ -13,8 +13,8 @@
 // OFFSET_X is the position when preDotCounter_x is -8. So,
 //    => (d+e+f-8*4-8*4)/4 => (100+102+56)/4 - 16 => 48 + 1 = 49
 `define OFFSET_X 7'd49
-`define LED_TV_X_NTSC  -20
-`define LED_TV_X_PAL  -20
+`define LED_TV_X_NTSC -20
+`define LED_TV_X_PAL -20
 
 
 // Vertical Display Parameters (NTSC)
@@ -29,8 +29,11 @@
 // OFFSET_Y is the start line of Top Border (192 Lines Mode)
 //    => l+g+h => 3 + 3 + 13 = 19
 `define OFFSET_Y 7'd16
-`define LED_TV_Y_NTSC  1
-`define LED_TV_Y_PAL  3
+`define LED_TV_Y_NTSC 1
+`define LED_TV_Y_PAL 3
 
 `define NTSC_Y 480 // (525-45)
 `define PAL_Y 576 // (625-60??????);
+
+
+`define VDP_ID 5'b00010  // V9958

@@ -81,6 +81,8 @@
 //      Fixed the write operation to the invalid register.
 //
 
+`include "vdp_constants.vh"
+
 module VDP_REGISTER (
     input wire RESET,
     input wire CLK21M,
@@ -174,8 +176,7 @@ module VDP_REGISTER (
     output wire VDPMODEGRAPHIC7,
     output wire VDPMODEISHIGHRES,
     output wire SPMODE2,
-    output wire VDPMODEISVRAMINTERLEAVE,
-    input wire [4:0] VDP_ID
+    output wire VDPMODEISVRAMINTERLEAVE
 );
 
   // S#2
@@ -266,13 +267,11 @@ module VDP_REGISTER (
       REG_R26_H_SCROLL <= {6{1'b0}};
     end else begin
       if ((HSYNC == 1'b1)) begin
-        REG_R1_DISP_ON   <= FF_R1_DISP_ON;
+        REG_R1_DISP_ON <= FF_R1_DISP_ON;
         REG_R0_DISP_MODE <= FF_R0_DISP_MODE;
         REG_R1_DISP_MODE <= FF_R1_DISP_MODE;
-        if ((VDP_ID != 5'b00000)) begin
-          REG_R25_SP2 <= FF_R25_SP2;
-          REG_R26_H_SCROLL <= FF_R26_H_SCROLL;
-        end
+        REG_R25_SP2 <= FF_R25_SP2;
+        REG_R26_H_SCROLL <= FF_R26_H_SCROLL;
       end
     end
   end
@@ -354,7 +353,7 @@ module VDP_REGISTER (
                 DBI <= {~REQ_VSYNC_INT_N, VDPS0SPOVERMAPPED, VDPS0SPCOLLISIONINCIDENCE, VDPS0SPOVERMAPPEDNUM};
               end
               4'b0001: begin  // READ S#1
-                DBI <= {2'b00, VDP_ID, ~REQ_HSYNC_INT_N};
+                DBI <= {2'b00, `VDP_ID, ~REQ_HSYNC_INT_N};
               end
               4'b0010: begin  // READ S#2
                 DBI <= {VDPCMDTR, VD, HD, VDPCMDBD, 2'b11, FIELD, VDPCMDCE};
@@ -686,23 +685,17 @@ module VDP_REGISTER (
               REG_R23_VSTART_LINE <= VDPP1DATA;
             end
             5'b11001: begin  // #25
-              if ((VDP_ID != 5'b00000)) begin
-                REG_R25_CMD <= VDPP1DATA[6];
-                REG_R25_YAE <= VDPP1DATA[4];
-                REG_R25_YJK <= VDPP1DATA[3];
-                REG_R25_MSK <= VDPP1DATA[1];
-                FF_R25_SP2  <= VDPP1DATA[0];
-              end
+              REG_R25_CMD <= VDPP1DATA[6];
+              REG_R25_YAE <= VDPP1DATA[4];
+              REG_R25_YJK <= VDPP1DATA[3];
+              REG_R25_MSK <= VDPP1DATA[1];
+              FF_R25_SP2  <= VDPP1DATA[0];
             end
             5'b11010: begin  // #26
-              if ((VDP_ID != 5'b00000)) begin
-                FF_R26_H_SCROLL <= VDPP1DATA[5:0];
-              end
+              FF_R26_H_SCROLL <= VDPP1DATA[5:0];
             end
             5'b11011: begin  // #27
-              if ((VDP_ID != 5'b00000)) begin
-                REG_R27_H_SCROLL <= VDPP1DATA[2:0];
-              end
+              REG_R27_H_SCROLL <= VDPP1DATA[2:0];
             end
             default: begin
             end

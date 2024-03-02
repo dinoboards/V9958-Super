@@ -343,7 +343,6 @@ module VDP (
     output wire PVIDEODHCLK,
     output wire PVIDEODLCLK,
     input wire NTSC_PAL_TYPE,
-    input wire [4:0] VDP_ID,
     output wire PAL_MODE,
     input wire SPMAXSPR,
     output wire [10:0] CX,
@@ -1243,8 +1242,7 @@ module VDP (
       .VDPMODEGRAPHIC7(VDPMODEGRAPHIC7),
       .VDPMODEISHIGHRES(VDPMODEISHIGHRES),
       .SPMODE2(SPMODE2),
-      .VDPMODEISVRAMINTERLEAVE(VDPMODEISVRAMINTERLEAVE),
-      .VDP_ID(VDP_ID)
+      .VDPMODEISVRAMINTERLEAVE(VDPMODEISVRAMINTERLEAVE)
   );
 
   //---------------------------------------------------------------------------
