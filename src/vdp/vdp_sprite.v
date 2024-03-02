@@ -498,7 +498,7 @@ module VDP_SPRITE (
   always_ff @(posedge CLK21M) begin
     if (((DOTSTATE == 2'b01) && (DOTCOUNTERX == 0))) begin
       // +1 SHOULD BE NEEDED. BECAUSE IT WILL BE DRAWN IN THE NEXT LINE.
-      FF_CUR_Y <= DOTCOUNTERYP + ({1'b0, REG_R23_VSTART_LINE}) + 1;
+      FF_CUR_Y <= 9'(DOTCOUNTERYP + ({1'b0, REG_R23_VSTART_LINE}) + 1);
     end
   end
 
@@ -620,14 +620,14 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_Y_TEST_SP_NUM <= {5{1'b0}};
+      FF_Y_TEST_SP_NUM <= 0;
     end else begin
       if ((DOTSTATE == 2'b01)) begin
         if ((DOTCOUNTERX == 0)) begin
-          FF_Y_TEST_SP_NUM <= {5{1'b0}};
+          FF_Y_TEST_SP_NUM <= 0;
         end else if ((EIGHTDOTSTATE == 3'b110)) begin
           if ((FF_Y_TEST_EN == 1'b1 && FF_Y_TEST_SP_NUM != 5'b11111)) begin
-            FF_Y_TEST_SP_NUM <= FF_Y_TEST_SP_NUM + 1;
+            FF_Y_TEST_SP_NUM <= 5'(FF_Y_TEST_SP_NUM + 1);
           end
         end
       end
@@ -640,16 +640,16 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_Y_TEST_LISTUP_ADDR <= {4{1'b0}};
+      FF_Y_TEST_LISTUP_ADDR <= 0;
     end else begin
       if ((DOTSTATE == 2'b01)) begin
         if ((DOTCOUNTERX == 0)) begin
           // INITIALIZE
-          FF_Y_TEST_LISTUP_ADDR <= {4{1'b0}};
+          FF_Y_TEST_LISTUP_ADDR <= 0;
         end else if ((EIGHTDOTSTATE == 3'b110)) begin
           // NEXT SPRITE [リストアップメモリが満杯になるまでインクリメント]
           if ((FF_Y_TEST_EN == 1'b1 && W_TARGET_SP_EN == 1'b1 && W_SP_OVERMAP == 1'b0 && W_SP_OFF == 1'b0)) begin
-            FF_Y_TEST_LISTUP_ADDR <= FF_Y_TEST_LISTUP_ADDR + 1;
+            FF_Y_TEST_LISTUP_ADDR <= 4'(FF_Y_TEST_LISTUP_ADDR + 1);
           end
         end
       end

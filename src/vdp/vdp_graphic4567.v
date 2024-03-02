@@ -220,55 +220,44 @@ module VDP_GRAPHIC4567 (
   // CONSIDER R#13 BLINKING TO FLIP PAGES
   assign W_SP2_H_SCROLL = ((REG_R25_SP2 & LATCHEDPTNNAMETBLBASEADDR[5]) == 1'b1) ? LOCALDOTCOUNTERX[8] : (FF_BLINK_STATE == 1'b0) ? LATCHEDPTNNAMETBLBASEADDR[5] : 1'b0;
   // VRAM ADDRESS MAPPINGS.
-  assign LOGICALVRAMADDRG45 = {
-    LATCHEDPTNNAMETBLBASEADDR[6],
-    W_SP2_H_SCROLL,
-    LATCHEDPTNNAMETBLBASEADDR[4:0] & DOTCOUNTERY[7:3],
-    DOTCOUNTERY[2:0],
-    LOCALDOTCOUNTERX[7:1]
-  };
-  assign LOGICALVRAMADDRG67 = {
-    W_SP2_H_SCROLL,
-    LATCHEDPTNNAMETBLBASEADDR[4:0] & DOTCOUNTERY[7:3],
-    DOTCOUNTERY[2:0],
-    LOCALDOTCOUNTERX[7:0]
-  };
+  assign LOGICALVRAMADDRG45 = {LATCHEDPTNNAMETBLBASEADDR[6], W_SP2_H_SCROLL, LATCHEDPTNNAMETBLBASEADDR[4:0] & DOTCOUNTERY[7:3], DOTCOUNTERY[2:0], LOCALDOTCOUNTERX[7:1]};
+  assign LOGICALVRAMADDRG67 = {W_SP2_H_SCROLL, LATCHEDPTNNAMETBLBASEADDR[4:0] & DOTCOUNTERY[7:3], DOTCOUNTERY[2:0], LOCALDOTCOUNTERX[7:0]};
 
   // FIFO CONTROL
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FIFOADDR_IN <= {8{1'b0}};
+      FIFOADDR_IN <= 0;
     end else begin
       if ((DOTSTATE == 2'b00)) begin
         if ((EIGHTDOTSTATE == 3'b000 && DOTCOUNTERX == 0)) begin
-          FIFOADDR_IN <= {8{1'b0}};
+          FIFOADDR_IN <= 0;
         end
       end else if ((FIFOIN == 1'b1)) begin
-        FIFOADDR_IN <= FIFOADDR_IN + 1;
+        FIFOADDR_IN <= 8'(FIFOADDR_IN + 1);
       end
     end
   end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FIFOADDR_OUT <= {8{1'b0}};
+      FIFOADDR_OUT <= 0;
     end else begin
       case (DOTSTATE)
         2'b00: begin
         end
         2'b01: begin
           if (((VDPMODEGRAPHIC4 == 1'b0) && (VDPMODEGRAPHIC5 == 1'b0))) begin
-            FIFOADDR_OUT <= FIFOADDR_OUT + 1;
+            FIFOADDR_OUT <= 8'(FIFOADDR_OUT + 1);
           end else if ((EIGHTDOTSTATE[0] == 1'b0)) begin
             // GRAPHIC4, 5
-            FIFOADDR_OUT <= FIFOADDR_OUT + 1;
+            FIFOADDR_OUT <= 8'(FIFOADDR_OUT + 1);
           end
         end
         2'b11: begin
         end
         2'b10: begin
           if ((DOTCOUNTERX == 8'h04)) begin
-            FIFOADDR_OUT <= {8{1'b0}};
+            FIFOADDR_OUT <= 0;
           end
         end
         default: begin
@@ -285,8 +274,7 @@ module VDP_GRAPHIC4567 (
         2'b00: begin
           if ((EIGHTDOTSTATE == 3'b000)) begin
             FIFOIN <= 1'b0;
-          end
-        else if(((EIGHTDOTSTATE == 3'b001) || (EIGHTDOTSTATE == 3'b010) || (EIGHTDOTSTATE == 3'b011) || (EIGHTDOTSTATE == 3'b100))) begin
+          end else if (((EIGHTDOTSTATE == 3'b001) || (EIGHTDOTSTATE == 3'b010) || (EIGHTDOTSTATE == 3'b011) || (EIGHTDOTSTATE == 3'b100))) begin
             FIFOIN <= 1'b1;
           end
         end
@@ -351,7 +339,7 @@ module VDP_GRAPHIC4567 (
   end
 
   // YJK COLOR CONVERT
-  assign W_Y = W_PIX[7:3];   //  Y ( 0...31)
+  assign W_Y = W_PIX[7:3];  //  Y ( 0...31)
   assign W_J = {FF_PIX3[2:0], FF_PIX2[2:0]};  //  J (-32...31)
   assign W_K = {FF_PIX1[2:0], FF_PIX0[2:0]};  //  K (-32...31)
 
@@ -362,9 +350,9 @@ module VDP_GRAPHIC4567 (
   assign W_B_YJKP = ({1'b0, W_B_Y}) - ({W_B_JK[7], W_B_JK}) + 9'b000000010;  //  (Y * 5 - (J * 2 + K) + 2)   (-91...253)
   assign W_B_YJK = W_B_YJKP[8:2];  //  (Y * 5 - (J * 2 + K) + 2)/4 (-22...63)
 
-  assign W_R = (W_R_YJK[6] == 1'b1) ? {6{1'b0}} : (W_R_YJK[5] == 1'b1) ? {6{1'b1}} : {W_R_YJK[4:0],1'b0};
-  assign W_G = (W_G_YJK[6] == 1'b1) ? {6{1'b0}} : (W_G_YJK[5] == 1'b1) ? {6{1'b1}} : {W_G_YJK[4:0],1'b0};
-  assign W_B = (W_B_YJK[6] == 1'b1) ? {6{1'b0}} : (W_B_YJK[5] == 1'b1) ? {6{1'b1}} : {W_B_YJK[4:0],1'b0};
+  assign W_R = (W_R_YJK[6] == 1'b1) ? {6{1'b0}} : (W_R_YJK[5] == 1'b1) ? {6{1'b1}} : {W_R_YJK[4:0], 1'b0};
+  assign W_G = (W_G_YJK[6] == 1'b1) ? {6{1'b0}} : (W_G_YJK[5] == 1'b1) ? {6{1'b1}} : {W_G_YJK[4:0], 1'b0};
+  assign W_B = (W_B_YJK[6] == 1'b1) ? {6{1'b0}} : (W_B_YJK[5] == 1'b1) ? {6{1'b1}} : {W_B_YJK[4:0], 1'b0};
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -423,14 +411,13 @@ module VDP_GRAPHIC4567 (
   assign W_DOTCOUNTERX = {DOTCOUNTERX[8:3] + REG_R26_H_SCROLL, 3'b000};
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      LOCALDOTCOUNTERX <= {9{1'b0}};
+      LOCALDOTCOUNTERX <= 0;
     end else begin
       if ((DOTSTATE == 2'b00)) begin
         if ((EIGHTDOTSTATE == 3'b000)) begin
           LOCALDOTCOUNTERX <= W_DOTCOUNTERX;
-        end
-        else if(((EIGHTDOTSTATE == 3'b001) || (EIGHTDOTSTATE == 3'b010) || (EIGHTDOTSTATE == 3'b011) || (EIGHTDOTSTATE == 3'b100))) begin
-          LOCALDOTCOUNTERX <= LOCALDOTCOUNTERX + 2;
+        end else if (((EIGHTDOTSTATE == 3'b001) || (EIGHTDOTSTATE == 3'b010) || (EIGHTDOTSTATE == 3'b011) || (EIGHTDOTSTATE == 3'b100))) begin
+          LOCALDOTCOUNTERX <= 9'(LOCALDOTCOUNTERX + 2);
         end
       end
     end
@@ -440,19 +427,19 @@ module VDP_GRAPHIC4567 (
   assign W_BLINK_SYNC = ((DOTCOUNTERX == 0) && (DOTCOUNTERY == 0) && (DOTSTATE == 2'b00) && (REG_R1_BL_CLKS == 1'b0)) ? 1'b1 : ((DOTCOUNTERX == 0) && (DOTSTATE == 2'b00) && (REG_R1_BL_CLKS == 1'b1)) ? 1'b1 : 1'b0;
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_BLINK_CLK_CNT <= {4{1'b0}};
-      FF_BLINK_STATE <= 1'b0;
-      FF_BLINK_PERIOD_CNT <= {4{1'b0}};
+      FF_BLINK_CLK_CNT <= 0;
+      FF_BLINK_STATE <= 0;
+      FF_BLINK_PERIOD_CNT <= 0;
     end else begin
       if ((W_BLINK_SYNC == 1'b1)) begin
         if ((FF_BLINK_CLK_CNT == 4'b1001)) begin
-          FF_BLINK_CLK_CNT <= {4{1'b0}};
-          FF_BLINK_PERIOD_CNT <= FF_BLINK_PERIOD_CNT + 1;
+          FF_BLINK_CLK_CNT <= 0;
+          FF_BLINK_PERIOD_CNT <= 4'(FF_BLINK_PERIOD_CNT + 1);
         end else begin
-          FF_BLINK_CLK_CNT <= FF_BLINK_CLK_CNT + 1;
+          FF_BLINK_CLK_CNT <= 4'(FF_BLINK_CLK_CNT + 1);
         end
         if ((FF_BLINK_PERIOD_CNT >= W_BLINK_CNT_MAX)) begin
-          FF_BLINK_PERIOD_CNT <= {4{1'b0}};
+          FF_BLINK_PERIOD_CNT <= 0;
           if ((REG_R13_BLINK_PERIOD[7:4] == 4'b0000)) begin
             // WHEN ON PERIOD IS 0, THE PAGE SELECTED SHOULD BE ALWAYS ODD / R#2
             FF_BLINK_STATE <= 1'b0;
