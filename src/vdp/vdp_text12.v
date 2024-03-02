@@ -184,10 +184,10 @@ module VDP_TEXT12 (
           DOTCOUNTER24 <= {5{1'b0}};
         end else begin
           if ((DOTCOUNTER24[2:0] == 3'b101)) begin
-            DOTCOUNTER24[4:3] <= DOTCOUNTER24[4:3] + 1;
+            DOTCOUNTER24[4:3] <= 2'(DOTCOUNTER24[4:3] + 1);
             DOTCOUNTER24[2:0] <= 3'b000;
           end else begin
-            DOTCOUNTER24[2:0] <= DOTCOUNTER24[2:0] + 1;
+            DOTCOUNTER24[2:0] <= 3'(DOTCOUNTER24[2:0] + 1);
           end
         end
       end
@@ -231,7 +231,7 @@ module VDP_TEXT12 (
       PRAMADR <= {17{1'b0}};
       ITXVRAMREADEN <= 1'b0;
       ITXVRAMREADEN2 <= 1'b0;
-      TXCHARCOUNTERX <= {7{1'b0}};
+      TXCHARCOUNTERX <= 0;
       PREBLINK <= {8{1'b0}};
       TXCHARCOUNTERSTARTOFLINE <= {12{1'b0}};
     end else begin
@@ -252,7 +252,7 @@ module VDP_TEXT12 (
                 // READ PATTERN NAME TABLE
                 PRAMADR <= LOGICALVRAMADDRNAM;
                 ITXVRAMREADEN <= 1'b1;
-                TXCHARCOUNTERX <= TXCHARCOUNTERX + 1;
+                TXCHARCOUNTERX <= 7'(TXCHARCOUNTERX + 1);
               end
               3'b010: begin
                 // READ PATTERN GENERATOR TABLE
@@ -265,7 +265,7 @@ module VDP_TEXT12 (
                 PRAMADR <= LOGICALVRAMADDRNAM;
                 ITXVRAMREADEN2 <= 1'b1;
                 if ((VDPMODETEXT2 == 1'b1)) begin
-                  TXCHARCOUNTERX <= TXCHARCOUNTERX + 1;
+                  TXCHARCOUNTERX <= 7'(TXCHARCOUNTERX + 1);
                 end
               end
               3'b101: begin
@@ -416,19 +416,19 @@ module VDP_TEXT12 (
   assign W_BLINK_SYNC = ((DOTCOUNTERX == 0) && (DOTCOUNTERYP == 0) && (DOTSTATE == 2'b00) && (REG_R1_BL_CLKS == 1'b0)) ? 1'b1 : ((DOTCOUNTERX == 0) && (DOTSTATE == 2'b00) && (REG_R1_BL_CLKS == 1'b1)) ? 1'b1 : 1'b0;
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_BLINK_CLK_CNT <= {4{1'b0}};
-      FF_BLINK_STATE <= 1'b0;
-      FF_BLINK_PERIOD_CNT <= {4{1'b0}};
+      FF_BLINK_CLK_CNT <= 0;
+      FF_BLINK_STATE <= 0;
+      FF_BLINK_PERIOD_CNT <= 0;
     end else begin
       if ((W_BLINK_SYNC == 1'b1)) begin
         if ((FF_BLINK_CLK_CNT == 4'b1001)) begin
-          FF_BLINK_CLK_CNT <= {4{1'b0}};
-          FF_BLINK_PERIOD_CNT <= FF_BLINK_PERIOD_CNT + 1;
+          FF_BLINK_CLK_CNT <= 0;
+          FF_BLINK_PERIOD_CNT <= 4'(FF_BLINK_PERIOD_CNT + 1);
         end else begin
-          FF_BLINK_CLK_CNT <= FF_BLINK_CLK_CNT + 1;
+          FF_BLINK_CLK_CNT <= 4'(FF_BLINK_CLK_CNT + 1);
         end
         if ((FF_BLINK_PERIOD_CNT >= W_BLINK_CNT_MAX)) begin
-          FF_BLINK_PERIOD_CNT <= {4{1'b0}};
+          FF_BLINK_PERIOD_CNT <= 0;
           if ((REG_R13_BLINK_PERIOD[7:4] == 4'b0000)) begin
             // WHEN ON PERIOD IS 0, THE PAGE SELECTED SHOULD BE ALWAYS ODD / R#2
             FF_BLINK_STATE <= 1'b0;

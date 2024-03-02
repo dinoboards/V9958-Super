@@ -917,9 +917,9 @@ module VDP (
           IRAMADR <= VDPVRAMACCESSADDR;
         end
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
-          VDPVRAMACCESSADDR[13:0] <= VDPVRAMACCESSADDR[13:0] + 1;
+          VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDR[13:0] + 1);
         end else begin
-          VDPVRAMACCESSADDR <= VDPVRAMACCESSADDR + 1;
+          VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDR + 1);
         end
         PRAMDBO <= VDPVRAMACCESSDATA;
         PRAMOE_N <= 1'b1;
@@ -945,9 +945,9 @@ module VDP (
           IRAMADR <= VDPVRAMACCESSADDRV;
         end
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
-          VDPVRAMACCESSADDR[13:0] <= VDPVRAMACCESSADDRV[13:0] + 1;
+          VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDRV[13:0] + 1);
         end else begin
-          VDPVRAMACCESSADDR <= VDPVRAMACCESSADDRV + 1;
+          VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDRV + 1);
         end
         PRAMDBO <= {8{1'bZ}};
         PRAMOE_N <= 1'b0;
