@@ -478,7 +478,7 @@ module VDP_REGISTER (
       REG_R9_INTERLACE_MODE <= 1'b0;
       REG_R9_Y_DOTS <= 1'b0;
       VDPR15STATUSREGNUM <= {4{1'b0}};
-      VDPR16PALNUM <= {4{1'b0}};
+      VDPR16PALNUM <= 0;
       VDPR17REGNUM <= {6{1'b0}};
       VDPR17INCREGNUM <= 1'b0;
       REG_R18_VERT <= {4{1'b0}};
@@ -585,7 +585,7 @@ module VDP_REGISTER (
               PALETTEWRNUM <= VDPR16PALNUM;
               FF_PALETTE_WR_REQ <= ~FF_PALETTE_WR_ACK;
               VDPP2IS1STBYTE <= 1'b1;
-              VDPR16PALNUM <= VDPR16PALNUM + 1;
+              VDPR16PALNUM <= 4'(VDPR16PALNUM + 1);
             end
           end
           2'b11: begin  // PORT#3: INDIRECT REGISTER WRITE
@@ -596,7 +596,7 @@ module VDP_REGISTER (
             VDPP1DATA <= DBO;
             VDPREGPTR <= VDPR17REGNUM;
             if ((VDPR17INCREGNUM == 1'b1)) begin
-              VDPR17REGNUM <= VDPR17REGNUM + 1;
+              VDPR17REGNUM <= 6'(VDPR17REGNUM + 1);
             end
           end
           default: begin

@@ -3,9 +3,6 @@
 `include "vdp_constants.vh"
 
 module v9958_top(
-    output  led5_n,
-    output  led4_n,
-
     input   A7,
     input   A6,
     input   A5,
@@ -33,7 +30,6 @@ module v9958_top(
     output  adc_cs,
     output  adc_mosi,
     input   adc_miso,
-
 
     output            tmds_clk_p,
     output            tmds_clk_n,
@@ -81,7 +77,6 @@ module v9958_top(
   wire  [15:0]  VrmDbi;
   wire          pVdpInt_n;
   wire  [4:0]  VDP_ID;
-  wire            blank_o;
 
   wire            r9palmode;
 
@@ -298,7 +293,6 @@ module v9958_top(
     .PVIDEOCS_N    ( VideoCS_n          ),
     .PVIDEODHCLK    ( VideoDHClk        ),
     .PVIDEODLCLK    ( VideoDLClk        ),
-    .BLANK_o    ( blank_o          ),
     .DISPRESO    ( 1'b1                    ),  // VGA 31Khz
     .NTSC_PAL_TYPE    ( 1'b1              ),
     .LEGACY_VGA    ( 1'b0              ),
@@ -348,9 +342,6 @@ module v9958_top(
     end
 
     assign hdmi_reset = ff_video_reset | reset_w | ~ram_enabled;
-
-    assign led5_n = ~ff_video_reset;
-    // assign led4_n = ~video_reset;
 
     wire clk_audio;
     CLOCK_DIV #(

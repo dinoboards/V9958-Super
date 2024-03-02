@@ -30,12 +30,15 @@ module CLOCK_DIV #(
     output clk_div
 );
 
-  localparam int CLK_HALF = $floor(CLK_SRC / CLK_DIV / 2.0);
-  localparam int CLK_END = $floor(CLK_SRC / CLK_DIV);
+  localparam int CLK_HALF = $rtoi($floor(CLK_SRC / CLK_DIV / 2.0));
+  localparam int CLK_END = $rtoi($floor(CLK_SRC / CLK_DIV));
   localparam real CLK_SKEW = (CLK_SRC / CLK_DIV) - $floor(CLK_SRC / CLK_DIV);
-  localparam int SKW_TICKS = $floor(CLK_SKEW / 2.0 / (1.0 / ($pow(2.0, $itor(PRECISION_BITS)) - 1)));
+  localparam int SKW_TICKS = $rtoi($floor(CLK_SKEW / 2.0 / (1.0 / ($pow(2.0, $itor(PRECISION_BITS)) - 1))));
 
-  logic [$clog2(CLK_END-1):0] cdiv = 1;
+  localparam C_DEV_PRECISION_BITS_MSB = $clog2(CLK_END - 1);
+  localparam C_DEV_PRECISION_BITS = (C_DEV_PRECISION_BITS_MSB+1);
+
+  logic [C_DEV_PRECISION_BITS_MSB:0] cdiv = 1;
   logic [PRECISION_BITS:0] sdiff = 0;
   logic clk_skew = 0;
   logic clkd;
@@ -47,9 +50,9 @@ module CLOCK_DIV #(
       else begin
         clkd <= ~clkd;
         if (cdiv == CLK_END - 1) begin
-          sdiff = sdiff + SKW_TICKS;
+          sdiff = PRECISION_BITS'(sdiff + SKW_TICKS);
           cdiv  = 0;
-        end else cdiv = cdiv + 1;
+        end else cdiv = C_DEV_PRECISION_BITS'(cdiv + 1);
 
       end
     else sdiff[PRECISION_BITS-1] = 0;

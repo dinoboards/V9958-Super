@@ -343,7 +343,6 @@ module VDP (
     output wire PVIDEOCS_N,
     output wire PVIDEODHCLK,
     output wire PVIDEODLCLK,
-    output wire BLANK_o,
     input wire DISPRESO,
     input wire NTSC_PAL_TYPE,
     input wire LEGACY_VGA,
@@ -635,7 +634,6 @@ module VDP (
       .VIDEOBOUT(IVIDEOB_VGA),
       .VIDEOHSOUT_N(IVIDEOHS_N_VGA),
       .VIDEOVSOUT_N(IVIDEOVS_N_VGA),
-      .BLANK_O(BLANK_O),
       .RATIOMODE(RATIOMODE)
   );
 

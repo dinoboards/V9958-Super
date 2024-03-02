@@ -757,8 +757,8 @@ module VDP_SPRITE (
   assign SPATTRIB_ADDR = {SPATTRTBLBASEADDR, SPPREPAREPLANENUM};
 
   assign READVRAMADDRPTREAD = (REG_R1_SP_SIZE == 1'b0) ?
-    {SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:0],SPPREPARELINENUM[2:0]} :                 // 16X16 MODE
-    {SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:2],SPPREPAREXPOS,SPPREPARELINENUM[3:0]};    // 16X16 MODE
+    17'({SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:0],SPPREPARELINENUM[2:0]}) :
+    17'({SPPTNGENETBLBASEADDR,SPPREPAREPATTERNNUM[7:2],SPPREPAREXPOS,SPPREPARELINENUM[3:0]});    // 16X16 MODE
   assign READVRAMADDRCREAD = (SPMODE2 == 1'b0) ? {SPATTRIB_ADDR, 2'b11} : {SPATTRTBLBASEADDR[9:3], ~SPATTRTBLBASEADDR[2], SPPREPAREPLANENUM, SPPREPARELINENUM};
 
   always_ff @(posedge RESET, posedge CLK21M) begin
@@ -811,7 +811,7 @@ module VDP_SPRITE (
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      SPPREPARELOCALPLANENUM <= {3{1'b0}};
+      SPPREPARELOCALPLANENUM <= 0;
       SPPREPAREEND <= 1'b0;
     end else begin
       // PREPAREING
@@ -859,7 +859,7 @@ module VDP_SPRITE (
                 // EC   32ドット左シフト (1: する, 0: しない)
                 // (32-dot left shift (1: do, 0: don't))
                 if ((PRAMDAT[7] == 1'b1)) begin
-                  SPINFORAMX_IN <= SPINFORAMX_IN - 32;
+                  SPINFORAMX_IN <= 9'(SPINFORAMX_IN - 32);
                 end
                 // IF ALL OF THE SPRITES LIST-UPED ARE READED,
                 // THE SPRITES LEFT SHOULD NOT BE DRAWN.
@@ -868,7 +868,7 @@ module VDP_SPRITE (
                 end
               end
               3'b111: begin
-                SPPREPARELOCALPLANENUM <= SPPREPARELOCALPLANENUM + 1;
+                SPPREPARELOCALPLANENUM <= 3'(SPPREPARELOCALPLANENUM + 1);
                 if (((SPPREPARELOCALPLANENUM == 7) || (SPMAXSPR == 1'b0 && (SPPREPARELOCALPLANENUM == 3 && SPMODE2 == 1'b0)))) begin
                   SPPREPAREEND <= 1'b1;
                 end
@@ -877,8 +877,8 @@ module VDP_SPRITE (
               end
             endcase
           end else begin
-            SPPREPARELOCALPLANENUM <= {3{1'b0}};
-            SPPREPAREEND <= 1'b0;
+            SPPREPARELOCALPLANENUM <= 0;
+            SPPREPAREEND <= 0;
           end
         end
         default: begin
@@ -949,7 +949,7 @@ module VDP_SPRITE (
               if (((REG_R1_SP_ZOOM == 1'b0) || (DOTCOUNTERX[0] == 1'b1))) begin
                 SPDRAWPATTERN <= {SPDRAWPATTERN[14:0], 1'b0};
               end
-              SPDRAWXV = SPDRAWX + 1;
+              SPDRAWXV = 9'(SPDRAWX + 1);
             end
             SPDRAWX <= SPDRAWXV;
             SPLINEBUFDRAWX <= SPDRAWXV[7:0];
@@ -998,9 +998,9 @@ module VDP_SPRITE (
                 // JP: スプライトが衝突。
                 // sprite colision occured
                 VDPS0SPCOLLISIONINCIDENCEV = 1'b1;
-                VDPS3S4SPCOLLISIONXV = SPDRAWX + 12;
+                VDPS3S4SPCOLLISIONXV = 9'(SPDRAWX + 12);
                 // note: drawing line is previous line.
-                VDPS5S6SPCOLLISIONYV = FF_CUR_Y + 7;
+                VDPS5S6SPCOLLISIONYV = 9'(FF_CUR_Y + 7);
               end
             end
             //
@@ -1010,7 +1010,7 @@ module VDP_SPRITE (
               LASTCC0LOCALPLANENUMV = {1{1'b0}};
               SPCC0FOUNDV = 1'b0;
             end else if ((DOTCOUNTERX[4:0] == 0)) begin
-              SPPREDRAWLOCALPLANENUM <= SPPREDRAWLOCALPLANENUM + 1;
+              SPPREDRAWLOCALPLANENUM <= 3'(SPPREDRAWLOCALPLANENUM + 1);
               if (((SPPREDRAWLOCALPLANENUM == 7) || (SPMAXSPR == 1'b0 && (SPPREDRAWLOCALPLANENUM == 3 && SPMODE2 == 1'b0)))) begin
                 SPPREDRAWEND <= 1'b1;
               end
@@ -1044,7 +1044,7 @@ module VDP_SPRITE (
   //---------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      SPLINEBUFDISPX <= {8{1'b0}};
+      SPLINEBUFDISPX <= 0;
     end else begin
       if ((DOTSTATE == 2'b10)) begin
         // JP: DOTCOUNTERと実際の表示(カラーコードの出力)は8ドットずれている
@@ -1052,7 +1052,7 @@ module VDP_SPRITE (
         if ((DOTCOUNTERX == 8)) begin
           SPLINEBUFDISPX <= {5'b00000, REG_R27_H_SCROLL};
         end else begin
-          SPLINEBUFDISPX <= SPLINEBUFDISPX + 1;
+          SPLINEBUFDISPX <= 8'(SPLINEBUFDISPX + 1);
         end
       end
     end

@@ -120,7 +120,6 @@ module VDP_VGA (
     output wire [5:0] VIDEOBOUT,
     output wire VIDEOHSOUT_N,
     output wire VIDEOVSOUT_N,
-    output wire BLANK_O,
     input wire [2:0] RATIOMODE
 );
 
@@ -249,8 +248,5 @@ import custom_timings::*;
 
   assign VIDEOHSOUT_N = FF_HSYNC_N;
   assign VIDEOVSOUT_N = FF_VSYNC_N;
-
-  // HDMI SUPPORT
-  assign BLANK_O = (VIDEOOUTX == 1'b0 || FF_VSYNC_N == 1'b0) ? 1'b1 : 1'b0;
 
 endmodule
