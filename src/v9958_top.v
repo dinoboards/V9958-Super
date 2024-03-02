@@ -15,7 +15,6 @@ module v9958_top(
     input   iorq_n,
 
     input   clk,
-    // input   clk_50,
 
     input   s1,
 
@@ -54,12 +53,14 @@ module v9958_top(
   localparam AUDIO_BIT_WIDTH = 16;
   localparam NUM_CHANNELS = 3;
 
-  wire    addr;
+  bit rst_n;
+
+  logic   addr;
   wire    csw_n;
   wire    csr_n;
 
-  assign ADDR = A7 & ~A6 & ~A5 & A4 & A3 & ~A2;   // $98 TO $9B
-  assign cs_n = !(ADDR & (!iorq_n));
+  assign addr = A7 & ~A6 & ~A5 & A4 & A3 & ~A2;   // $98 TO $9B
+  assign cs_n = !(addr & (!iorq_n));
 
   assign csw_n = !((!cs_n) & (!wr_n));
   assign csr_n = !((!cs_n) & (!rd_n));
@@ -94,27 +95,37 @@ module v9958_top(
 
   wire clk_bufg;
 
-  wire clk_135_w;
-  wire clk_135_lock_w;
 
-  wire clk_sdram_w;
-  wire clk_sdramp_w;
-  wire clk_sdram_lock_w;
 
   logic [9:0] cy;
   logic [9:0] cx;
 
-  wire clk_w;
-  BUFG clk_bufg_inst(
-  .O(clk_w),
-  .I(clk)
+  // ----------------------------------------
+  // ALL CLOCKS
+  // ----------------------------------------
+  bit clk_w;
+  bit clk_135_w;
+  bit clk_135_lock_w;
+  bit sckclk_w;
+  bit clk_audio_w;
+  bit clk_sdram_w;
+  bit clk_sdramp_w;
+  bit clk_sdram_lock_w;
+
+  clocks clocks (
+    .rst_n(rst_n),
+    .clk(clk),
+    .clk_w(clk_w),
+    .clk_135_w(clk_135_w),
+    .clk_135_lock_w(clk_135_lock_w),
+    .sckclk_w(sckclk_w),
+    .clk_audio_w(clk_audio_w),
+    .clk_sdram_w(clk_sdram_w),
+    .clk_sdramp_w(clk_sdramp_w),
+    .clk_sdram_lock_w(clk_sdram_lock_w)
   );
 
-    // wire clk_50_w;
-    // BUFG clk_50_bufg_inst(
-    // .O(clk_50_w),
-    // .I(clk_50)
-    // );
+  // ----------------------------------------
 
     reg s1_n = 0;
     always_ff @(posedge clk_w) s1_n <= ~s1;
@@ -124,37 +135,8 @@ module v9958_top(
     .I(s1_n)
     );
 
-    CLK_135 clk_135_inst(
-        .clkout(clk_135), //output clkout
-        .lock(clk_135_lock_w), //output lock
-        .reset(~rst_n), //input reset
-        .clkin(clk) //input clkin
-    );
-
-    BUFG clk_135_bufg_inst(
-    .O(clk_135_w),
-    .I(clk_135)
-    );
-
     wire rst_n_w;
     assign rst_n_w = rst_n & clk_135_lock_w & clk_sdram_lock_w;
-
-    CLK_108P clk_sdramp_inst (
-      .clkout(clk_sdram), //output clkout
-      .lock(clk_sdram_lock_w), //output lock
-      .clkoutp(clk_sdramp), //output clkoutp
-      .reset(~rst_n), //input reset
-      .clkin(clk) //input clkin
-    );
-
-    BUFG clk_sdram_bufg_inst(
-    .O(clk_sdram_w),
-    .I(clk_sdram)
-    );
-    BUFG clk_sdramp_bufg_inst(
-    .O(clk_sdramp_w),
-    .I(clk_sdramp)
-    );
 
     wire reset_w;
     assign reset_n_w = rst_n_w & reset_n;
@@ -340,19 +322,6 @@ module v9958_top(
 
     assign hdmi_reset = ff_video_reset | reset_w | ~ram_enabled;
 
-    wire clk_audio;
-    CLOCK_DIV #(
-        .CLK_SRC(27),
-        .CLK_DIV(0.044100),
-        .PRECISION_BITS(16)
-    ) audioclkd (
-        .clk_src(clk_w),
-        .clk_div(clk_audio)
-    );
-    BUFG clk_audio_bufg_inst(
-    .O(clk_audio_w),
-    .I(clk_audio)
-    );
 
 
     wire [15:0] sample_w;
@@ -460,7 +429,7 @@ module v9958_top(
   .ODD(0)         // sets sample input to channel 0
   )
     SPI_MCP3202 (
-  .clk(clk_135_w),                 // 125  MHz
+  .clk(clk_135_w),                 // 125  MHz???
   .EN(reset_n_w),                  // Enable the SPI core (ACTIVE HIGH)
   .MISO(adc_miso),                // data out of ADC (Dout pin)
   .MOSI(adc_mosi),               // Data into ADC (Din pin)
@@ -470,25 +439,6 @@ module v9958_top(
   .DATA_VALID(sample_valid)          // is high when there is a full 12 bit word.
   );
 
-    localparam SCKCLK_SRCFRQ = 135.0;
-    localparam SCKCLK_FRQ = 0.9;
-    localparam integer SCKCLK_DELAY0 = $rtoi($floor(SCKCLK_SRCFRQ / SCKCLK_FRQ / 2.0));
-    localparam integer SCKCLK_DELAY1 = $rtoi(SCKCLK_DELAY0 + $floor((SCKCLK_SRCFRQ / SCKCLK_FRQ) - SCKCLK_DELAY0 + 0.5));
-    logic [$clog2(SCKCLK_DELAY1)-1:0] sckclk_divider;
-
-    wire clk_sck;
-    CLOCK_DIV #(
-        .CLK_SRC(135),
-        .CLK_DIV(0.9),
-        .PRECISION_BITS(16)
-    ) adcclkd (
-        .clk_src(clk_135_w),
-        .clk_div(clk_sck)
-    );
-    BUFG clk_sck_bufg_inst(
-    .O(sckclk_w),
-    .I(clk_sck)
-    );
 
     assign adc_clk = sckclk_w & sck_enable;
 

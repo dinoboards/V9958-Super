@@ -1,3 +1,4 @@
+add_file src\\clocks.v
 add_file src\\clockdiv.v
 add_file src\\interpo_mul.v
 add_file src\\interpo.v
