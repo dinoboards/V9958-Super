@@ -213,13 +213,13 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_EIGHTDOTSTATE <= 3'b000;
+      FF_EIGHTDOTSTATE <= 0;
     end else begin
       if ((W_H_CNT[1:0] == 2'b11)) begin
         if ((FF_PRE_X_CNT == 0)) begin
-          FF_EIGHTDOTSTATE <= 3'b000;
+          FF_EIGHTDOTSTATE <= 0;
         end else begin
-          FF_EIGHTDOTSTATE <= FF_EIGHTDOTSTATE + 1;
+          FF_EIGHTDOTSTATE <= 3'(FF_EIGHTDOTSTATE + 1);
         end
       end
     end
@@ -243,19 +243,19 @@ module VDP_SSG (
   assign W_PRE_X_CNT_START2[5:0] = FF_PRE_X_CNT_START1;
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_PRE_X_CNT <= {9{1'b0}};
+      FF_PRE_X_CNT <= 0;
     end else begin
       if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         FF_PRE_X_CNT <= W_PRE_X_CNT_START2;
       end else if ((W_H_CNT[1:0] == 2'b10)) begin
-        FF_PRE_X_CNT <= FF_PRE_X_CNT + 1;
+        FF_PRE_X_CNT <= 9'(FF_PRE_X_CNT + 1);
       end
     end
   end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_X_CNT <= {9{1'b0}};
+      FF_X_CNT <= 0;
     end else begin
       if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         // HOLD
@@ -263,9 +263,9 @@ module VDP_SSG (
         if ((FF_PRE_X_CNT == 9'b111111111)) begin
           // JP: FF_PRE_X_CNT が -1から0にカウントアップする時にFF_X_CNTを-8にする
           // (When FF_PRE_X_CNT counts up from -1 to 0, FF_X_CNT is set to -8.)
-          FF_X_CNT <= 9'b111111000;  // -8
+          FF_X_CNT <= -8;
         end else begin
-          FF_X_CNT <= FF_X_CNT + 1;
+          FF_X_CNT <= 9'(FF_X_CNT + 1);
         end
       end
     end
@@ -360,7 +360,7 @@ module VDP_SSG (
           if ((PREDOTCOUNTER_YP_V == 255)) begin
             PREDOTCOUNTER_YP_V = FF_MONITOR_LINE;
           end else begin
-            PREDOTCOUNTER_YP_V = FF_MONITOR_LINE + 1;
+            PREDOTCOUNTER_YP_V = 9'(FF_MONITOR_LINE + 1);
           end
           if ((PREDOTCOUNTER_YP_V == 0)) begin
             ENAHSYNC <= 1'b1;
