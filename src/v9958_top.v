@@ -20,8 +20,6 @@ module v9958_top (
 
     input clk,
 
-    input s1,
-
     input reset_n,
     input [1:0] mode,
     output cs_n,
@@ -56,8 +54,6 @@ module v9958_top (
   localparam AUDIO_RATE = 44100;
   localparam AUDIO_BIT_WIDTH = 16;
   localparam NUM_CHANNELS = 3;
-
-  bit   rst_n;
 
   logic addr;
   wire  csw_n;
@@ -94,18 +90,12 @@ module v9958_top (
   wire         VideoCS_n;  // Composite Sync
 
   wire         scanlin;
-  wire         reset_n_w;
-
-
-  wire         clk_bufg;
-
-
 
   logic [ 9:0] cy;
   logic [ 9:0] cx;
 
   // ----------------------------------------
-  // ALL CLOCKS
+  // All Clocks
   // ----------------------------------------
   bit          clk_w;
   bit          clk_135_w;
@@ -117,7 +107,7 @@ module v9958_top (
   bit          clk_sdram_lock_w;
 
   clocks clocks (
-      .rst_n(rst_n),
+      .rst_n(reset_n),
       .clk(clk),
       .clk_w(clk_w),
       .clk_135_w(clk_135_w),
@@ -130,21 +120,15 @@ module v9958_top (
   );
 
   // ----------------------------------------
+  // Master Reset combined with clock phase locks
+  // ----------------------------------------
 
-  reg s1_n = 0;
-  always_ff @(posedge clk_w) s1_n <= ~s1;
-
-  BUFG rst_bufg_inst (
-      .O(rst_n),
-      .I(s1_n)
-  );
-
-  wire rst_n_w;
-  assign rst_n_w = rst_n & clk_135_lock_w & clk_sdram_lock_w;
-
-  wire reset_w;
-  assign reset_n_w = rst_n_w & reset_n;
+  bit reset_w;
+  bit reset_n_w;
+  assign reset_n_w = clk_135_lock_w & clk_sdram_lock_w & reset_n;
   assign reset_w   = ~reset_n_w;
+
+  // ----------------------------------------
 
   wire ram_busy, ram_fail;
 
