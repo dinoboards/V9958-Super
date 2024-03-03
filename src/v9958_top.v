@@ -7,12 +7,7 @@ module v9958_top (
     //low => send HDMI single with audio encoded
     input exclude_audio,
 
-    input A7,
-    input A6,
-    input A5,
-    input A4,
-    input A3,
-    input A2,
+    input [7:2] A,
 
     input rd_n,
     input wr_n,
@@ -52,16 +47,6 @@ module v9958_top (
 
   localparam NUM_CHANNELS = 3;
 
-  logic addr;
-  wire  csw_n;
-  wire  csr_n;
-
-  assign addr  = A7 & ~A6 & ~A5 & A4 & A3 & ~A2;  // $98 TO $9B
-  assign cs_n  = !(addr & (!iorq_n));
-
-  assign csw_n = !((!cs_n) & (!wr_n));
-  assign csr_n = !((!cs_n) & (!rd_n));
-
   // VDP signals
   wire        VdpReq;
   wire [ 7:0] VdpDbi;
@@ -84,8 +69,6 @@ module v9958_top (
   wire        VideoHS_n;  // Horizontal Sync
   wire        VideoVS_n;  // Vertical Sync
   wire        VideoCS_n;  // Composite Sync
-
-  wire        scanlin;
 
   // ----------------------------------------
   // All Clocks
@@ -158,78 +141,28 @@ module v9958_top (
       .SDRAM_DQM(O_sdram_dqm)
   );
 
-
   // Internal bus signals (common)
+  bit          CpuReq;
+  bit          CpuWrt;
+  bit   [ 7:0] CpuDbo;
+  bit   [ 7:0] CpuDbi;
 
-  reg io_state_r = 1'b0;
-  reg [1:0] cs_latch;
-  wire [7:0] CpuDbi;
-
-  reg [1:0] csr_sync_r;
-  reg [1:0] csw_sync_r;
-  wire csr_next;
-  wire csw_next;
-  reg csrn_sdram_r;
-  reg cswn_sdram_r;
-
-  assign cd = csr_n == 0 ? CpuDbi : 8'bzzzzzzzz;
-
-  assign scanlin = 1'b0;
-
-  wire cswn_w;
-  PINFILTER cswn_filter (
-      .clk(clk_sdram_w),
+  cpu_io cpu_io (
+      .clk(clk_w),
       .reset_n(reset_n_w),
-      .din(csw_n),
-      .dout(cswn_w)
+      .A(A),
+      .rd_n(rd_n),
+      .wr_n(wr_n),
+      .iorq_n(iorq_n),
+      .cd(cd),
+      .clk_sdram(clk_sdram_w),
+
+      .CpuReq(CpuReq),
+      .CpuWrt(CpuWrt),
+      .CpuDbo(CpuDbo),
+      .CpuDbi(CpuDbi),
+      .cs_n(cs_n)
   );
-
-  wire csrn_w;
-  PINFILTER csrn_filter (
-      .clk(clk_sdram_w),
-      .reset_n(reset_n_w),
-      .din(csr_n),
-      .dout(csrn_w)
-  );
-
-  reg        CpuReq;
-  reg        CpuWrt;
-  reg [15:0] CpuAdr;
-  reg [ 7:0] CpuDbo;
-
-  always @(posedge clk_w or negedge reset_n_w) begin
-    if (reset_n_w == 0) begin
-      io_state_r = 1'b0;
-
-      CpuDbo = 1'b0;
-      CpuAdr = 15'b0;
-      CpuWrt = 1'b0;
-      CpuReq = 1'b0;
-    end else begin
-
-      if (!io_state_r) begin
-
-        CpuAdr = {14'b0, {mode[1], mode[0]}};
-        CpuDbo = cd;
-        CpuReq = (csrn_w ^ cswn_w);
-        CpuWrt = ~cswn_w;
-
-        cs_latch = {csrn_w, cswn_w};
-        io_state_r = 1'b1;
-
-      end else begin
-
-        CpuWrt = 1'b0;
-        CpuReq = 1'b0;
-
-        if (cs_latch != {csrn_w, cswn_w}) begin
-          io_state_r = 1'b0;
-        end
-
-      end
-
-    end
-  end
 
   wire pal_mode;
   wire [10:0] vdp_cx;
@@ -240,7 +173,7 @@ module v9958_top (
       .REQ            (CpuReq),
       .ACK            (),
       .WRT            (CpuWrt),
-      .ADR            (CpuAdr),
+      .mode           (mode),
       .DBI            (CpuDbi),
       .DBO            (CpuDbo),
       .INT_N          (pVdpInt_n),
@@ -280,12 +213,15 @@ module v9958_top (
   logic [ 2:0] tmds;
   logic [11:0] cx;
   logic [10:0] cy;
+  bit          scanlin;
 
-  assign dvi_r = (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
-  assign dvi_g = (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
-  assign dvi_b = (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
+  assign scanlin = 1'b0;
 
-  assign int_n = pVdpInt_n ? 1'bz : 1'b0;
+  assign dvi_r   = (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
+  assign dvi_g   = (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
+  assign dvi_b   = (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
+
+  assign int_n   = pVdpInt_n ? 1'bz : 1'b0;
 
   always_ff @(posedge clk_w) begin
     ff_video_reset <= 1'b0;

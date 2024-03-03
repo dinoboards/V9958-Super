@@ -89,7 +89,7 @@ module VDP_REGISTER (
     input wire REQ,
     output wire ACK,
     input wire WRT,
-    input wire [15:0] ADR,
+    input wire [1:0] mode,
     output reg [7:0] DBI,
     input wire [7:0] DBO,
     input wire [1:0] DOTSTATE,
@@ -343,7 +343,7 @@ module VDP_REGISTER (
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
         // READ REQUEST
-        case (ADR[1:0])
+        case (mode[1:0])
           2'b00: begin  // PORT#0 (0x98): READ VRAM
             DBI <= VDPVRAMRDDATA;
           end
@@ -402,7 +402,7 @@ module VDP_REGISTER (
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
         // CASE OF READ REQUEST
-        if ((ADR[1:0] == 2'b01 && VDPR15STATUSREGNUM == 4'b0001)) begin
+        if ((mode[1:0] == 2'b01 && VDPR15STATUSREGNUM == 4'b0001)) begin
           // CLEAR HSYNC INTERRUPT BY READ S#1
           CLR_HSYNC_INT <= 1'b1;
         end else begin
@@ -430,7 +430,7 @@ module VDP_REGISTER (
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
         // CASE OF READ REQUEST
-        if ((ADR[1:0] == 2'b01 && VDPR15STATUSREGNUM == 4'b0000)) begin
+        if ((mode[1:0] == 2'b01 && VDPR15STATUSREGNUM == 4'b0000)) begin
           // CLEAR VSYNC INTERRUPT BY READ S#0
           CLR_VSYNC_INT <= 1'b1;
         end else begin
@@ -503,7 +503,7 @@ module VDP_REGISTER (
       PALETTEWRNUM <= {4{1'b0}};
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
-        case (ADR[1:0])
+        case (mode[1:0])
           2'b00: begin  // PORT#0 (0x98): READ VRAM
             VDPVRAMRDREQ <= ~VDPVRAMRDACK;
           end
@@ -530,7 +530,7 @@ module VDP_REGISTER (
           end
         endcase
       end else if ((REQ == 1'b1 && WRT == 1'b1)) begin  // WRITE REQUEST
-        case (ADR[1:0])
+        case (mode[1:0])
           2'b00: begin  // PORT#0 (0x98): WRITE VRAM
             VDPVRAMACCESSDATA <= DBO;
             VDPVRAMWRREQ <= ~VDPVRAMWRACK;
