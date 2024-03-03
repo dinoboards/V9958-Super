@@ -233,7 +233,7 @@ module v9958_top (
 
   assign hdmi_reset = ff_video_reset | reset_w | ~ram_enabled;
 
-  always @(posedge clk_w) begin  // crossing clock domain
+  always @(posedge clk_w) begin
     audio_sample_word0[0] <= sample_w;
     audio_sample_word[0]  <= audio_sample_word0[0];
     audio_sample_word0[1] <= sample_w;

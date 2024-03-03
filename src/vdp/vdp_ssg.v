@@ -245,7 +245,10 @@ module VDP_SSG (
     if ((RESET == 1'b1)) begin
       FF_PRE_X_CNT <= 0;
     end else begin
-      if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
+        (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
+        (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
+        (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         FF_PRE_X_CNT <= W_PRE_X_CNT_START2;
       end else if ((W_H_CNT[1:0] == 2'b10)) begin
         FF_PRE_X_CNT <= 9'(FF_PRE_X_CNT + 1);
@@ -257,7 +260,10 @@ module VDP_SSG (
     if ((RESET == 1'b1)) begin
       FF_X_CNT <= 0;
     end else begin
-      if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) || (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({ ~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
+         (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
+         (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
+         (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         // HOLD
       end else if ((W_H_CNT[1:0] == 2'b10)) begin
         if ((FF_PRE_X_CNT == 9'b111111111)) begin
