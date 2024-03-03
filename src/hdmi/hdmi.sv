@@ -17,8 +17,7 @@ function longint get_video_rate;
   endcase
 endfunction
 
-module hdmi
-#(
+module hdmi #(
     // Defaults to 640x480 which should be supported by almost if not all HDMI sinks.
     // See README.md or CEA-861-D for enumeration of video id codes.
     // Pixel repetition, interlaced scans and other special output modes are not implemented (yet).
@@ -35,12 +34,7 @@ module hdmi
     // range (0-255).
     parameter bit IT_CONTENT = 1'b1,
 
-    // A true HDMI signal sends auxiliary data (i.e. audio, preambles) which prevents it from being parsed by DVI signal sinks.
-    // HDMI signal sinks are fortunately backwards-compatible with DVI signals.
-    // Enable this flag if the output should be a DVI signal. You might want to do this to reduce resource usage or if you're only outputting video.
-    parameter bit DVI_OUTPUT = 1'b0,
-
-    // **All parameters below matter ONLY IF you plan on sending auxiliary data (DVI_OUTPUT == 1'b0)**
+    // **All parameters below matter ONLY IF you plan on sending auxiliary data (include_audio == 1'b0)**
 
     // As specified in Section 7.3, the minimal audio requirements are met: 16-bit or more L-PCM audio at 32 kHz, 44.1 kHz, or 48 kHz.
     // See Table 7-4 or README.md for an enumeration of sampling frequencies supported by HDMI.
@@ -52,9 +46,9 @@ module hdmi
 
     // Some HDMI sinks will show the source product description below to users (i.e. in a list of inputs instead of HDMI 1, HDMI 2, etc.).
     // If you care about this, change it below.
-    parameter bit [8*8-1:0] VENDOR_NAME = {"Unknown", 8'd0}, // Must be 8 bytes null-padded 7-bit ASCII
-    parameter bit [8*16-1:0] PRODUCT_DESCRIPTION = {"FPGA", 96'd0}, // Must be 16 bytes null-padded 7-bit ASCII
-    parameter bit [7:0] SOURCE_DEVICE_INFORMATION = 8'h00, // See README.md or CTA-861-G for the list of valid codes
+    parameter bit [8*8-1:0] VENDOR_NAME = {"Unknown", 8'd0},  // Must be 8 bytes null-padded 7-bit ASCII
+    parameter bit [8*16-1:0] PRODUCT_DESCRIPTION = {"FPGA", 96'd0},  // Must be 16 bytes null-padded 7-bit ASCII
+    parameter bit [7:0] SOURCE_DEVICE_INFORMATION = 8'h00,  // See README.md or CTA-861-G for the list of valid codes
 
     // Starting screen coordinate when module comes out of reset.
     //
@@ -70,17 +64,17 @@ module hdmi
     parameter int START_X = 0,
     parameter int START_Y = 0,
     parameter int NUM_CHANNELS = 3
-)
-(
+) (
+    input bit include_audio,
     input logic clk_pixel_x5,
     input logic clk_pixel,
     input logic clk_audio,
     // synchronous reset back to 0,0
     input logic reset,
     input logic [23:0] rgb,
-    input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word [1:0],
+    input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word[1:0],
 
-    output logic [9:0] tmds_channels [NUM_CHANNELS-1:0],
+    output logic [9:0] tmds_channels[NUM_CHANNELS-1:0],
 
     // All outputs below this line stay inside the FPGA
     // They are used (by you) to pick the color each pixel should have
@@ -97,278 +91,264 @@ module hdmi
     output logic [10:0] screen_height
 );
 
-initial cx = START_X;
-initial cy = START_Y;
+  initial cx = START_X;
+  initial cy = START_Y;
 
-logic hsync;
-logic vsync;
+  logic hsync;
+  logic vsync;
 
-logic [11:0] hsync_pulse_start, hsync_pulse_size;
-logic [10:0] vsync_pulse_start, vsync_pulse_size;
-logic invert;
+  logic [11:0] hsync_pulse_start, hsync_pulse_size;
+  logic [10:0] vsync_pulse_start, vsync_pulse_size;
+  logic invert;
 
-// See CEA-861-D for more specifics formats described below.
-generate
+  // See CEA-861-D for more specifics formats described below.
+  generate
     case (VIDEO_ID_CODE)
-        1:
-        begin
-            assign frame_width = 800;
-            assign frame_height = 525;
-            assign screen_width = 640;
-            assign screen_height = 480;
-            assign hsync_pulse_start = 16;
-            assign hsync_pulse_size = 96;
-            assign vsync_pulse_start = 10;
-            assign vsync_pulse_size = 2;
-            assign invert = 1;
-            end
-        2, 3:
-        begin
-            assign frame_width = 858;
-            assign frame_height = 525;
-            assign screen_width = 720;
-            assign screen_height = 480;
-            assign hsync_pulse_start = 16;
-            assign hsync_pulse_size = 62;
-            assign vsync_pulse_start = 9;
-            assign vsync_pulse_size = 6;
-            assign invert = 1;
-            end
-        4:
-        begin
-            assign frame_width = 1650;
-            assign frame_height = 750;
-            assign screen_width = 1280;
-            assign screen_height = 720;
-            assign hsync_pulse_start = 110;
-            assign hsync_pulse_size = 40;
-            assign vsync_pulse_start = 5;
-            assign vsync_pulse_size = 5;
-            assign invert = 0;
-        end
-        16, 34:
-        begin
-            assign frame_width = 2200;
-            assign frame_height = 1125;
-            assign screen_width = 1920;
-            assign screen_height = 1080;
-            assign hsync_pulse_start = 88;
-            assign hsync_pulse_size = 44;
-            assign vsync_pulse_start = 4;
-            assign vsync_pulse_size = 5;
-            assign invert = 0;
-        end
-        17, 18:
-        begin
-            assign frame_width = 864;
-            assign frame_height = 625;
-            assign screen_width = 720;
-            assign screen_height = 576;
-            assign hsync_pulse_start = 12;
-            assign hsync_pulse_size = 64;
-            assign vsync_pulse_start = 5;
-            assign vsync_pulse_size = 5;
-            assign invert = 1;
-        end
-        19:
-        begin
-            assign frame_width = 1980;
-            assign frame_height = 750;
-            assign screen_width = 1280;
-            assign screen_height = 720;
-            assign hsync_pulse_start = 440;
-            assign hsync_pulse_size = 40;
-            assign vsync_pulse_start = 5;
-            assign vsync_pulse_size = 5;
-            assign invert = 0;
-        end
-        95, 105, 97, 107:
-        begin
-            assign frame_width = 4400;
-            assign frame_height = 2250;
-            assign screen_width = 3840;
-            assign screen_height = 2160;
-            assign hsync_pulse_start = 176;
-            assign hsync_pulse_size = 88;
-            assign vsync_pulse_start = 8;
-            assign vsync_pulse_size = 10;
-            assign invert = 0;
-        end
+      1: begin
+        assign frame_width = 800;
+        assign frame_height = 525;
+        assign screen_width = 640;
+        assign screen_height = 480;
+        assign hsync_pulse_start = 16;
+        assign hsync_pulse_size = 96;
+        assign vsync_pulse_start = 10;
+        assign vsync_pulse_size = 2;
+        assign invert = 1;
+      end
+      2, 3: begin
+        assign frame_width = 858;
+        assign frame_height = 525;
+        assign screen_width = 720;
+        assign screen_height = 480;
+        assign hsync_pulse_start = 16;
+        assign hsync_pulse_size = 62;
+        assign vsync_pulse_start = 9;
+        assign vsync_pulse_size = 6;
+        assign invert = 1;
+      end
+      4: begin
+        assign frame_width = 1650;
+        assign frame_height = 750;
+        assign screen_width = 1280;
+        assign screen_height = 720;
+        assign hsync_pulse_start = 110;
+        assign hsync_pulse_size = 40;
+        assign vsync_pulse_start = 5;
+        assign vsync_pulse_size = 5;
+        assign invert = 0;
+      end
+      16, 34: begin
+        assign frame_width = 2200;
+        assign frame_height = 1125;
+        assign screen_width = 1920;
+        assign screen_height = 1080;
+        assign hsync_pulse_start = 88;
+        assign hsync_pulse_size = 44;
+        assign vsync_pulse_start = 4;
+        assign vsync_pulse_size = 5;
+        assign invert = 0;
+      end
+      17, 18: begin
+        assign frame_width = 864;
+        assign frame_height = 625;
+        assign screen_width = 720;
+        assign screen_height = 576;
+        assign hsync_pulse_start = 12;
+        assign hsync_pulse_size = 64;
+        assign vsync_pulse_start = 5;
+        assign vsync_pulse_size = 5;
+        assign invert = 1;
+      end
+      19: begin
+        assign frame_width = 1980;
+        assign frame_height = 750;
+        assign screen_width = 1280;
+        assign screen_height = 720;
+        assign hsync_pulse_start = 440;
+        assign hsync_pulse_size = 40;
+        assign vsync_pulse_start = 5;
+        assign vsync_pulse_size = 5;
+        assign invert = 0;
+      end
+      95, 105, 97, 107: begin
+        assign frame_width = 4400;
+        assign frame_height = 2250;
+        assign screen_width = 3840;
+        assign screen_height = 2160;
+        assign hsync_pulse_start = 176;
+        assign hsync_pulse_size = 88;
+        assign vsync_pulse_start = 8;
+        assign vsync_pulse_size = 10;
+        assign invert = 0;
+      end
     endcase
-endgenerate
+  endgenerate
 
-always_comb begin
+  always_comb begin
     hsync <= invert ^ (cx >= screen_width + hsync_pulse_start && cx < screen_width + hsync_pulse_start + hsync_pulse_size);
     // vsync pulses should begin and end at the start of hsync, so special
     // handling is required for the lines on which vsync starts and ends
-    if (cy == screen_height + vsync_pulse_start - 1)
-        vsync <= invert ^ (cx >= screen_width + hsync_pulse_start);
-    else if (cy == screen_height + vsync_pulse_start + vsync_pulse_size - 1)
-        vsync <= invert ^ (cx < screen_width + hsync_pulse_start);
-    else
-        vsync <= invert ^ (cy >= screen_height + vsync_pulse_start && cy < screen_height + vsync_pulse_start + vsync_pulse_size);
-end
+    if (cy == screen_height + vsync_pulse_start - 1) vsync <= invert ^ (cx >= screen_width + hsync_pulse_start);
+    else if (cy == screen_height + vsync_pulse_start + vsync_pulse_size - 1) vsync <= invert ^ (cx < screen_width + hsync_pulse_start);
+    else vsync <= invert ^ (cy >= screen_height + vsync_pulse_start && cy < screen_height + vsync_pulse_start + vsync_pulse_size);
+  end
 
-localparam longint VIDEO_RATE = get_video_rate(VIDEO_ID_CODE);
+  localparam longint VIDEO_RATE = get_video_rate(VIDEO_ID_CODE);
 
-// Wrap-around pixel position counters indicating the pixel to be generated by the user in THIS clock and sent out in the NEXT clock.
-always_ff @(posedge clk_pixel)
-begin
-    if (reset)
-    begin
-        cx <= 12'(START_X);
-        cy <= 11'(START_Y);
+  // Wrap-around pixel position counters indicating the pixel to be generated by the user in THIS clock and sent out in the NEXT clock.
+  always_ff @(posedge clk_pixel) begin
+    if (reset) begin
+      cx <= 12'(START_X);
+      cy <= 11'(START_Y);
+    end else begin
+      cx <= cx == frame_width - 1'b1 ? 12'(0) : 12'(cx + 1'b1);
+      cy <= cx == frame_width - 1'b1 ? cy == frame_height - 1'b1 ? 11'(0) : 11'(cy + 1'b1) : cy;
     end
-    else
-    begin
-        cx <= cx == frame_width-1'b1 ? 12'(0) : 12'(cx + 1'b1);
-        cy <= cx == frame_width-1'b1 ? cy == frame_height-1'b1 ? 11'(0) : 11'(cy + 1'b1) : cy;
+  end
+
+  // See Section 5.2
+  logic video_data_period = 0;
+  always_ff @(posedge clk_pixel) begin
+    if (reset) video_data_period <= 0;
+    else video_data_period <= cx < screen_width && cy < screen_height;
+  end
+
+  logic [2:0] mode = 3'd1;
+  logic [23:0] video_data = 24'd0;
+  logic [5:0] control_data = 6'd0;
+  logic [11:0] data_island_data = 12'd0;
+
+  logic video_guard = 1;
+  logic video_preamble = 0;
+  always_ff @(posedge clk_pixel) begin
+    if (reset) begin
+      video_guard <= 1;
+      video_preamble <= 0;
+    end else begin
+      video_guard <= cx >= frame_width - 2 && cx < frame_width && (cy == frame_height - 1 || cy < screen_height - 1  /* no VG at end of last line */);
+      video_preamble <= cx >= frame_width - 10 && cx < frame_width - 2 && (cy == frame_height - 1 || cy < screen_height - 1  /* no VP at end of last line */);
     end
-end
+  end
 
-// See Section 5.2
-logic video_data_period = 0;
-always_ff @(posedge clk_pixel)
-begin
-    if (reset)
-        video_data_period <= 0;
-    else
-        video_data_period <= cx < screen_width && cy < screen_height;
-end
+  // See Section 5.2.3.1
+  int max_num_packets_alongside;
+  logic [4:0] num_packets_alongside;
+  always_comb begin
+    max_num_packets_alongside = (frame_width - screen_width  /* VD period */ - 2 /* V guard */ - 8 /* V preamble */ - 4 /* Min V control period */ - 2 /* DI trailing guard */ - 2 /* DI leading guard */ - 8 /* DI premable */ - 4 /* Min DI control period */) / 32;
+    if (max_num_packets_alongside > 18) num_packets_alongside = 5'd18;
+    else num_packets_alongside = 5'(max_num_packets_alongside);
+  end
 
-logic [2:0] mode = 3'd1;
-logic [23:0] video_data = 24'd0;
-logic [5:0] control_data = 6'd0;
-logic [11:0] data_island_data = 12'd0;
+  logic data_island_period_instantaneous;
+  assign data_island_period_instantaneous = num_packets_alongside > 0 && cx >= screen_width + 14 && cx < screen_width + 14 + num_packets_alongside * 32;
+  logic packet_enable;
+  assign packet_enable = data_island_period_instantaneous && 5'(cx + screen_width + 18) == 5'd0;
 
-generate
-    if (!DVI_OUTPUT)
-    begin: true_hdmi_output
-        logic video_guard = 1;
-        logic video_preamble = 0;
-        always_ff @(posedge clk_pixel)
-        begin
-            if (reset)
-            begin
-                video_guard <= 1;
-                video_preamble <= 0;
-            end
-            else
-            begin
-                video_guard <= cx >= frame_width - 2 && cx < frame_width && (cy == frame_height - 1 || cy < screen_height - 1 /* no VG at end of last line */);
-                video_preamble <= cx >= frame_width - 10 && cx < frame_width - 2 && (cy == frame_height - 1 || cy < screen_height - 1 /* no VP at end of last line */);
-            end
-        end
-
-        // See Section 5.2.3.1
-        int max_num_packets_alongside;
-        logic [4:0] num_packets_alongside;
-        always_comb
-        begin
-            max_num_packets_alongside = (frame_width - screen_width  /* VD period */ - 2 /* V guard */ - 8 /* V preamble */ - 4 /* Min V control period */ - 2 /* DI trailing guard */ - 2 /* DI leading guard */ - 8 /* DI premable */ - 4 /* Min DI control period */) / 32;
-            if (max_num_packets_alongside > 18)
-                num_packets_alongside = 5'd18;
-            else
-                num_packets_alongside = 5'(max_num_packets_alongside);
-        end
-
-        logic data_island_period_instantaneous;
-        assign data_island_period_instantaneous = num_packets_alongside > 0 && cx >= screen_width + 14 && cx < screen_width + 14 + num_packets_alongside * 32;
-        logic packet_enable;
-        assign packet_enable = data_island_period_instantaneous && 5'(cx + screen_width + 18) == 5'd0;
-
-        logic data_island_guard = 0;
-        logic data_island_preamble = 0;
-        logic data_island_period = 0;
-        always_ff @(posedge clk_pixel)
-        begin
-            if (reset)
-            begin
-                data_island_guard <= 0;
-                data_island_preamble <= 0;
-                data_island_period <= 0;
-            end
-            else
-            begin
-                data_island_guard <= num_packets_alongside > 0 && (
-                    (cx >= screen_width + 12 && cx < screen_width + 14) /* leading guard */ ||
-                    (cx >= screen_width + 14 + num_packets_alongside * 32 && cx < screen_width + 14 + num_packets_alongside * 32 + 2) /* trailing guard */
-                );
-                data_island_preamble <= num_packets_alongside > 0 && cx >= screen_width + 4 && cx < screen_width + 12;
-                data_island_period <= data_island_period_instantaneous;
-            end
-        end
-
-        // See Section 5.2.3.4
-        logic [23:0] header;
-        logic [55:0] sub [3:0];
-        logic video_field_end;
-        assign video_field_end = cx == screen_width - 1'b1 && cy == screen_height - 1'b1;
-        logic [4:0] packet_pixel_counter;
-        packet_picker #(
-            .VIDEO_ID_CODE(VIDEO_ID_CODE),
-            .VIDEO_RATE(VIDEO_RATE),
-            .IT_CONTENT(IT_CONTENT),
-            .AUDIO_RATE(AUDIO_RATE),
-            .AUDIO_BIT_WIDTH(AUDIO_BIT_WIDTH),
-            .VENDOR_NAME(VENDOR_NAME),
-            .PRODUCT_DESCRIPTION(PRODUCT_DESCRIPTION),
-            .SOURCE_DEVICE_INFORMATION(SOURCE_DEVICE_INFORMATION)
-        ) packet_picker (.clk_pixel(clk_pixel), .clk_audio(clk_audio), .reset(reset), .video_field_end(video_field_end), .packet_enable(packet_enable), .packet_pixel_counter(packet_pixel_counter), .audio_sample_word(audio_sample_word), .header(header), .sub(sub));
-        logic [8:0] packet_data;
-        packet_assembler packet_assembler (.clk_pixel(clk_pixel), .reset(reset), .data_island_period(data_island_period), .header(header), .sub(sub), .packet_data(packet_data), .counter(packet_pixel_counter));
-
-
-        always_ff @(posedge clk_pixel)
-        begin
-            if (reset)
-            begin
-                mode <= 3'd2;
-                video_data <= 24'd0;
-                control_data = 6'd0;
-                data_island_data <= 12'd0;
-            end
-            else
-            begin
-                mode <= data_island_guard ? 3'd4 : data_island_period ? 3'd3 : video_guard ? 3'd2 : video_data_period ? 3'd1 : 3'd0;
-                video_data <= rgb;
-                control_data <= {{1'b0, data_island_preamble}, {1'b0, video_preamble || data_island_preamble}, {vsync, hsync}}; // ctrl3, ctrl2, ctrl1, ctrl0, vsync, hsync
-                data_island_data[11:4] <= packet_data[8:1];
-                data_island_data[3] <= cx != 0;
-                data_island_data[2] <= packet_data[0];
-                data_island_data[1:0] <= {vsync, hsync};
-            end
-        end
+  logic data_island_guard = 0;
+  logic data_island_preamble = 0;
+  logic data_island_period = 0;
+  always_ff @(posedge clk_pixel) begin
+    if (reset) begin
+      data_island_guard <= 0;
+      data_island_preamble <= 0;
+      data_island_period <= 0;
+    end else begin
+      data_island_guard <= num_packets_alongside > 0 && (
+            (cx >= screen_width + 12 && cx < screen_width + 14) /* leading guard */ ||
+            (cx >= screen_width + 14 + num_packets_alongside * 32 && cx < screen_width + 14 + num_packets_alongside * 32 + 2) /* trailing guard */
+        );
+      data_island_preamble <= num_packets_alongside > 0 && cx >= screen_width + 4 && cx < screen_width + 12;
+      data_island_period <= data_island_period_instantaneous;
     end
-    else // DVI_OUTPUT = 1
-    begin
-        always_ff @(posedge clk_pixel)
-        begin
-            if (reset)
-            begin
-                mode <= 3'd0;
-                video_data <= 24'd0;
-                control_data <= 6'd0;
-                data_island_data <= 12'd0;
-            end
-            else
-            begin
-                mode <= video_data_period ? 3'd1 : 3'd0;
-                video_data <= rgb;
-                control_data <= {4'b0000, {vsync, hsync}}; // ctrl3, ctrl2, ctrl1, ctrl0, vsync, hsync
-            end
-        end
-    end
-endgenerate
+  end
 
-// All logic below relates to the production and output of the 10-bit TMDS code.
-genvar i;
-generate
+  // See Section 5.2.3.4
+  logic [23:0] header;
+  logic [55:0] sub[3:0];
+  logic video_field_end;
+  assign video_field_end = cx == screen_width - 1'b1 && cy == screen_height - 1'b1;
+  logic [4:0] packet_pixel_counter;
+  packet_picker #(
+      .VIDEO_ID_CODE(VIDEO_ID_CODE),
+      .VIDEO_RATE(VIDEO_RATE),
+      .IT_CONTENT(IT_CONTENT),
+      .AUDIO_RATE(AUDIO_RATE),
+      .AUDIO_BIT_WIDTH(AUDIO_BIT_WIDTH),
+      .VENDOR_NAME(VENDOR_NAME),
+      .PRODUCT_DESCRIPTION(PRODUCT_DESCRIPTION),
+      .SOURCE_DEVICE_INFORMATION(SOURCE_DEVICE_INFORMATION)
+  ) packet_picker (
+      .clk_pixel(clk_pixel),
+      .clk_audio(clk_audio),
+      .reset(reset),
+      .video_field_end(video_field_end),
+      .packet_enable(packet_enable),
+      .packet_pixel_counter(packet_pixel_counter),
+      .audio_sample_word(audio_sample_word),
+      .header(header),
+      .sub(sub)
+  );
+  logic [8:0] packet_data;
+  packet_assembler packet_assembler (
+      .clk_pixel(clk_pixel),
+      .reset(reset),
+      .data_island_period(data_island_period),
+      .header(header),
+      .sub(sub),
+      .packet_data(packet_data),
+      .counter(packet_pixel_counter)
+  );
+
+
+  always_ff @(posedge clk_pixel) begin
+    if (reset) begin
+      if (!include_audio) begin
+        mode <= 3'd0;
+        video_data <= 24'd0;
+        control_data <= 6'd0;
+        data_island_data <= 12'd0;
+
+      end else begin
+        mode <= 3'd2;
+        video_data <= 24'd0;
+        control_data = 6'd0;
+        data_island_data <= 12'd0;
+      end
+
+    end else begin
+      if (!include_audio) begin
+        mode <= video_data_period ? 3'd1 : 3'd0;
+        video_data <= rgb;
+        control_data <= {4'b0000, {vsync, hsync}};  // ctrl3, ctrl2, ctrl1, ctrl0, vsync, hsync
+
+      end else begin
+        mode <= data_island_guard ? 3'd4 : data_island_period ? 3'd3 : video_guard ? 3'd2 : video_data_period ? 3'd1 : 3'd0;
+        video_data <= rgb;
+        control_data <= {{1'b0, data_island_preamble}, {1'b0, video_preamble || data_island_preamble}, {vsync, hsync}};  // ctrl3, ctrl2, ctrl1, ctrl0, vsync, hsync
+        data_island_data[11:4] <= packet_data[8:1];
+        data_island_data[3] <= cx != 0;
+        data_island_data[2] <= packet_data[0];
+        data_island_data[1:0] <= {vsync, hsync};
+      end
+    end
+  end
+
+  // All logic below relates to the production and output of the 10-bit TMDS code.
+  genvar i;
+  generate
     // TMDS code production.
-    for (i = 0; i < NUM_CHANNELS; i++)
-    begin: tmds_gen
-        tmds_channel #(.CN(i)) tmds_channel (.clk_pixel(clk_pixel), .video_data(video_data[i*8+7:i*8]), .data_island_data(data_island_data[i*4+3:i*4]), .control_data(control_data[i*2+1:i*2]), .mode(mode), .tmds(tmds_channels[i]));
+    for (i = 0; i < NUM_CHANNELS; i++) begin : tmds_gen
+      tmds_channel #(
+          .CN(i)
+      ) tmds_channel (
+          .clk_pixel(clk_pixel),
+          .video_data(video_data[i*8+7:i*8]),
+          .data_island_data(data_island_data[i*4+3:i*4]),
+          .control_data(control_data[i*2+1:i*2]),
+          .mode(mode),
+          .tmds(tmds_channels[i])
+      );
     end
-endgenerate
+  endgenerate
 
 endmodule

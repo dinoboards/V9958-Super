@@ -9,7 +9,7 @@ module hdmi_selection #(
     parameter int NUM_CHANNELS = 3
 
 ) (
-    input dvi_output,
+    input include_audio,
     input bit clk_pixel_x5,
     input bit clk_pixel,
     input bit clk_audio,
@@ -31,11 +31,11 @@ module hdmi_selection #(
   logic [ 9:0] tmds_channels_ntsc[NUM_CHANNELS-1:0];
   logic [ 9:0] tmds_channels_pal [NUM_CHANNELS-1:0];
 
-  dvi_or_hdmi_output #(
+  hdmi_output #(
       .VIDEO_ID_CODE(2),
       .START_Y(`NTSC_Y)
   ) video_ntsc_output (
-      .dvi_output(dvi_output),
+      .include_audio(include_audio),
       .clk_pixel_x5(clk_pixel_x5),
       .clk_pixel(clk_pixel),
       .clk_audio(clk_audio),
@@ -47,11 +47,11 @@ module hdmi_selection #(
       .tmds_channels(tmds_channels_ntsc)
   );
 
-  dvi_or_hdmi_output #(
+  hdmi_output #(
       .VIDEO_ID_CODE(17),
       .START_Y(`PAL_Y)
   ) video_pal_output (
-      .dvi_output(dvi_output),
+      .include_audio(include_audio),
       .clk_pixel_x5(clk_pixel_x5),
       .clk_pixel(clk_pixel),
       .clk_audio(clk_audio),

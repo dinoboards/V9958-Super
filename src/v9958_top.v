@@ -3,9 +3,9 @@
 `include "vdp_constants.vh"
 
 module v9958_top (
-    //high => send a DVI compatible (with no audio out) to HDMI port
-    //low => send a true HDMI with audio to HDMI port
-    input dvi_output,
+    //high => send a HDMI single without any audio encoded
+    //low => send HDMI single with audio encoded
+    input exclude_audio,
 
     input A7,
     input A6,
@@ -307,7 +307,7 @@ module v9958_top (
   assign audio_sample_word_w = audio_sample_word;
 
   hdmi_selection #() hdmi (
-      .dvi_output(dvi_output),
+      .include_audio(~exclude_audio),
       .clk_pixel_x5(clk_135_w),
       .clk_pixel(clk_w),
       .clk_audio(clk_audio_w),
