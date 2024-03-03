@@ -45,31 +45,6 @@ module v9958_top (
     output [ 3:0] O_sdram_dqm     // 32/4
 );
 
-  localparam NUM_CHANNELS = 3;
-
-  // VDP signals
-  wire        VdpReq;
-  wire [ 7:0] VdpDbi;
-  wire        VideoSC;
-  wire        VideoDLClk;
-  wire        VideoDHClk;
-  wire        WeVdp_n;
-  wire        ReVdp_n;
-  wire [16:0] VdpAdr;
-  wire [ 7:0] VrmDbo;
-  wire [15:0] VrmDbi;
-  wire        pVdpInt_n;
-
-  wire        r9palmode;
-
-  // Video signals
-  wire [ 5:0] VideoR;  // RGB Red
-  wire [ 5:0] VideoG;  // RGB Green
-  wire [ 5:0] VideoB;  // RGB Blue
-  wire        VideoHS_n;  // Horizontal Sync
-  wire        VideoVS_n;  // Vertical Sync
-  wire        VideoCS_n;  // Composite Sync
-
   // ----------------------------------------
   // All Clocks
   // ----------------------------------------
@@ -141,11 +116,25 @@ module v9958_top (
       .SDRAM_DQM(O_sdram_dqm)
   );
 
-  // Internal bus signals (common)
+  // ----------------------------------------
+  // V5598 Video Generation
+  // ----------------------------------------
+
   bit          CpuReq;
   bit          CpuWrt;
   bit   [ 7:0] CpuDbo;
   bit   [ 7:0] CpuDbi;
+  bit        VideoDLClk;
+  bit        VideoDHClk;
+  bit        WeVdp_n;
+  bit        ReVdp_n;
+  bit [16:0] VdpAdr;
+  bit [ 7:0] VrmDbo;
+  bit [15:0] VrmDbi;
+
+  bit [ 5:0] VideoR;  // RGB Red
+  bit [ 5:0] VideoG;  // RGB Green
+  bit [ 5:0] VideoB;  // RGB Blue
 
   cpu_io cpu_io (
       .clk(clk_w),
@@ -176,7 +165,7 @@ module v9958_top (
       .mode           (mode),
       .DBI            (CpuDbi),
       .DBO            (CpuDbo),
-      .INT_N          (pVdpInt_n),
+      .INT_N          (int_n),
       .PRAMOE_N       (ReVdp_n),
       .PRAMWE_N       (WeVdp_n),
       .PRAMADR        (VdpAdr),
@@ -188,11 +177,10 @@ module v9958_top (
       .PVIDEOR        (VideoR),
       .PVIDEOG        (VideoG),
       .PVIDEOB        (VideoB),
-      .PVIDEOHS_N     (VideoHS_n),
-      .PVIDEOVS_N     (VideoVS_n),
+      .PVIDEOHS_N     (),
+      .PVIDEOVS_N     (),
       .PVIDEODHCLK    (VideoDHClk),
       .PVIDEODLCLK    (VideoDLClk),
-      .NTSC_PAL_TYPE  (1'b1),
       .PAL_MODE       (pal_mode),
       .SPMAXSPR       (1'b0),
       .CX             (vdp_cx),
@@ -200,7 +188,7 @@ module v9958_top (
   );
 
   //--------------------------------------------------------------
-  // Video output
+  // HDMI output
   //--------------------------------------------------------------
 
   wire [7:0] dvi_r;
@@ -220,8 +208,6 @@ module v9958_top (
   assign dvi_r   = (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
   assign dvi_g   = (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
   assign dvi_b   = (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
-
-  assign int_n   = pVdpInt_n ? 1'bz : 1'b0;
 
   always_ff @(posedge clk_w) begin
     ff_video_reset <= 1'b0;

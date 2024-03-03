@@ -342,7 +342,6 @@ module VDP (
     output wire PVIDEOVS_N,
     output wire PVIDEODHCLK,
     output wire PVIDEODLCLK,
-    input wire NTSC_PAL_TYPE,
     output wire PAL_MODE,
     input wire SPMAXSPR,
     output wire [10:0] CX,
