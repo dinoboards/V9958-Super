@@ -33,7 +33,6 @@ module hdmi_selection #(
 
   dvi_or_hdmi_output #(
       .VIDEO_ID_CODE(2),
-      .VIDEO_REFRESH_RATE(59.94),
       .START_Y(`NTSC_Y)
   ) video_ntsc_output (
       .dvi_output(dvi_output),
@@ -50,7 +49,6 @@ module hdmi_selection #(
 
   dvi_or_hdmi_output #(
       .VIDEO_ID_CODE(17),
-      .VIDEO_REFRESH_RATE(50),
       .START_Y(`PAL_Y)
   ) video_pal_output (
       .dvi_output(dvi_output),

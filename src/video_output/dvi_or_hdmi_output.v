@@ -6,8 +6,6 @@ module dvi_or_hdmi_output #(
     // Pixel repetition, interlaced scans and other special output modes are not implemented (yet).
     parameter int VIDEO_ID_CODE = 1,
 
-    // Specify the refresh rate in Hz you are using for audio calculations
-    parameter real VIDEO_REFRESH_RATE = 59.94,
 
     // Defaults to 16-bit audio, the minmimum supported by HDMI sinks. Can be anywhere from 16-bit to 24-bit.
     parameter int AUDIO_BIT_WIDTH = 16,
@@ -67,7 +65,6 @@ module dvi_or_hdmi_output #(
   hdmi #(
       .VIDEO_ID_CODE(VIDEO_ID_CODE),
       .DVI_OUTPUT(0),
-      .VIDEO_REFRESH_RATE(VIDEO_REFRESH_RATE),
       .IT_CONTENT(1),
       .VENDOR_NAME({"Unknown", 8'd0}),  // Must be 8 bytes null-padded 7-bit ASCII
       .PRODUCT_DESCRIPTION({"FPGA", 96'd0}),  // Must be 16 bytes null-padded 7-bit ASCII
@@ -93,7 +90,6 @@ module dvi_or_hdmi_output #(
   hdmi #(
       .VIDEO_ID_CODE(VIDEO_ID_CODE),
       .DVI_OUTPUT(1),
-      .VIDEO_REFRESH_RATE(VIDEO_REFRESH_RATE),
       .IT_CONTENT(1),
       .START_X(0),
       .START_Y(START_Y)
