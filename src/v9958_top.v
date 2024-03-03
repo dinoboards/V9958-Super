@@ -50,9 +50,6 @@ module v9958_top (
     output [ 3:0] O_sdram_dqm     // 32/4
 );
 
-  localparam CLKFRQ = 27000;
-  localparam AUDIO_RATE = 44100;
-  localparam AUDIO_BIT_WIDTH = 16;
   localparam NUM_CHANNELS = 3;
 
   logic addr;
@@ -66,44 +63,41 @@ module v9958_top (
   assign csr_n = !((!cs_n) & (!rd_n));
 
   // VDP signals
-  wire         VdpReq;
-  wire  [ 7:0] VdpDbi;
-  wire         VideoSC;
-  wire         VideoDLClk;
-  wire         VideoDHClk;
-  wire         WeVdp_n;
-  wire         ReVdp_n;
-  wire  [16:0] VdpAdr;
-  wire  [ 7:0] VrmDbo;
-  wire  [15:0] VrmDbi;
-  wire         pVdpInt_n;
+  wire        VdpReq;
+  wire [ 7:0] VdpDbi;
+  wire        VideoSC;
+  wire        VideoDLClk;
+  wire        VideoDHClk;
+  wire        WeVdp_n;
+  wire        ReVdp_n;
+  wire [16:0] VdpAdr;
+  wire [ 7:0] VrmDbo;
+  wire [15:0] VrmDbi;
+  wire        pVdpInt_n;
 
-  wire         r9palmode;
+  wire        r9palmode;
 
   // Video signals
-  wire  [ 5:0] VideoR;  // RGB Red
-  wire  [ 5:0] VideoG;  // RGB Green
-  wire  [ 5:0] VideoB;  // RGB Blue
-  wire         VideoHS_n;  // Horizontal Sync
-  wire         VideoVS_n;  // Vertical Sync
-  wire         VideoCS_n;  // Composite Sync
+  wire [ 5:0] VideoR;  // RGB Red
+  wire [ 5:0] VideoG;  // RGB Green
+  wire [ 5:0] VideoB;  // RGB Blue
+  wire        VideoHS_n;  // Horizontal Sync
+  wire        VideoVS_n;  // Vertical Sync
+  wire        VideoCS_n;  // Composite Sync
 
-  wire         scanlin;
-
-  logic [11:0] cx;
-  logic [10:0] cy;
+  wire        scanlin;
 
   // ----------------------------------------
   // All Clocks
   // ----------------------------------------
-  bit          clk_w;
-  bit          clk_135_w;
-  bit          clk_135_lock_w;
-  bit          sckclk_w;
-  bit          clk_audio_w;
-  bit          clk_sdram_w;
-  bit          clk_sdramp_w;
-  bit          clk_sdram_lock_w;
+  bit         clk_w;
+  bit         clk_135_w;
+  bit         clk_135_lock_w;
+  bit         sckclk_w;
+  bit         clk_audio_w;
+  bit         clk_sdram_w;
+  bit         clk_sdramp_w;
+  bit         clk_sdram_lock_w;
 
   clocks clocks (
       .rst_n(reset_n),
@@ -276,43 +270,33 @@ module v9958_top (
   // Video output
   //--------------------------------------------------------------
 
-
   wire [7:0] dvi_r;
   wire [7:0] dvi_g;
   wire [7:0] dvi_b;
+  reg ff_video_reset;
+  wire hdmi_reset;
+  wire [15:0] sample_w;
+  reg [15:0] audio_sample_word[1:0], audio_sample_word0[1:0];
+  logic [ 2:0] tmds;
+  logic [11:0] cx;
+  logic [10:0] cy;
 
   assign dvi_r = (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
   assign dvi_g = (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
   assign dvi_b = (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
 
-
-  ///////////
-
   assign int_n = pVdpInt_n ? 1'bz : 1'b0;
 
-  reg ff_video_reset;
-
-  logic [11:0] cx_ntsc;
-  logic [10:0] cy_ntsc;
-  logic [11:0] cx_pal;
-  logic [10:0] cy_pal;
-
-  wire hdmi_reset;
-
   always_ff @(posedge clk_w) begin
-
     ff_video_reset <= 1'b0;
 
     if (vdp_cx == 11'd0 && vdp_cy == 11'd0) begin
-      if ((pal_mode == 1'b0 && !(cx_ntsc == 10'd0 && cy_ntsc == `NTSC_Y)) || (pal_mode == 1'b1 && !(cx_pal == 10'd0 && cy_pal == `PAL_Y))) ff_video_reset <= 1'b1;
+      if ((pal_mode == 1'b0 && !(cx == 12'd0 && cy == `NTSC_Y)) || (pal_mode == 1'b1 && !(cx == 12'd0 && cy == `PAL_Y))) ff_video_reset <= 1'b1;
     end
   end
 
   assign hdmi_reset = ff_video_reset | reset_w | ~ram_enabled;
 
-  wire [15:0] sample_w;
-
-  reg [15:0] audio_sample_word[1:0], audio_sample_word0[1:0];
   always @(posedge clk_w) begin  // crossing clock domain
     audio_sample_word0[0] <= sample_w;
     audio_sample_word[0]  <= audio_sample_word0[0];
@@ -322,56 +306,18 @@ module v9958_top (
   wire [15:0] audio_sample_word_w[1:0];
   assign audio_sample_word_w = audio_sample_word;
 
-  logic [2:0] tmds;
-  logic [9:0] tmds_channels_ntsc[NUM_CHANNELS-1:0];
-  logic [9:0] tmds_channels_pal [NUM_CHANNELS-1:0];
-
-  video_output #(
-      .VIDEO_ID_CODE(2),
-      .VIDEO_REFRESH_RATE(59.94),
-      .START_Y(`NTSC_Y)
-  ) video_ntsc_output (
+  hdmi_selection #() hdmi (
       .dvi_output(dvi_output),
       .clk_pixel_x5(clk_135_w),
       .clk_pixel(clk_w),
       .clk_audio(clk_audio_w),
       .rgb({dvi_r, dvi_g, dvi_b}),
-      .reset(hdmi_reset),
-      .audio_sample_word(audio_sample_word_w),
-      .cx(cx_ntsc),
-      .cy(cy_ntsc),
-      .tmds_channels(tmds_channels_ntsc)
-  );
-
-  video_output #(
-      .VIDEO_ID_CODE(17),
-      .VIDEO_REFRESH_RATE(50),
-      .START_Y(`PAL_Y)
-  ) video_pal_output (
-      .dvi_output(dvi_output),
-      .clk_pixel_x5(clk_135_w),
-      .clk_pixel(clk_w),
-      .clk_audio(clk_audio_w),
-      .rgb({dvi_r, dvi_g, dvi_b}),
-      .reset(hdmi_reset),
-      .audio_sample_word(audio_sample_word_w),
-      .cx(cx_pal),
-      .cy(cy_pal),
-      .tmds_channels(tmds_channels_pal)
-  );
-
-  assign cx = pal_mode ? cx_pal : cx_ntsc;
-  assign cy = pal_mode ? cy_pal : cy_ntsc;
-
-  // Select the tmds_channels based on video mode (pal/ntsc)
-  // encode it with the serializer
-  serializer_diplexer serializer_diplexer_inst (
-      .clk_pixel(clk_w),
-      .clk_pixel_x5(clk_135_w),
+      .hdmi_reset(hdmi_reset),
       .reset(reset_w),
+      .audio_sample_word(audio_sample_word_w),
       .pal_mode(pal_mode),
-      .tmds_channels_ntsc(tmds_channels_ntsc),
-      .tmds_channels_pal(tmds_channels_pal),
+      .cx(cx),
+      .cy(cy),
       .tmds(tmds)
   );
 
@@ -382,7 +328,8 @@ module v9958_top (
       .OB({tmds_clk_n, tmds_data_n})
   );
 
-  ////////////////////
+  //--------------------------------------------------------------
+
 
   // ADC
   wire sck_enable;

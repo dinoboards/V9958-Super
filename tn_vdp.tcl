@@ -12,8 +12,10 @@ add_file src\\ram.v
 add_file src\\sdram.v
 add_file src\\SPI_MCP3202.v
 add_file src\\v9958_top.v
-add_file src\\video_output.v
 add_file src\\vram.v
+
+add_file src\\video_output\\dvi_or_hdmi_output.v
+add_file src\\video_output\\hdmi_selection.v
 
 add_file src\\hdmi\\audio_clock_regeneration_packet.sv
 add_file src\\hdmi\\audio_info_frame.sv

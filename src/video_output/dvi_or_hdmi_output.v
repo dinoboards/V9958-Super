@@ -1,5 +1,5 @@
 
-module video_output #(
+module dvi_or_hdmi_output #(
 
     // Defaults to 640x480 which should be supported by almost if not all HDMI sinks.
     // See README.md or CEA-861-D for enumeration of video id codes.
