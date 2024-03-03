@@ -19,11 +19,6 @@ module hdmi
     // range (0-255).
     parameter bit IT_CONTENT = 1'b1,
 
-    // Defaults to minimum bit lengths required to represent positions.
-    // Modify these parameters if you have alternate desired bit lengths.
-    parameter int BIT_WIDTH = VIDEO_ID_CODE < 4 ? 10 : VIDEO_ID_CODE == 4 ? 11 : 12,
-    parameter int BIT_HEIGHT = VIDEO_ID_CODE == 16 ? 11: 10,
-
     // A true HDMI signal sends auxiliary data (i.e. audio, preambles) which prevents it from being parsed by DVI signal sinks.
     // HDMI signal sinks are fortunately backwards-compatible with DVI signals.
     // Enable this flag if the output should be a DVI signal. You might want to do this to reduce resource usage or if you're only outputting video.
@@ -77,16 +72,16 @@ module hdmi
     // All outputs below this line stay inside the FPGA
     // They are used (by you) to pick the color each pixel should have
     // i.e. always_ff @(posedge pixel_clk) rgb <= {8'd0, 8'(cx), 8'(cy)};
-    output logic [BIT_WIDTH-1:0] cx,
-    output logic [BIT_HEIGHT-1:0] cy,
+    output logic [11:0] cx,
+    output logic [10:0] cy,
 
     // The screen is at the upper left corner of the frame.
     // 0,0 = 0,0 in video
     // the frame includes extra space for sending auxiliary data
-    output logic [BIT_WIDTH-1:0] frame_width,
-    output logic [BIT_HEIGHT-1:0] frame_height,
-    output logic [BIT_WIDTH-1:0] screen_width,
-    output logic [BIT_HEIGHT-1:0] screen_height
+    output logic [11:0] frame_width,
+    output logic [10:0] frame_height,
+    output logic [11:0] screen_width,
+    output logic [10:0] screen_height
 );
 
 initial cx = START_X;
@@ -95,8 +90,8 @@ initial cy = START_Y;
 logic hsync;
 logic vsync;
 
-logic [BIT_WIDTH-1:0] hsync_pulse_start, hsync_pulse_size;
-logic [BIT_HEIGHT-1:0] vsync_pulse_start, vsync_pulse_size;
+logic [11:0] hsync_pulse_start, hsync_pulse_size;
+logic [10:0] vsync_pulse_start, vsync_pulse_size;
 logic invert;
 
 // See CEA-861-D for more specifics formats described below.
@@ -216,13 +211,13 @@ always_ff @(posedge clk_pixel)
 begin
     if (reset)
     begin
-        cx <= BIT_WIDTH'(START_X);
-        cy <= BIT_HEIGHT'(START_Y);
+        cx <= 12'(START_X);
+        cy <= 11'(START_Y);
     end
     else
     begin
-        cx <= cx == frame_width-1'b1 ? BIT_WIDTH'(0) : cx + 1'b1;
-        cy <= cx == frame_width-1'b1 ? cy == frame_height-1'b1 ? BIT_HEIGHT'(0) : cy + 1'b1 : cy;
+        cx <= cx == frame_width-1'b1 ? 12'(0) : 12'(cx + 1'b1);
+        cy <= cx == frame_width-1'b1 ? cy == frame_height-1'b1 ? 11'(0) : 11'(cy + 1'b1) : cy;
     end
 end
 

@@ -6,11 +6,6 @@ module video_output #(
     // Pixel repetition, interlaced scans and other special output modes are not implemented (yet).
     parameter int VIDEO_ID_CODE = 1,
 
-    // Defaults to minimum bit lengths required to represent positions.
-    // Modify these parameters if you have alternate desired bit lengths.
-    parameter int BIT_WIDTH  = VIDEO_ID_CODE < 4 ? 10 : VIDEO_ID_CODE == 4 ? 11 : 12,
-    parameter int BIT_HEIGHT = VIDEO_ID_CODE == 16 ? 11 : 10,
-
     // Specify the refresh rate in Hz you are using for audio calculations
     parameter real VIDEO_REFRESH_RATE = 59.94,
 
@@ -22,7 +17,7 @@ module video_output #(
     // Note that sinks may not support rates above 48 kHz.
     parameter int AUDIO_RATE = 44100,
 
-        // Starting screen coordinate when module comes out of reset.
+    // Starting screen coordinate when module comes out of reset.
     //
     // Setting these to something other than (0, 0) is useful when positioning
     // an external video signal within a larger overall frame (e.g.
@@ -53,17 +48,17 @@ module video_output #(
     // All outputs below this line stay inside the FPGA
     // They are used (by you) to pick the color each pixel should have
     // i.e. always_ff @(posedge pixel_clk) rgb <= {8'd0, 8'(cx), 8'(cy)};
-    output logic [ BIT_WIDTH-1:0] cx,
-    output logic [BIT_HEIGHT-1:0] cy
+    output logic [11:0] cx,
+    output logic [10:0] cy
 );
 
-  logic [9:0] cy_hdmi;
-  logic [9:0] cx_hdmi;
-  logic [9:0] cy_dvi;
-  logic [9:0] cx_dvi;
+  logic [11:0] cx_hdmi;
+  logic [10:0] cy_hdmi;
+  logic [11:0] cx_dvi;
+  logic [10:0] cy_dvi;
 
-  logic [9:0] tmds_channels_hdmi[NUM_CHANNELS-1:0];
-  logic [9:0] tmds_channels_dvi [NUM_CHANNELS-1:0];
+  logic [ 9:0] tmds_channels_hdmi[NUM_CHANNELS-1:0];
+  logic [ 9:0] tmds_channels_dvi [NUM_CHANNELS-1:0];
 
   assign cx = dvi_output ? cx_dvi : cx_hdmi;
   assign cy = dvi_output ? cy_dvi : cy_hdmi;

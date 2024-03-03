@@ -90,8 +90,8 @@ module v9958_top (
 
   wire         scanlin;
 
-  logic [ 9:0] cy;
-  logic [ 9:0] cx;
+  logic [11:0] cx;
+  logic [10:0] cy;
 
   // ----------------------------------------
   // All Clocks
@@ -292,10 +292,10 @@ module v9958_top (
 
   reg ff_video_reset;
 
-  logic [9:0] cy_ntsc;
-  logic [9:0] cx_ntsc;
-  logic [9:0] cy_pal;
-  logic [9:0] cx_pal;
+  logic [11:0] cx_ntsc;
+  logic [10:0] cy_ntsc;
+  logic [11:0] cx_pal;
+  logic [10:0] cy_pal;
 
   wire hdmi_reset;
 
