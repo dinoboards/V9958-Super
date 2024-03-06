@@ -136,7 +136,7 @@ module VDP_COLORDEC (
   wire [7:0] W_GRP7_COLOR;
   wire [3:0] W_PALETTE_ADDR;
 
-  assign PPALETTEADDR_OUT = (VDPMODEGRAPHIC5 == 1'b0) ? FF_PALETTE_ADDR : {2'b00,FF_PALETTE_ADDR_G5};
+  assign PPALETTEADDR_OUT = (VDPMODEGRAPHIC5 == 1'b0) ? FF_PALETTE_ADDR : {2'b00, FF_PALETTE_ADDR_G5};
   assign PVIDEOR_VDP = FF_VIDEO_R;
   assign PVIDEOG_VDP = FF_VIDEO_G;
   assign PVIDEOB_VDP = FF_VIDEO_B;
@@ -171,7 +171,7 @@ module VDP_COLORDEC (
   end
 
   // FOR GRAPHIC7
-  always_comb  begin
+  always_comb begin
     case (COLORCODESPRITE)
       4'b0000: W_GRP7_SPRITE_COLOR = {3'b000, 3'b000, 2'b00};
       4'b0001: W_GRP7_SPRITE_COLOR = {3'b000, 3'b000, 2'b01};
@@ -201,7 +201,7 @@ module VDP_COLORDEC (
       FF_PALETTE_ADDR <= {4{1'b0}};
     end else begin
       if ((W_EVEN_DOTSTATE == 1'b1)) begin
-        if((WINDOW == 1'b0 || REG_R1_DISP_ON == 1'b0 || (W_FORE_COLOR == 4'b0000 && REG_R8_COL0_ON == 1'b0))) begin
+        if ((WINDOW == 1'b0 || REG_R1_DISP_ON == 1'b0 || (W_FORE_COLOR == 4'b0000 && REG_R8_COL0_ON == 1'b0))) begin
           FF_PALETTE_ADDR <= W_BACK_COLOR;
         end else begin
           FF_PALETTE_ADDR <= W_FORE_COLOR;

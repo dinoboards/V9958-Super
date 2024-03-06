@@ -25,7 +25,6 @@ module hdmi_output #(
     // You probably don't need to change these parameters if you are
     // generating a signal from scratch instead of processing an
     // external signal.
-    parameter int START_Y = 0,
     parameter int NUM_CHANNELS = 3
 ) (
     input include_audio,
@@ -54,7 +53,7 @@ module hdmi_output #(
       .PRODUCT_DESCRIPTION({"FPGA", 96'd0}),  // Must be 16 bytes null-padded 7-bit ASCII
       .SOURCE_DEVICE_INFORMATION(8'h09),  // PC Device Code
       .START_X(0),
-      .START_Y(START_Y)
+      .START_Y(0)
   ) hdmi (
       .include_audio(include_audio),
       .clk_pixel_x5(clk_pixel_x5),

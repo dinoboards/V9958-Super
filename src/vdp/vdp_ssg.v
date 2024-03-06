@@ -123,8 +123,6 @@ module VDP_SSG (
   wire [1:0] W_LINE_MODE;
   wire W_V_BLANKING_START;
   wire W_V_BLANKING_END;
-  wire [8:0] W_V_SYNC_INTR_START_LINE;
-  reg [8:0] FF_TOP_BORDER_LINES;
 
   //---------------------------------------------------------------------------
   //  PORT ASSIGNMENT
@@ -350,18 +348,19 @@ module VDP_SSG (
         // JP: PREWINDOW_Xが 1になるタイミングと同じタイミングでY座標の計算
         // (Y coordinate calculation at the same timing as when PREWINDOW_X becomes 1)
         if ((W_V_BLANKING_END == 1'b1)) begin
-          if ((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b0)) begin
-            PREDOTCOUNTERYPSTART = 9'b111100110;  // TOP BORDER LINES = -26
-          end else if ((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b0)) begin
-            PREDOTCOUNTERYPSTART = 9'b111110000;  // TOP BORDER LINES = -16
-          end else if ((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b1)) begin
-            PREDOTCOUNTERYPSTART = 9'b111001011;  // TOP BORDER LINES = -53
-          end else if ((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b1)) begin
-            PREDOTCOUNTERYPSTART = 9'b111010101;  // TOP BORDER LINES = -43
+          if ((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b0)) begin  //NTSC 192 LINES
+            PREDOTCOUNTERYPSTART = (-26 / 2);  // TOP BORDER LINES = -26
+          end else if ((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b0)) begin  //NTSC 212 LINES
+            PREDOTCOUNTERYPSTART = (-16 / 2);  // TOP BORDER LINES = -16
+          end else if ((REG_R9_Y_DOTS == 1'b0 && VDPR9PALMODE == 1'b1)) begin  //pal 192 LINES
+            PREDOTCOUNTERYPSTART = (-53 / 2);  // TOP BORDER LINES = -53
+          end else if ((REG_R9_Y_DOTS == 1'b1 && VDPR9PALMODE == 1'b1)) begin  //PAL 212 lines
+            PREDOTCOUNTERYPSTART = (-43 / 2);  // TOP BORDER LINES = -43
           end
+          // TODO: not sure why the border counts needed to be divided by 2.  But unless we do this
+          // the main image is seems to have a double border height.
           FF_MONITOR_LINE <= PREDOTCOUNTERYPSTART + W_Y_ADJ;
-          FF_TOP_BORDER_LINES <= 9'b000000000 - PREDOTCOUNTERYPSTART - W_Y_ADJ;
-          PREWINDOW_Y_SP <= 1'b1;
+          PREWINDOW_Y_SP  <= 1'b1;
         end else begin
           if ((PREDOTCOUNTER_YP_V == 255)) begin
             PREDOTCOUNTER_YP_V = FF_MONITOR_LINE;
@@ -388,20 +387,25 @@ module VDP_SSG (
   // -----------------------------------------------------------------------------
   // -- VSYNC INTERRUPT REQUEST
   // -----------------------------------------------------------------------------
+  logic [8:0] W_V_SYNC_INTR_START_LINE;
+
   assign W_LINE_MODE = {REG_R9_Y_DOTS, VDPR9PALMODE};
 
-  // take the screen height as set by RG_R9_Y_DOTS(LN), and NTSC/PAL and get a intra start line
-  assign W_V_SYNC_INTR_START_LINE = (W_LINE_MODE == 2'b00) ? (9'd192 + `OFFSET_Y + `LED_TV_Y_NTSC) :
-      (W_LINE_MODE == 2'b10) ? (9'd212 + `OFFSET_Y + `LED_TV_Y_NTSC) :
-      (W_LINE_MODE == 2'b01) ? (9'd192 + `OFFSET_Y + `LED_TV_Y_PAL) :
-      (W_LINE_MODE == 2'b11) ? (9'd212 + `OFFSET_Y + `LED_TV_Y_PAL) :
-      9'bxxxxxxxxx;
+  always_comb begin
+    case (W_LINE_MODE)
+      2'b00:   W_V_SYNC_INTR_START_LINE = `V_BLANKING_START_192_NTSC;  // 240
+      2'b10:   W_V_SYNC_INTR_START_LINE = `V_BLANKING_START_212_NTSC;  // 250
+      2'b01:   W_V_SYNC_INTR_START_LINE = `V_BLANKING_START_192_PAL;  // 263
+      2'b11:   W_V_SYNC_INTR_START_LINE = `V_BLANKING_START_212_PAL;  // 273
+      default: W_V_SYNC_INTR_START_LINE = 9'bx;
+    endcase
+  end
 
-  wire [9:0] v_blanking_end_ntsc = ({2'b00, `OFFSET_Y + `LED_TV_Y_NTSC, W_FIELD & REG_R9_INTERLACE_MODE});
-  wire [9:0] v_blanking_end_pal = ({2'b00, `OFFSET_Y + `LED_TV_Y_PAL, W_FIELD & REG_R9_INTERLACE_MODE});
-  assign W_V_BLANKING_END = ((W_V_CNT_IN_FIELD == v_blanking_end_ntsc && VDPR9PALMODE == 1'b0) || (W_V_CNT_IN_FIELD == v_blanking_end_pal && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
+  assign W_V_BLANKING_END = ((W_V_CNT_IN_FIELD == {2'b00, `OFFSET_Y + `LED_TV_Y_NTSC, W_FIELD & REG_R9_INTERLACE_MODE} && VDPR9PALMODE == 1'b0) ||
+                            (W_V_CNT_IN_FIELD == {2'b00, `OFFSET_Y + `LED_TV_Y_PAL, W_FIELD & REG_R9_INTERLACE_MODE} && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
 
-
-  assign W_V_BLANKING_START = ((W_V_CNT_IN_FIELD == ({W_V_SYNC_INTR_START_LINE + FF_TOP_BORDER_LINES,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b0) || (W_V_CNT_IN_FIELD == ({W_V_SYNC_INTR_START_LINE + FF_TOP_BORDER_LINES,W_FIELD & REG_R9_INTERLACE_MODE}) && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
+  assign W_V_BLANKING_START = ((W_V_CNT_IN_FIELD == {W_V_SYNC_INTR_START_LINE + `LED_TV_Y_NTSC, W_FIELD & REG_R9_INTERLACE_MODE} && VDPR9PALMODE == 1'b0) ||
+                              (W_V_CNT_IN_FIELD == {W_V_SYNC_INTR_START_LINE + `LED_TV_Y_PAL, W_FIELD & REG_R9_INTERLACE_MODE} && VDPR9PALMODE == 1'b1)) ? 1'b1 : 1'b0;
 
 endmodule
+

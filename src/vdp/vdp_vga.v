@@ -122,7 +122,7 @@ module VDP_VGA (
     input wire [2:0] RATIOMODE
 );
 
-import custom_timings::*;
+  import custom_timings::*;
 
   // VDP CLOCK ... 21.477MHZ
   // VIDEO INPUT
@@ -133,16 +133,20 @@ import custom_timings::*;
   // SWITCHED I/O SIGNALS
 
   reg FF_HSYNC_N;
-  reg FF_VSYNC_N;  // VIDEO OUTPUT ENABLE
-  reg VIDEOOUTX;  // DOUBLE BUFFER SIGNAL
+  reg FF_VSYNC_N;
+
+  // VIDEO OUTPUT ENABLE
+  reg VIDEOOUTX;
+
+  // DOUBLE BUFFER SIGNAL
   wire [9:0] XPOSITIONW;
   reg [9:0] XPOSITIONR;
   wire EVENODD;
   wire WE_BUF;
   wire [5:0] DATAROUT;
   wire [5:0] DATAGOUT;
-  wire [5:0] DATABOUT;  // DISP_START_X + DISP_WIDTH < CLOCKS_PER_HALF_LINE(PALMODE) = 684
-  parameter DISP_WIDTH = 720;  //    SHARED VARIABLE DISP_START_X    : INTEGER := 0; --684 - DISP_WIDTH - 2;          -- 106
+  wire [5:0] DATABOUT;
+  parameter DISP_WIDTH = 720;
   parameter DISP_START_X = 0;  // 106
 
   assign VIDEOROUT = (VIDEOOUTX == 1'b1) ? DATAROUT : {6{1'b0}};
@@ -189,33 +193,29 @@ import custom_timings::*;
     end else begin
       if ((PALMODE == 1'b0)) begin
         if ((INTERLACEMODE == 1'b0)) begin
-          if(((VCOUNTERIN == (3 * 2 + CENTER_Y)) || (VCOUNTERIN == (524 + 3 * 2 + CENTER_Y)))) begin
+          if (((VCOUNTERIN == (3 * 2 + CENTER_Y)) || (VCOUNTERIN == (524 + 3 * 2 + CENTER_Y)))) begin
             FF_VSYNC_N <= 1'b0;
-          end
-          else if(((VCOUNTERIN == (6 * 2 + CENTER_Y)) || (VCOUNTERIN == (524 + 6 * 2 + CENTER_Y)))) begin
+          end else if (((VCOUNTERIN == (6 * 2 + CENTER_Y)) || (VCOUNTERIN == (524 + 6 * 2 + CENTER_Y)))) begin
             FF_VSYNC_N <= 1'b1;
           end
         end else begin
-          if(((VCOUNTERIN == (3 * 2 + CENTER_Y)) || (VCOUNTERIN == (525 + 3 * 2 + CENTER_Y)))) begin
+          if (((VCOUNTERIN == (3 * 2 + CENTER_Y)) || (VCOUNTERIN == (525 + 3 * 2 + CENTER_Y)))) begin
             FF_VSYNC_N <= 1'b0;
-          end
-          else if(((VCOUNTERIN == (6 * 2 + CENTER_Y)) || (VCOUNTERIN == (525 + 6 * 2 + CENTER_Y)))) begin
+          end else if (((VCOUNTERIN == (6 * 2 + CENTER_Y)) || (VCOUNTERIN == (525 + 6 * 2 + CENTER_Y)))) begin
             FF_VSYNC_N <= 1'b1;
           end
         end
       end else begin
         if ((INTERLACEMODE == 1'b0)) begin
-          if(((VCOUNTERIN == (3 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (626 + 3 * 2 + CENTER_Y + 6)))) begin
+          if (((VCOUNTERIN == (3 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (626 + 3 * 2 + CENTER_Y + 6)))) begin
             FF_VSYNC_N <= 1'b0;
-          end
-          else if(((VCOUNTERIN == (6 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (626 + 6 * 2 + CENTER_Y + 6)))) begin
+          end else if (((VCOUNTERIN == (6 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (626 + 6 * 2 + CENTER_Y + 6)))) begin
             FF_VSYNC_N <= 1'b1;
           end
         end else begin
-          if(((VCOUNTERIN == (3 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (625 + 3 * 2 + CENTER_Y + 6)))) begin
+          if (((VCOUNTERIN == (3 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (625 + 3 * 2 + CENTER_Y + 6)))) begin
             FF_VSYNC_N <= 1'b0;
-          end
-          else if(((VCOUNTERIN == (6 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (625 + 6 * 2 + CENTER_Y + 6)))) begin
+          end else if (((VCOUNTERIN == (6 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (625 + 6 * 2 + CENTER_Y + 6)))) begin
             FF_VSYNC_N <= 1'b1;
           end
         end
@@ -228,7 +228,7 @@ import custom_timings::*;
     if ((RESET == 1'b1)) begin
       XPOSITIONR <= 0;
     end else begin
-      if(((HCOUNTERIN == DISP_START_X) || (HCOUNTERIN == (DISP_START_X + (CLOCKS_PER_HALF_LINE(PALMODE)))))) begin
+      if (((HCOUNTERIN == DISP_START_X) || (HCOUNTERIN == (DISP_START_X + (CLOCKS_PER_HALF_LINE(PALMODE)))))) begin
         XPOSITIONR <= 0;
       end else begin
         XPOSITIONR <= 10'(XPOSITIONR + 1);

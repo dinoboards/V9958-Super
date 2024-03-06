@@ -32,8 +32,7 @@ module hdmi_selection #(
   logic [ 9:0] tmds_channels_pal [NUM_CHANNELS-1:0];
 
   hdmi_output #(
-      .VIDEO_ID_CODE(2),
-      .START_Y(`NTSC_Y)
+      .VIDEO_ID_CODE(2)
   ) video_ntsc_output (
       .include_audio(include_audio),
       .clk_pixel_x5(clk_pixel_x5),
@@ -48,8 +47,7 @@ module hdmi_selection #(
   );
 
   hdmi_output #(
-      .VIDEO_ID_CODE(17),
-      .START_Y(`PAL_Y)
+      .VIDEO_ID_CODE(17)
   ) video_pal_output (
       .include_audio(include_audio),
       .clk_pixel_x5(clk_pixel_x5),
@@ -77,6 +75,5 @@ module hdmi_selection #(
       .tmds_channels_pal(tmds_channels_pal),
       .tmds(tmds)
   );
-
 
 endmodule

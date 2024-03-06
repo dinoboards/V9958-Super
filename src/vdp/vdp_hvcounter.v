@@ -77,7 +77,7 @@ module VDP_HVCOUNTER (
     input wire BLANKING_END
 );
 
-import custom_timings::*;
+  import custom_timings::*;
 
   reg [10:0] FF_H_CNT;
   reg [10:0] FF_H_CNT_IN_FIELD;
@@ -112,12 +112,12 @@ import custom_timings::*;
   //  HORIZONTAL COUNTER
   //------------------------------------------------------------------------
   assign W_H_CNT_HALF = (FF_H_CNT == ((CLOCKS_PER_HALF_LINE(PAL_MODE)) - 1)) ? 1'b1 : 1'b0;
-  assign W_H_CNT_END  = (FF_H_CNT == (CLOCKS_PER_LINE(PAL_MODE) - 1)) ? 1'b1 : 1'b0;
+  assign W_H_CNT_END = (FF_H_CNT == (CLOCKS_PER_LINE(PAL_MODE) - 1)) ? 1'b1 : 1'b0;
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_H_CNT <= 0;
     end else begin
-      if((W_H_CNT_END == 1'b1 || (W_FIELD_END == 1'b1 && W_H_CNT_HALF == 1'b1 && INTERLACE_MODE == 1'b0))) begin
+      if ((W_H_CNT_END == 1'b1 || (W_FIELD_END == 1'b1 && W_H_CNT_HALF == 1'b1 && INTERLACE_MODE == 1'b0))) begin
         FF_H_CNT <= 0;
       end else begin
         FF_H_CNT <= 11'(FF_H_CNT + 1);

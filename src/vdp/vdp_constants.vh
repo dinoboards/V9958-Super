@@ -32,8 +32,9 @@
 `define LED_TV_Y_NTSC 1
 `define LED_TV_Y_PAL 3
 
-`define NTSC_Y 480 // (525-45)
-`define PAL_Y 576 // (625-60??????);
-
-
 `define VDP_ID 5'b00010  // V9958
+
+`define V_BLANKING_START_192_NTSC 240
+`define V_BLANKING_START_212_NTSC 250
+`define V_BLANKING_START_192_PAL 263
+`define V_BLANKING_START_212_PAL 273

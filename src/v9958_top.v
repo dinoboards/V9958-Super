@@ -48,14 +48,14 @@ module v9958_top (
   // ----------------------------------------
   // All Clocks
   // ----------------------------------------
-  bit         clk_w;
-  bit         clk_135_w;
-  bit         clk_135_lock_w;
-  bit         sckclk_w;
-  bit         clk_audio_w;
-  bit         clk_sdram_w;
-  bit         clk_sdramp_w;
-  bit         clk_sdram_lock_w;
+  bit clk_w;
+  bit clk_135_w;
+  bit clk_135_lock_w;
+  bit sckclk_w;
+  bit clk_audio_w;
+  bit clk_sdram_w;
+  bit clk_sdramp_w;
+  bit clk_sdram_lock_w;
 
   clocks clocks (
       .rst_n(reset_n),
@@ -120,10 +120,10 @@ module v9958_top (
   // V5598 Video Generation
   // ----------------------------------------
 
-  bit          CpuReq;
-  bit          CpuWrt;
-  bit   [ 7:0] CpuDbo;
-  bit   [ 7:0] CpuDbi;
+  bit        CpuReq;
+  bit        CpuWrt;
+  bit [ 7:0] CpuDbo;
+  bit [ 7:0] CpuDbi;
   bit        VideoDLClk;
   bit        VideoDHClk;
   bit        WeVdp_n;
@@ -150,7 +150,7 @@ module v9958_top (
       .CpuWrt(CpuWrt),
       .CpuDbo(CpuDbo),
       .CpuDbi(CpuDbi),
-      .cs_n(cs_n)
+      .cs_n  (cs_n)
   );
 
   wire pal_mode;
@@ -171,7 +171,7 @@ module v9958_top (
       .PRAMADR        (VdpAdr),
       .PRAMDBI        (VrmDbi),
       .PRAMDBO        (VrmDbo),
-      .VDPSPEEDMODE   (1'b0),                    // for V9958 MSX2+/tR VDP
+      .VDPSPEEDMODE   (1'b1),                    // for V9958 MSX2+/tR VDP
       .RATIOMODE      (3'b000),                  // for V9958 MSX2+/tR VDP
       .CENTERYJK_R25_N(1'b0),                    // for V9958 MSX2+/tR VDP
       .PVIDEOR        (VideoR),
@@ -209,13 +209,16 @@ module v9958_top (
   assign dvi_g   = (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
   assign dvi_b   = (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
 
-  always_ff @(posedge clk_w) begin
-    ff_video_reset <= 1'b0;
+  vdp_to_hdmi_sync vdp_to_hdmi_sync (
+      .reset(reset_w),
+      .clk(clk_w),
+      .vdp_cx(vdp_cx),
+      .vdp_cy(vdp_cy),
+      .hdmi_cx(cx),
+      .hdmi_cy(cy),
 
-    if (vdp_cx == 11'd0 && vdp_cy == 11'd0) begin
-      if ((pal_mode == 1'b0 && !(cx == 12'd0 && cy == `NTSC_Y)) || (pal_mode == 1'b1 && !(cx == 12'd0 && cy == `PAL_Y))) ff_video_reset <= 1'b1;
-    end
-  end
+      .ff_video_reset(ff_video_reset)
+  );
 
   assign hdmi_reset = ff_video_reset | reset_w | ~ram_enabled;
 

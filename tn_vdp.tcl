@@ -14,6 +14,7 @@ add_file src\\SPI_MCP3202.v
 add_file src\\v9958_top.v
 add_file src\\vram.v
 add_file src\\cpu_io.v
+add_file src\\vdp_to_hdmi_sync.sv
 
 add_file src\\video_output\\hdmi_output.v
 add_file src\\video_output\\hdmi_selection.v

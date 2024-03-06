@@ -642,7 +642,7 @@ module VDP (
   );
 
   always_ff @(posedge CLK21M) begin
-    if ((PREDOTCOUNTER_X == (255 + 25) || PREDOTCOUNTER_X == 9'b111111111)) begin
+    if ((PREDOTCOUNTER_X == 255)) begin
       ACTIVE_LINE <= 1'b1;
     end else begin
       ACTIVE_LINE <= 1'b0;
@@ -744,10 +744,8 @@ module VDP (
     if ((RESET == 1'b1)) begin
       PREWINDOW_X <= 1'b0;
     end else begin
-      if(((H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4, 2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
-          (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}), 2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
-          (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4, 2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
-          (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}), 2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      if(((H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({3'b100}), 2'b10}) && (REG_R25_YJK == 1'b0) && VDPR9PALMODE == 1'b0) ||
+          (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({3'b100}), 2'b10}) && (REG_R25_YJK == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         // HOLD
       end else if ((H_CNT[1:0] == 2'b10)) begin
         if ((PREDOTCOUNTER_X == 9'b111111111)) begin
