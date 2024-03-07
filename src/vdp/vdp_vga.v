@@ -146,12 +146,11 @@ module VDP_VGA (
   wire [5:0] DATAROUT;
   wire [5:0] DATAGOUT;
   wire [5:0] DATABOUT;
-  parameter DISP_WIDTH = 720;
-  parameter DISP_START_X = 0;  // 106
 
-  assign VIDEOROUT = (VIDEOOUTX == 1'b1) ? DATAROUT : {6{1'b0}};
-  assign VIDEOGOUT = (VIDEOOUTX == 1'b1) ? DATAGOUT : {6{1'b0}};
-  assign VIDEOBOUT = (VIDEOOUTX == 1'b1) ? DATABOUT : {6{1'b0}};
+  assign VIDEOROUT = (VIDEOOUTX == 1'b1) ? DATAROUT : 0;
+  assign VIDEOGOUT = (VIDEOOUTX == 1'b1) ? DATAGOUT : 0;
+  assign VIDEOBOUT = (VIDEOOUTX == 1'b1) ? DATABOUT : 0;
+
   VDP_DOUBLEBUF DBUF (
       .CLK(CLK21M),
       .XPOSITIONW(XPOSITIONW),
@@ -228,7 +227,7 @@ module VDP_VGA (
     if ((RESET == 1'b1)) begin
       XPOSITIONR <= 0;
     end else begin
-      if (((HCOUNTERIN == DISP_START_X) || (HCOUNTERIN == (DISP_START_X + (CLOCKS_PER_HALF_LINE(PALMODE)))))) begin
+      if (((HCOUNTERIN == 0) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE))))) begin
         XPOSITIONR <= 0;
       end else begin
         XPOSITIONR <= 10'(XPOSITIONR + 1);

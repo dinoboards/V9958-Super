@@ -249,9 +249,9 @@ module VDP_COLORDEC (
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       FF_SPRITECOLOROUT <= 1'b0;
-      FF_YJK_R <= {6{1'b0}};
-      FF_YJK_G <= {6{1'b0}};
-      FF_YJK_B <= {6{1'b0}};
+      FF_YJK_R <= 0;
+      FF_YJK_G <= 0;
+      FF_YJK_B <= 0;
       FF_YJK_EN <= 1'b0;
     end else begin
       if ((W_EVEN_DOTSTATE == 1'b1)) begin
