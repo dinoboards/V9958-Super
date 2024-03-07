@@ -20,14 +20,14 @@ module hdmi_selection #(
     input logic pal_mode,
 
     output logic [ 2:0] tmds,
-    output logic [11:0] cx,
-    output logic [10:0] cy
+    output logic [10:0] cx,
+    output logic [ 9:0] cy
 );
 
-  logic [11:0] cx_ntsc;
-  logic [10:0] cy_ntsc;
-  logic [11:0] cx_pal;
-  logic [10:0] cy_pal;
+  logic [10:0] cx_ntsc;
+  logic [ 9:0] cy_ntsc;
+  logic [10:0] cx_pal;
+  logic [ 9:0] cy_pal;
   logic [ 9:0] tmds_channels_ntsc[NUM_CHANNELS-1:0];
   logic [ 9:0] tmds_channels_pal [NUM_CHANNELS-1:0];
 

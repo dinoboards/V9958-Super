@@ -344,8 +344,8 @@ module VDP (
     output wire PVIDEODLCLK,
     output wire PAL_MODE,
     input wire SPMAXSPR,
-    output wire [10:0] CX,
-    output wire [10:0] CY
+    input wire [10:0] CX,
+    input wire [9:0] CY
 );
 
   import custom_timings::*;
@@ -356,7 +356,7 @@ module VDP (
 
   wire [10:0] H_CNT;
   wire [10:0] H_CNT_IN_FIELD;
-  wire [10:0] V_CNT;
+  wire [9:0] V_CNT;
 
   // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
   wire [ 6:0] ADJUST_X;
@@ -567,8 +567,8 @@ module VDP (
   parameter VRAM_ACCESS_VDPR = 6;
   parameter VRAM_ACCESS_VDPS = 7;
 
-  assign CX = H_CNT;
-  assign CY = V_CNT;
+  assign H_CNT = CY[0] ? CX + CLOCKS_PER_HALF_LINE(PAL_MODE) : CX;
+  assign V_CNT = CY;
   assign PAL_MODE = VDPR9PALMODE;
 
   assign PRAMADR = IRAMADR;

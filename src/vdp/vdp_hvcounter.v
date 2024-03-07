@@ -63,10 +63,10 @@
 module VDP_HVCOUNTER (
     input wire RESET,
     input wire CLK21M,
-    output wire [10:0] H_CNT,
+    input wire [10:0] H_CNT,
     output wire [10:0] H_CNT_IN_FIELD,
     output wire [9:0] V_CNT_IN_FIELD,
-    output wire [10:0] V_CNT_IN_FRAME,
+    input wire [9:0] V_CNT_IN_FRAME,
     output wire FIELD,
     output wire H_BLANK,
     output wire V_BLANK,
@@ -83,7 +83,7 @@ module VDP_HVCOUNTER (
   reg [10:0] FF_H_CNT_IN_FIELD;
   reg [9:0] FF_V_CNT_IN_FIELD;
   reg FF_FIELD;
-  reg [10:0] FF_V_CNT_IN_FRAME;
+  reg [9:0] FF_V_CNT_IN_FRAME;
   reg FF_H_BLANK;
   reg FF_V_BLANK;
   wire [9:0] FF_FIELD_END_CNT;
@@ -99,11 +99,11 @@ module VDP_HVCOUNTER (
   wire W_H_BLANK_END;
   wire [8:0] W_V_SYNC_INTR_START_LINE;
 
-  assign H_CNT = FF_H_CNT;
-  assign H_CNT_IN_FIELD = FF_H_CNT_IN_FIELD;
-  assign V_CNT_IN_FIELD = FF_V_CNT_IN_FIELD;
+  assign FF_H_CNT = H_CNT;
+  assign H_CNT_IN_FIELD = H_CNT;
+  assign V_CNT_IN_FIELD = V_CNT_IN_FRAME;
   assign FIELD = FF_FIELD;
-  assign V_CNT_IN_FRAME = FF_V_CNT_IN_FRAME;
+  assign FF_V_CNT_IN_FRAME = V_CNT_IN_FRAME;
   assign H_BLANK = FF_H_BLANK;
   assign V_BLANK = FF_V_BLANK;
 
@@ -113,17 +113,6 @@ module VDP_HVCOUNTER (
   //------------------------------------------------------------------------
   assign W_H_CNT_HALF = (FF_H_CNT == ((CLOCKS_PER_HALF_LINE(PAL_MODE)) - 1)) ? 1'b1 : 1'b0;
   assign W_H_CNT_END = (FF_H_CNT == (CLOCKS_PER_LINE(PAL_MODE) - 1)) ? 1'b1 : 1'b0;
-  always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_H_CNT <= 0;
-    end else begin
-      if ((W_H_CNT_END == 1'b1 || (W_FIELD_END == 1'b1 && W_H_CNT_HALF == 1'b1 && INTERLACE_MODE == 1'b0))) begin
-        FF_H_CNT <= 0;
-      end else begin
-        FF_H_CNT <= 11'(FF_H_CNT + 1);
-      end
-    end
-  end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
@@ -145,16 +134,8 @@ module VDP_HVCOUNTER (
     if (RESET) begin
       FF_FIELD_END <= 1'b0;
     end else begin
-      if (
-            (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-            (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
-            (FF_FIELD == 1'b1 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-            (FF_FIELD == 1'b1 && INTERLACE_MODE == 1'b0 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
-            (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b1 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-            (FF_FIELD == 1'b0 && INTERLACE_MODE == 1'b1 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624) ||
-            (FF_FIELD == 1'b1 && INTERLACE_MODE == 1'b1 && PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-            (FF_FIELD == 1'b1 && INTERLACE_MODE == 1'b1 && PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624)
-        ) begin
+      if ((PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
+          (PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624)) begin
         FF_FIELD_END <= 1'b1;
       end else begin
         FF_FIELD_END <= 1'b0;
@@ -186,23 +167,6 @@ module VDP_HVCOUNTER (
       if (((W_H_CNT_HALF | W_H_CNT_END) == 1'b1)) begin
         if ((W_FIELD_END == 1'b1)) begin
           FF_FIELD <= ~FF_FIELD;
-        end
-      end
-    end
-  end
-
-  //------------------------------------------------------------------------
-  //  VERTICAL COUNTER IN FRAME
-  //------------------------------------------------------------------------
-  always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_V_CNT_IN_FRAME <= 0;
-    end else begin
-      if (((W_H_CNT_HALF | W_H_CNT_END) == 1'b1)) begin
-        if ((W_FIELD_END == 1'b1 && (FF_FIELD == 1'b1 || INTERLACE_MODE == 1'b0))) begin
-          FF_V_CNT_IN_FRAME <= 0;
-        end else begin
-          FF_V_CNT_IN_FRAME <= 11'(FF_V_CNT_IN_FRAME + 1);
         end
       end
     end

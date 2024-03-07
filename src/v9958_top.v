@@ -80,11 +80,32 @@ module v9958_top (
   assign reset_w   = ~reset_n_w;
 
   // ----------------------------------------
+  // V5598 Video Generation
+  // ----------------------------------------
 
-  wire ram_busy, ram_fail;
+  bit          CpuReq;
+  bit          CpuWrt;
+  bit   [ 7:0] CpuDbo;
+  bit   [ 7:0] CpuDbi;
+  bit          VideoDLClk;
+  bit          VideoDHClk;
+  bit          WeVdp_n;
+  bit          ReVdp_n;
+  bit   [16:0] VdpAdr;
+  bit   [ 7:0] VrmDbo;
+  bit   [15:0] VrmDbi;
 
-  wire [19:0] ram_total_written;
-  wire ram_enabled;
+  bit   [ 5:0] VideoR;  // RGB Red
+  bit   [ 5:0] VideoG;  // RGB Green
+  bit   [ 5:0] VideoB;  // RGB Blue
+
+  logic [10:0] cx;
+  logic [ 9:0] cy;
+
+  bit ram_busy, ram_fail;
+
+  bit [19:0] ram_total_written;
+  bit ram_enabled;
 
   memory_controller #(
       .FREQ(108_000_000)
@@ -116,26 +137,6 @@ module v9958_top (
       .SDRAM_DQM(O_sdram_dqm)
   );
 
-  // ----------------------------------------
-  // V5598 Video Generation
-  // ----------------------------------------
-
-  bit        CpuReq;
-  bit        CpuWrt;
-  bit [ 7:0] CpuDbo;
-  bit [ 7:0] CpuDbi;
-  bit        VideoDLClk;
-  bit        VideoDHClk;
-  bit        WeVdp_n;
-  bit        ReVdp_n;
-  bit [16:0] VdpAdr;
-  bit [ 7:0] VrmDbo;
-  bit [15:0] VrmDbi;
-
-  bit [ 5:0] VideoR;  // RGB Red
-  bit [ 5:0] VideoG;  // RGB Green
-  bit [ 5:0] VideoB;  // RGB Blue
-
   cpu_io cpu_io (
       .clk(clk_w),
       .reset_n(reset_n_w),
@@ -154,8 +155,7 @@ module v9958_top (
   );
 
   wire pal_mode;
-  wire [10:0] vdp_cx;
-  wire [10:0] vdp_cy;
+
   VDP u_v9958 (
       .CLK21M         (clk_w),
       .RESET          (reset_w | ~ram_enabled),
@@ -183,8 +183,8 @@ module v9958_top (
       .PVIDEODLCLK    (VideoDLClk),
       .PAL_MODE       (pal_mode),
       .SPMAXSPR       (1'b0),
-      .CX             (vdp_cx),
-      .CY             (vdp_cy)
+      .CX             (cx),
+      .CY             (cy)
   );
 
   //--------------------------------------------------------------
@@ -194,33 +194,19 @@ module v9958_top (
   wire [7:0] dvi_r;
   wire [7:0] dvi_g;
   wire [7:0] dvi_b;
-  reg ff_video_reset;
   wire hdmi_reset;
   wire [15:0] sample_w;
   reg [15:0] audio_sample_word[1:0], audio_sample_word0[1:0];
-  logic [ 2:0] tmds;
-  logic [11:0] cx;
-  logic [10:0] cy;
-  bit          scanlin;
+  logic [2:0] tmds;
+  bit         scanlin;
 
   assign scanlin = 1'b0;
 
-  assign dvi_r   = (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
-  assign dvi_g   = (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
-  assign dvi_b   = (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
+  assign dvi_r = (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
+  assign dvi_g = (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
+  assign dvi_b = (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
 
-  vdp_to_hdmi_sync vdp_to_hdmi_sync (
-      .reset(reset_w),
-      .clk(clk_w),
-      .vdp_cx(vdp_cx),
-      .vdp_cy(vdp_cy),
-      .hdmi_cx(cx),
-      .hdmi_cy(cy),
-
-      .ff_video_reset(ff_video_reset)
-  );
-
-  assign hdmi_reset = ff_video_reset | reset_w | ~ram_enabled;
+  assign hdmi_reset = reset_w | ~ram_enabled;
 
   always @(posedge clk_w) begin
     audio_sample_word0[0] <= sample_w;

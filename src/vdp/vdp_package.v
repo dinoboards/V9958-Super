@@ -1,5 +1,5 @@
 package custom_timings;
-  function [31:0] CLOCKS_PER_LINE;
+  function [10:0] CLOCKS_PER_LINE;
     input PAL_MODE;
     begin
       if (PAL_MODE)
@@ -9,7 +9,7 @@ package custom_timings;
     end
   endfunction
 
-  function [31:0] CLOCKS_PER_HALF_LINE;
+  function [9:0] CLOCKS_PER_HALF_LINE;
     input PAL_MODE;
     begin
       if (PAL_MODE)

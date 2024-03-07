@@ -14,7 +14,6 @@ add_file src\\SPI_MCP3202.v
 add_file src\\v9958_top.v
 add_file src\\vram.v
 add_file src\\cpu_io.v
-add_file src\\vdp_to_hdmi_sync.sv
 
 add_file src\\video_output\\hdmi_output.v
 add_file src\\video_output\\hdmi_selection.v
@@ -70,6 +69,7 @@ set_option -use_mspi_as_gpio 1
 set_option -verilog_std sysv2017
 set_option -vhdl_std vhd2008
 set_option -print_all_synthesis_warning 1
+# set_option -show_all_warn 1
 
 run syn
 run pnr
