@@ -190,9 +190,21 @@ module VDP_COMMAND (
   // 1 = VDP COMMAND ON TEXT/GRAPHIC1/GRAPHIC2/GRAPHIC3/MOSAIC MODE
   assign W_VDPCMD_EN = ((VDPMODEGRAPHIC4 | VDPMODEGRAPHIC5 | VDPMODEGRAPHIC6) == 1'b0) ? VDPMODEGRAPHIC7 | REG_R25_CMD : VDPMODEGRAPHIC4 | VDPMODEGRAPHIC5 | VDPMODEGRAPHIC6;
 
-  always_ff @(posedge RESET, posedge CLK21M) begin
+
+  reg GRAPHIC4_OR_6;
+  always_comb begin
+    if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1))) begin
+      GRAPHIC4_OR_6 = 1'b1;
+    end else begin
+      GRAPHIC4_OR_6 = 1'b0;
+    end
+  end
+
+  reg [9:0] NXCOUNT;
+  assign NXCOUNT = CMR[7:6] == 2'b11 && GRAPHIC4_OR_6 == 1'b1 ? {1'b0, NX[9:1]} : CMR[7:6] == 2'b11 && VDPMODEGRAPHIC5 == 1'b1 ? {2'b00, NX[9:2]} : NX;
+
+  always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
-    reg [9:0] NXCOUNT;
     reg [10:0] XCOUNTDELTA;
     reg [9:0] YCOUNTDELTA;
     reg NXLOOPEND;
@@ -205,7 +217,6 @@ module VDP_COMMAND (
     reg [7:0] COLMASK;
     reg [1:0] MAXXMASK;
     reg [7:0] LOGOPDESTCOL;
-    reg GRAPHIC4_OR_6;
     reg SRCHEQRSLT;
     reg [9:0] VDPVRAMACCESSY;
     reg [8:0] VDPVRAMACCESSX;
@@ -213,53 +224,51 @@ module VDP_COMMAND (
     if ((RESET == 1'b1)) begin
       STATE <= STIDLE;
       // VERY IMPORTANT FOR XILINX SYNTHESIS TOOL(XST)
-      INITIALIZING = 1'b0;
-      NXCOUNT = {1{1'b0}};
-      NXLOOPEND = 1'b0;
-      XCOUNTDELTA = {1{1'b0}};
-      YCOUNTDELTA = {1{1'b0}};
-      COLMASK = {1{1'b1}};
-      RDXLOW = 2'b00;
-      SX         = {9{1'b0}};  // R32
-      SY         = {10{1'b0}};  // R34
-      DX         = {9{1'b0}};  // R36
-      DY         = {10{1'b0}};  // R38
-      NX         = {10{1'b0}};  // R40
-      NY         = {10{1'b0}};  // R42
-      CLR        = {8{1'b0}};  // R44
-      MM         = 1'b0;  // R45 BIT 0
-      EQ         = 1'b0;  // R45 BIT 1
-      DIX        = 1'b0;  // R45 BIT 2
-      DIY        = 1'b0;  // R45 BIT 3
-      CMR        = {8{1'b0}};  // R46
-      SXTMP      = {11{1'b0}};
-      DXTMP      = {10{1'b0}};
-      CMRWR      = 1'b0;
-      REGWRACK   = 1'b0;
-      VRAMWRREQ  = 1'b0;
-      VRAMRDREQ  = 1'b0;
-      VRAMWRDATA = {8{1'b0}};
-      TR         = 1'b1;  // TRANSFER READY
-      CE         = 1'b0;  // COMMAND EXECUTING
-      BD         = 1'b0;  // BORDER COLOR FOUND
-      TRCLRACK   = 1'b0;
+      INITIALIZING   = 1'b0;
+      NXLOOPEND      = 1'b0;
+      XCOUNTDELTA    = {1{1'b0}};
+      YCOUNTDELTA    = {1{1'b0}};
+      COLMASK        = {1{1'b1}};
+      RDXLOW         = 2'b00;
+      SX             = {9{1'b0}};  // R32
+      SY             = {10{1'b0}};  // R34
+      DX             = {9{1'b0}};  // R36
+      DY             = {10{1'b0}};  // R38
+      NX             = {10{1'b0}};  // R40
+      NY             = {10{1'b0}};  // R42
+      CLR            = {8{1'b0}};  // R44
+      MM             = 1'b0;  // R45 BIT 0
+      EQ             = 1'b0;  // R45 BIT 1
+      DIX            = 1'b0;  // R45 BIT 2
+      DIY            = 1'b0;  // R45 BIT 3
+      CMR            = {8{1'b0}};  // R46
+      SXTMP          = {11{1'b0}};
+      DXTMP          = {10{1'b0}};
+      CMRWR          = 1'b0;
+      REGWRACK       = 1'b0;
+      VRAMWRREQ      = 1'b0;
+      VRAMRDREQ      = 1'b0;
+      VRAMWRDATA     = {8{1'b0}};
+      TR             = 1'b1;  // TRANSFER READY
+      CE             = 1'b0;  // COMMAND EXECUTING
+      BD             = 1'b0;  // BORDER COLOR FOUND
+      TRCLRACK       = 1'b0;
       VDPVRAMACCESSY = {1{1'b0}};
       VDPVRAMACCESSX = {1{1'b0}};
       VRAMACCESSADDR = {17{1'b0}};
 
     end else begin
-      if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1))) begin
-        GRAPHIC4_OR_6 = 1'b1;
-      end else begin
-        GRAPHIC4_OR_6 = 1'b0;
-      end
+      // if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1))) begin
+      //   GRAPHIC4_OR_6 = 1'b1;
+      // end else begin
+      //   GRAPHIC4_OR_6 = 1'b0;
+      // end
 
       case (CMR[7:6])
         2'b11: begin
           // BYTE COMMAND
           if ((GRAPHIC4_OR_6 == 1'b1)) begin
             // GRAPHIC4,6 (SCREEN 5, 7)
-            NXCOUNT = {1'b0, NX[9:1]};
             if ((DIX == 1'b0)) begin
               XCOUNTDELTA = 11'b00000000010;  // +2
             end else begin
@@ -268,7 +277,6 @@ module VDP_COMMAND (
 
           end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
             // GRAPHIC5 (SCREEN 6)
-            NXCOUNT = {2'b00, NX[9:2]};
             if ((DIX == 1'b0)) begin
               XCOUNTDELTA = 11'b00000000100;  // +4
             end else begin
@@ -277,7 +285,6 @@ module VDP_COMMAND (
 
           end else begin
             // GRAPHIC7 (SCREEN 8) AND OTHER
-            NXCOUNT = NX;
             if ((DIX == 1'b0)) begin
               XCOUNTDELTA = 11'b00000000001;  // +1
             end else begin
@@ -289,7 +296,6 @@ module VDP_COMMAND (
 
         default: begin
           // DOT COMMAND
-          NXCOUNT = NX;
           if ((DIX == 1'b0)) begin
             XCOUNTDELTA = 11'b00000000001;  // +1;
           end else begin
@@ -521,7 +527,7 @@ module VDP_COMMAND (
                 NXTMP <= NXCOUNT;
               end
               DXTMP <= {1'b0, DX};
-              INITIALIZING = 1'b1;
+              INITIALIZING = 1'b1;  //if !RESET && REGWRREQ != REGWRACK && TRCLRREQ != TRCLRACK && STATE == STIDLE && CMRWR != 1'b0
               STATE <= STCHKLOOP;
             end
           end
@@ -821,7 +827,7 @@ module VDP_COMMAND (
             end else begin
               SXTMP[10] <= 1'b0;
             end
-            INITIALIZING = 1'b0;
+            INITIALIZING = 1'b0;  // STATE == STCHKLOOP
           end
           default: begin
             STATE <= STIDLE;

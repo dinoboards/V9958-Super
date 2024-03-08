@@ -5,8 +5,9 @@
     <Version>5</Version>
     <Device name="GW2AR-18C" pn="GW2AR-LV18QN88C8/I7">gw2ar18c-000</Device>
     <FileList>
-        <File path="src/SPI_MCP3202.v" type="file.verilog" enable="1"/>
         <File path="src/clockdiv.v" type="file.verilog" enable="1"/>
+        <File path="src/clocks.v" type="file.verilog" enable="1"/>
+        <File path="src/cpu_io.v" type="file.verilog" enable="1"/>
         <File path="src/gowin/clk_108p.v" type="file.verilog" enable="1"/>
         <File path="src/gowin/clk_135.v" type="file.verilog" enable="1"/>
         <File path="src/hdmi/audio_clock_regeneration_packet.sv" type="file.verilog" enable="1"/>
@@ -19,33 +20,37 @@
         <File path="src/hdmi/serializer.sv" type="file.verilog" enable="1"/>
         <File path="src/hdmi/source_product_description_info_frame.sv" type="file.verilog" enable="1"/>
         <File path="src/hdmi/tmds_channel.sv" type="file.verilog" enable="1"/>
+        <File path="src/interpo.v" type="file.verilog" enable="1"/>
+        <File path="src/interpo_mul.v" type="file.verilog" enable="1"/>
+        <File path="src/lpf1.v" type="file.verilog" enable="1"/>
+        <File path="src/lpf2.v" type="file.verilog" enable="1"/>
         <File path="src/memory_controller.v" type="file.verilog" enable="1"/>
+        <File path="src/palette_g.v" type="file.verilog" enable="1"/>
+        <File path="src/palette_rb.v" type="file.verilog" enable="1"/>
         <File path="src/pinfilter.v" type="file.verilog" enable="1"/>
+        <File path="src/ram.v" type="file.verilog" enable="1"/>
         <File path="src/sdram.v" type="file.verilog" enable="1"/>
+        <File path="src/SPI_MCP3202.v" type="file.verilog" enable="1"/>
         <File path="src/v9958_top.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_colordec.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_command.sv" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_doublebuf.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_graphic123m.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_graphic4567.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_hvcounter.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_interrupt.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_linebuf.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_package.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_register.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_spinforam.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_sprite.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_ssg.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_text12.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_vga.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_wait_control.v" type="file.verilog" enable="1"/>
+        <File path="src/video_output/hdmi_output.v" type="file.verilog" enable="1"/>
+        <File path="src/video_output/hdmi_selection.v" type="file.verilog" enable="1"/>
         <File path="src/vram.v" type="file.verilog" enable="1"/>
-        <File path="src/lpf.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/ram.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_colordec.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_command.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_doublebuf.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_graphic123m.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_graphic4567.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_hvcounter.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_interrupt.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_linebuf.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_ntsc_pal.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_package.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_register.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_spinforam.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_sprite.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_ssg.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_text12.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_vga.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vdp_wait_control.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/vdp/vencode.vhd" type="file.vhdl" enable="1"/>
-        <File path="src/v9958.cst" type="file.cst" enable="1"/>
-        <File path="src/v9958.sdc" type="file.sdc" enable="1"/>
     </FileList>
 </Project>
