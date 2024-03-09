@@ -158,6 +158,7 @@ module VDP_COMMAND (
   } type_state;
 
   type_state STATE;
+
   parameter HMMC = 4'b1111;
   parameter YMMM = 4'b1110;
   parameter HMMM = 4'b1101;
@@ -410,35 +411,34 @@ module VDP_COMMAND (
     reg SRCHEQRSLT;
 
     if ((RESET == 1'b1)) begin
-      STATE <= STIDLE;
-      // VERY IMPORTANT FOR XILINX SYNTHESIS TOOL(XST)
-      INITIALIZING = 1'b0;
-      RDXLOW         <= 2'b00;
-      SX             <= {9{1'b0}};  // R32
-      SY             <= {10{1'b0}};  // R34
-      DX             <= {9{1'b0}};  // R36
-      DY             <= {10{1'b0}};  // R38
-      NX             <= {10{1'b0}};  // R40
-      NY             <= {10{1'b0}};  // R42
-      CLR            <= {8{1'b0}};  // R44
-      MM             <= 1'b0;  // R45 BIT 0
-      EQ             <= 1'b0;  // R45 BIT 1
-      DIX            <= 1'b0;  // R45 BIT 2
-      DIY            <= 1'b0;  // R45 BIT 3
-      CMR            <= {8{1'b0}};  // R46
-      SXTMP          <= {11{1'b0}};
-      DXTMP          <= {10{1'b0}};
-      CMRWR          <= 1'b0;
-      REGWRACK       <= 1'b0;
-      VRAMWRREQ      <= 1'b0;
-      VRAMRDREQ      <= 1'b0;
-      VRAMWRDATA     <= {8{1'b0}};
+      STATE          <= STIDLE;
+      INITIALIZING   <= 0;
+      RDXLOW         <= 0;
+      SX             <= 0;  // R32
+      SY             <= 0;  // R34
+      DX             <= 0;  // R36
+      DY             <= 0;  // R38
+      NX             <= 0;  // R40
+      NY             <= 0;  // R42
+      CLR            <= 0;  // R44
+      MM             <= 0;  // R45 BIT 0
+      EQ             <= 0;  // R45 BIT 1
+      DIX            <= 0;  // R45 BIT 2
+      DIY            <= 0;  // R45 BIT 3
+      CMR            <= 0;  // R46
+      SXTMP          <= 0;
+      DXTMP          <= 0;
+      CMRWR          <= 0;
+      REGWRACK       <= 0;
+      VRAMWRREQ      <= 0;
+      VRAMRDREQ      <= 0;
+      VRAMWRDATA     <= 0;
       TR             <= 1'b1;  // TRANSFER READY
-      CE             <= 1'b0;  // COMMAND EXECUTING
-      BD             <= 1'b0;  // BORDER COLOR FOUND
-      TRCLRACK       <= 1'b0;
-      VDPVRAMACCESSY <= 10'b0;
-      VDPVRAMACCESSX <= 9'b0;
+      CE             <= 0;  // COMMAND EXECUTING
+      BD             <= 0;  // BORDER COLOR FOUND
+      TRCLRACK       <= 0;
+      VDPVRAMACCESSY <= 0;
+      VDPVRAMACCESSX <= 0;
 
     end else begin
       // PROCESS REGISTER UPDATE REQUEST, CLEAR 'TRANSFER READY' REQUEST
@@ -446,57 +446,28 @@ module VDP_COMMAND (
       if ((REGWRREQ != REGWRACK)) begin
         REGWRACK <= ~REGWRACK;
         case (REGNUM)
-          4'b0000: begin  // #32
-            SX[7:0] <= REGDATA;
-          end
-          4'b0001: begin  // #33
-            SX[8] <= REGDATA[0];
-          end
-          4'b0010: begin  // #34
-            SY[7:0] <= REGDATA;
-          end
-          4'b0011: begin  // #35
-            SY[9:8] <= REGDATA[1:0];
-          end
-          4'b0100: begin  // #36
-            DX[7:0] <= REGDATA;
-          end
-          4'b0101: begin  // #37
-            DX[8] <= REGDATA[0];
-          end
-          4'b0110: begin  // #38
-            DY[7:0] <= REGDATA;
-          end
-          4'b0111: begin  // #39
-            DY[9:8] <= REGDATA[1:0];
-          end
-          4'b1000: begin  // #40
-            NX[7:0] <= REGDATA;
-          end
-          4'b1001: begin  // #41
-            NX[9:8] <= REGDATA[1:0];
-          end
-          4'b1010: begin  // #42
-            NY[7:0] <= REGDATA;
-          end
-          4'b1011: begin  // #43
-            NY[9:8] <= REGDATA[1:0];
-          end
+          4'b0000: SX[7:0] <= REGDATA;  // #32
+          4'b0001: SX[8] <= REGDATA[0];  // #33
+          4'b0010: SY[7:0] <= REGDATA;  // #34
+          4'b0011: SY[9:8] <= REGDATA[1:0];  // #35
+          4'b0100: DX[7:0] <= REGDATA;  // #36
+          4'b0101: DX[8] <= REGDATA[0];  // #37
+          4'b0110: DY[7:0] <= REGDATA;  // #38
+          4'b0111: DY[9:8] <= REGDATA[1:0];  // #39
+          4'b1000: NX[7:0] <= REGDATA;  // #40
+          4'b1001: NX[9:8] <= REGDATA[1:0];  // #41
+          4'b1010: NY[7:0] <= REGDATA;  // #42
+          4'b1011: NY[9:8] <= REGDATA[1:0];  // #43
           4'b1100: begin  // #44
-            if ((CE == 1'b1)) begin
-              CLR <= REGDATA & COLMASK;
-            end else begin
-              CLR <= REGDATA;
-            end
-            TR <= 1'b0;
             // DATA IS TRANSFERRED FROM CPU TO VDP COLOR REGISTER
+            CLR <= (CE == 1'b1) ? REGDATA & COLMASK : REGDATA;
+            TR <= 1'b0;
           end
           4'b1101: begin  // #45
             MM  <= REGDATA[0];
             EQ  <= REGDATA[1];
             DIX <= REGDATA[2];
             DIY <= REGDATA[3];
-            //                      MXD <= REGDATA(5);
           end
           4'b1110: begin  // #46
             // INITIALIZE THE NEW COMMAND
@@ -504,8 +475,6 @@ module VDP_COMMAND (
             CMR   <= REGDATA;
             CMRWR <= W_VDPCMD_EN;
             STATE <= STIDLE;
-          end
-          default: begin
           end
         endcase
 
@@ -528,9 +497,9 @@ module VDP_COMMAND (
               BD <= 1'b0;
               if (CMR[7:4] == LINE) begin
                 // LINE COMMAND REQUIRES SPECIAL SXTMP AND NXTMP SET-UP
-                NX_MINUS_ONE = NX - 1;
+                NX_MINUS_ONE = 10'(NX - 1);
                 SXTMP <= {2'b00, NX_MINUS_ONE[9:1]};
-                NXTMP <= {10{1'b0}};
+                NXTMP <= 0;
               end else begin
                 if (CMR[7:4] == YMMM) begin
                   // FOR YMMM, SXTMP = DXTMP = DX
@@ -543,7 +512,7 @@ module VDP_COMMAND (
                 NXTMP <= NXCOUNT;
               end
               DXTMP <= {1'b0, DX};
-              INITIALIZING = 1'b1;  //if !RESET && REGWRREQ != REGWRACK && TRCLRREQ != TRCLRACK && STATE == STIDLE && CMRWR != 1'b0
+              INITIALIZING <= 1'b1;
               STATE <= STCHKLOOP;
             end
           end
@@ -555,13 +524,7 @@ module VDP_COMMAND (
               TR <= 1'b1;
               // VDP IS READY TO RECEIVE THE NEXT TRANSFER.
               VRAMWRDATA <= CLR;
-              if ((CMR[6] == 1'b0)) begin
-                // IT IS LMMC
-                STATE <= STPRERDVRAM;
-              end else begin
-                // IT IS HMMC
-                STATE <= STWRVRAM;
-              end
+              STATE <= (CMR[6] == 1'b0) ?  STPRERDVRAM : STWRVRAM; // LMMC OR HMMC
             end
           end
 
@@ -631,7 +594,7 @@ module VDP_COMMAND (
                 LMCM: begin
                   CLR <= RDPOINT;
                   TR <= 1'b1;
-                  NXTMP <= NXTMP - 1;
+                  NXTMP <= 10'(NXTMP - 1);
                   STATE <= STCHKLOOP;
                 end
                 default: begin
@@ -677,7 +640,6 @@ module VDP_COMMAND (
                   default: begin
                     // 2'b11:
                     VRAMWRDATA <= {VRAMRDDATA[7:2], LOGOPDESTCOL[1:0]};
-                    // NULL; -- SHOULD NEVER OCCUR
                   end
                 endcase
               end else begin
@@ -714,7 +676,7 @@ module VDP_COMMAND (
                 end
                 default: begin
                   DXTMP <= DXTMP + XCOUNTDELTA[9:0];
-                  NXTMP <= NXTMP - 1;
+                  NXTMP <= 10'(NXTMP - 1);
                   STATE <= STCHKLOOP;
                 end
               endcase
@@ -744,7 +706,7 @@ module VDP_COMMAND (
               CLR <= CLR & COLMASK;
               STATE <= STPRERDVRAM;
             end
-            NXTMP <= NXTMP + 1;
+            NXTMP <= 10'(NXTMP + 1);
           end
 
           STSRCHCHKLOOP: begin
@@ -843,12 +805,12 @@ module VDP_COMMAND (
             end else begin
               SXTMP[10] <= 1'b0;
             end
-            INITIALIZING = 1'b0;  // STATE == STCHKLOOP
+            INITIALIZING <= 1'b0;
           end
           default: begin
             STATE <= STIDLE;
-            CE <= 1'b0;
-            CMR <= {8{1'b0}};
+            CE <= 0;
+            CMR <= 0;
           end
         endcase
       end
