@@ -135,6 +135,8 @@ module VDP_COMMAND (
 
   //??
   reg  [ 1:0] RDXLOW;
+  reg  [ 9:0] VDPVRAMACCESSY;
+  reg  [ 8:0] VDPVRAMACCESSX;
 
   typedef enum logic [3:0] {
     STIDLE,
@@ -384,6 +386,21 @@ module VDP_COMMAND (
     endcase
   end
 
+  always_comb begin
+    if ((VDPMODEGRAPHIC4 == 1'b1)) begin
+      VRAMACCESSADDR = {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[7:1]};
+
+    end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
+      VRAMACCESSADDR = {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[8:2]};
+
+    end else if ((VDPMODEGRAPHIC6 == 1'b1)) begin
+      VRAMACCESSADDR = {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[8:1]};
+
+    end else begin
+      VRAMACCESSADDR = {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[7:0]};
+    end
+  end
+
   always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
     reg DYEND;
@@ -391,40 +408,37 @@ module VDP_COMMAND (
     reg NYLOOPEND;
     reg [9:0] NX_MINUS_ONE;
     reg SRCHEQRSLT;
-    reg [9:0] VDPVRAMACCESSY;
-    reg [8:0] VDPVRAMACCESSX;
 
     if ((RESET == 1'b1)) begin
       STATE <= STIDLE;
       // VERY IMPORTANT FOR XILINX SYNTHESIS TOOL(XST)
       INITIALIZING = 1'b0;
-      RDXLOW     <= 2'b00;
-      SX         <= {9{1'b0}};  // R32
-      SY         <= {10{1'b0}};  // R34
-      DX         <= {9{1'b0}};  // R36
-      DY         <= {10{1'b0}};  // R38
-      NX         <= {10{1'b0}};  // R40
-      NY         <= {10{1'b0}};  // R42
-      CLR        <= {8{1'b0}};  // R44
-      MM         <= 1'b0;  // R45 BIT 0
-      EQ         <= 1'b0;  // R45 BIT 1
-      DIX        <= 1'b0;  // R45 BIT 2
-      DIY        <= 1'b0;  // R45 BIT 3
-      CMR        <= {8{1'b0}};  // R46
-      SXTMP      <= {11{1'b0}};
-      DXTMP      <= {10{1'b0}};
-      CMRWR      <= 1'b0;
-      REGWRACK   <= 1'b0;
-      VRAMWRREQ  <= 1'b0;
-      VRAMRDREQ  <= 1'b0;
-      VRAMWRDATA <= {8{1'b0}};
-      TR         <= 1'b1;  // TRANSFER READY
-      CE         <= 1'b0;  // COMMAND EXECUTING
-      BD         <= 1'b0;  // BORDER COLOR FOUND
-      TRCLRACK   <= 1'b0;
-      VDPVRAMACCESSY = {1{1'b0}};
-      VDPVRAMACCESSX = {1{1'b0}};
-      VRAMACCESSADDR <= {17{1'b0}};
+      RDXLOW         <= 2'b00;
+      SX             <= {9{1'b0}};  // R32
+      SY             <= {10{1'b0}};  // R34
+      DX             <= {9{1'b0}};  // R36
+      DY             <= {10{1'b0}};  // R38
+      NX             <= {10{1'b0}};  // R40
+      NY             <= {10{1'b0}};  // R42
+      CLR            <= {8{1'b0}};  // R44
+      MM             <= 1'b0;  // R45 BIT 0
+      EQ             <= 1'b0;  // R45 BIT 1
+      DIX            <= 1'b0;  // R45 BIT 2
+      DIY            <= 1'b0;  // R45 BIT 3
+      CMR            <= {8{1'b0}};  // R46
+      SXTMP          <= {11{1'b0}};
+      DXTMP          <= {10{1'b0}};
+      CMRWR          <= 1'b0;
+      REGWRACK       <= 1'b0;
+      VRAMWRREQ      <= 1'b0;
+      VRAMRDREQ      <= 1'b0;
+      VRAMWRDATA     <= {8{1'b0}};
+      TR             <= 1'b1;  // TRANSFER READY
+      CE             <= 1'b0;  // COMMAND EXECUTING
+      BD             <= 1'b0;  // BORDER COLOR FOUND
+      TRCLRACK       <= 1'b0;
+      VDPVRAMACCESSY <= 10'b0;
+      VDPVRAMACCESSX <= 9'b0;
 
     end else begin
       // PROCESS REGISTER UPDATE REQUEST, CLEAR 'TRANSFER READY' REQUEST
@@ -562,8 +576,8 @@ module VDP_COMMAND (
 
           STRDVRAM: begin
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM, SRCH, POINT
-            VDPVRAMACCESSY = SY;
-            VDPVRAMACCESSX = SXTMP[8:0];
+            VDPVRAMACCESSY <= SY;
+            VDPVRAMACCESSX <= SXTMP[8:0];
             RDXLOW <= SXTMP[1:0];
             VRAMRDREQ <= ~VRAMRDACK;
             case (CMR[7:4])
@@ -631,8 +645,8 @@ module VDP_COMMAND (
 
           STPRERDVRAM: begin
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
-            VDPVRAMACCESSY = DY;
-            VDPVRAMACCESSX = DXTMP[8:0];
+            VDPVRAMACCESSY <= DY;
+            VDPVRAMACCESSX <= DXTMP[8:0];
             RDXLOW <= DXTMP[1:0];
             VRAMRDREQ <= ~VRAMRDACK;
             STATE <= STWAITPRERDVRAM;
@@ -676,8 +690,8 @@ module VDP_COMMAND (
 
           STWRVRAM: begin
             // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMMM, LMMV, LINE, PSET
-            VDPVRAMACCESSY = DY;
-            VDPVRAMACCESSX = DXTMP[8:0];
+            VDPVRAMACCESSY <= DY;
+            VDPVRAMACCESSX <= DXTMP[8:0];
             VRAMWRREQ <= ~VRAMWRACK;
             STATE <= STWAITWRVRAM;
           end
@@ -837,19 +851,6 @@ module VDP_COMMAND (
             CMR <= {8{1'b0}};
           end
         endcase
-      end
-
-      if ((VDPMODEGRAPHIC4 == 1'b1)) begin
-        VRAMACCESSADDR <= {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[7:1]};
-
-      end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
-        VRAMACCESSADDR <= {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[8:2]};
-
-      end else if ((VDPMODEGRAPHIC6 == 1'b1)) begin
-        VRAMACCESSADDR <= {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[8:1]};
-
-      end else begin
-        VRAMACCESSADDR <= {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[7:0]};
       end
     end
   end
