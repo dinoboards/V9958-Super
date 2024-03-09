@@ -296,10 +296,54 @@ module VDP_COMMAND (
     end
   end
 
+  reg NXLOOPEND;
+  always_comb begin
+    // DETERMINE IF X-LOOP IS FINISHED
+    case (CMR[7:4])
+      HMMV, HMMC, LMMV, LMMC: begin
+        if (((NXTMP == 0) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
+          NXLOOPEND = 1'b1;
+        end else begin
+          NXLOOPEND = 1'b0;
+        end
+      end
+      YMMM: begin
+        if (((DXTMP[9:8] & MAXXMASK) == MAXXMASK)) begin
+          NXLOOPEND = 1'b1;
+        end else begin
+          NXLOOPEND = 1'b0;
+        end
+      end
+      HMMM, LMMM: begin
+        if (((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
+          NXLOOPEND = 1'b1;
+        end else begin
+          NXLOOPEND = 1'b0;
+        end
+      end
+      LMCM: begin
+        if (((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
+          NXLOOPEND = 1'b1;
+        end else begin
+          NXLOOPEND = 1'b0;
+        end
+      end
+      SRCH: begin
+        if (((SXTMP[9:8] & MAXXMASK) == MAXXMASK)) begin
+          NXLOOPEND = 1'b1;
+        end else begin
+          NXLOOPEND = 1'b0;
+        end
+      end
+      default: begin
+        NXLOOPEND = 1'b1;
+      end
+    endcase
+  end
+
   always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
     reg [10:0] XCOUNTDELTA;
-    reg NXLOOPEND;
     reg DYEND;
     reg SYEND;
     reg NYLOOPEND;
@@ -312,7 +356,6 @@ module VDP_COMMAND (
       STATE <= STIDLE;
       // VERY IMPORTANT FOR XILINX SYNTHESIS TOOL(XST)
       INITIALIZING = 1'b0;
-      NXLOOPEND    = 1'b0;
       XCOUNTDELTA  = {1{1'b0}};
       RDXLOW <= 2'b00;
       SX             = {9{1'b0}};  // R32
@@ -379,48 +422,6 @@ module VDP_COMMAND (
           end else begin
             XCOUNTDELTA = 11'b11111111111;  // -1;
           end
-        end
-      endcase
-
-      // DETERMINE IF X-LOOP IS FINISHED
-      case (CMR[7:4])
-        HMMV, HMMC, LMMV, LMMC: begin
-          if (((NXTMP == 0) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
-            NXLOOPEND = 1'b1;
-          end else begin
-            NXLOOPEND = 1'b0;
-          end
-        end
-        YMMM: begin
-          if (((DXTMP[9:8] & MAXXMASK) == MAXXMASK)) begin
-            NXLOOPEND = 1'b1;
-          end else begin
-            NXLOOPEND = 1'b0;
-          end
-        end
-        HMMM, LMMM: begin
-          if (((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
-            NXLOOPEND = 1'b1;
-          end else begin
-            NXLOOPEND = 1'b0;
-          end
-        end
-        LMCM: begin
-          if (((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
-            NXLOOPEND = 1'b1;
-          end else begin
-            NXLOOPEND = 1'b0;
-          end
-        end
-        SRCH: begin
-          if (((SXTMP[9:8] & MAXXMASK) == MAXXMASK)) begin
-            NXLOOPEND = 1'b1;
-          end else begin
-            NXLOOPEND = 1'b0;
-          end
-        end
-        default: begin
-          NXLOOPEND = 1'b1;
         end
       endcase
 
