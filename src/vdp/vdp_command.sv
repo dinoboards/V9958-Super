@@ -133,6 +133,9 @@ module VDP_COMMAND (
   reg  [10:0] SXTMP;  // S#8, S#9
   wire        W_VDPCMD_EN;  // VDP COMMAND STATE REGISTER
 
+  //??
+  reg  [ 1:0] RDXLOW;
+
   typedef enum logic [3:0] {
     STIDLE,
     STCHKLOOP,
@@ -208,6 +211,42 @@ module VDP_COMMAND (
   reg [1:0] MAXXMASK;
   assign MAXXMASK = (VDPMODEISHIGHRES == 1'b1) ? 2'b10 : 2'b01;  // GRAPHIC 5,6 (SCREEN 6, 7)
 
+
+  reg [7:0] RDPOINT;
+  always_comb begin
+    // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
+    if ((GRAPHIC4_OR_6 == 1'b1)) begin
+      // SCREEN 5, 7
+      if ((RDXLOW[0] == 1'b0)) begin
+        RDPOINT = {4'b0000, VRAMRDDATA[7:4]};
+      end else begin
+        RDPOINT = {4'b0000, VRAMRDDATA[3:0]};
+      end
+
+    end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
+      // SCREEN 6
+      case (RDXLOW)
+        2'b00: begin
+          RDPOINT = {6'b000000, VRAMRDDATA[7:6]};
+        end
+        2'b01: begin
+          RDPOINT = {6'b000000, VRAMRDDATA[5:4]};
+        end
+        2'b10: begin
+          RDPOINT = {6'b000000, VRAMRDDATA[3:2]};
+        end
+        default: begin
+          // 2'b11:
+          RDPOINT = {6'b000000, VRAMRDDATA[1:0]};
+          // NULL; -- SHOULD NEVER OCCUR
+        end
+      endcase
+    end else begin
+      // SCREEN 8 AND OTHER MODES
+      RDPOINT = VRAMRDDATA;
+    end
+  end
+
   always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
     reg [10:0] XCOUNTDELTA;
@@ -216,8 +255,6 @@ module VDP_COMMAND (
     reg SYEND;
     reg NYLOOPEND;
     reg [9:0] NX_MINUS_ONE;
-    reg [1:0] RDXLOW;
-    reg [7:0] RDPOINT;
     reg [7:0] COLMASK;
     reg [7:0] LOGOPDESTCOL;
     reg SRCHEQRSLT;
@@ -227,11 +264,11 @@ module VDP_COMMAND (
     if ((RESET == 1'b1)) begin
       STATE <= STIDLE;
       // VERY IMPORTANT FOR XILINX SYNTHESIS TOOL(XST)
-      INITIALIZING   = 1'b0;
-      NXLOOPEND      = 1'b0;
-      XCOUNTDELTA    = {1{1'b0}};
-      COLMASK        = {1{1'b1}};
-      RDXLOW         = 2'b00;
+      INITIALIZING = 1'b0;
+      NXLOOPEND    = 1'b0;
+      XCOUNTDELTA  = {1{1'b0}};
+      COLMASK      = {1{1'b1}};
+      RDXLOW <= 2'b00;
       SX             = {9{1'b0}};  // R32
       SY             = {10{1'b0}};  // R34
       DX             = {9{1'b0}};  // R36
@@ -349,37 +386,6 @@ module VDP_COMMAND (
         end
       endcase
 
-      // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
-      if ((GRAPHIC4_OR_6 == 1'b1)) begin
-        // SCREEN 5, 7
-        if ((RDXLOW[0] == 1'b0)) begin
-          RDPOINT = {4'b0000, VRAMRDDATA[7:4]};
-        end else begin
-          RDPOINT = {4'b0000, VRAMRDDATA[3:0]};
-        end
-
-      end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
-        // SCREEN 6
-        case (RDXLOW)
-          2'b00: begin
-            RDPOINT = {6'b000000, VRAMRDDATA[7:6]};
-          end
-          2'b01: begin
-            RDPOINT = {6'b000000, VRAMRDDATA[5:4]};
-          end
-          2'b10: begin
-            RDPOINT = {6'b000000, VRAMRDDATA[3:2]};
-          end
-          default: begin
-            // 2'b11:
-            RDPOINT = {6'b000000, VRAMRDDATA[1:0]};
-            // NULL; -- SHOULD NEVER OCCUR
-          end
-        endcase
-      end else begin
-        // SCREEN 8 AND OTHER MODES
-        RDPOINT = VRAMRDDATA;
-      end
 
       // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
       // ON THE POINT TO BE WRITTEN.
@@ -545,7 +551,7 @@ module VDP_COMMAND (
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM, SRCH, POINT
             VDPVRAMACCESSY = SY;
             VDPVRAMACCESSX = SXTMP[8:0];
-            RDXLOW = SXTMP[1:0];
+            RDXLOW <= SXTMP[1:0];
             VRAMRDREQ <= ~VRAMRDACK;
             case (CMR[7:4])
               POINT: begin
@@ -614,7 +620,7 @@ module VDP_COMMAND (
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
             VDPVRAMACCESSY = DY;
             VDPVRAMACCESSX = DXTMP[8:0];
-            RDXLOW = DXTMP[1:0];
+            RDXLOW <= DXTMP[1:0];
             VRAMRDREQ <= ~VRAMRDACK;
             STATE <= STWAITPRERDVRAM;
           end
