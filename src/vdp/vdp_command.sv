@@ -253,7 +253,7 @@ module VDP_COMMAND (
   always_comb begin
     case (CMR[7:6])
       2'b11: begin
-        COLMASK = 8'b000000001;
+        COLMASK = 8'b11111111;
       end
 
       default: begin
@@ -262,7 +262,7 @@ module VDP_COMMAND (
         end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
           COLMASK = 8'b00000011;
         end else begin
-          COLMASK = 8'b00000001;
+          COLMASK = 8'b11111111;
         end
       end
     endcase
