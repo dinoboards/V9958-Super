@@ -341,9 +341,51 @@ module VDP_COMMAND (
     endcase
   end
 
+  reg [10:0] XCOUNTDELTA;
+
+  always_comb begin
+    case (CMR[7:6])
+      2'b11: begin
+        // BYTE COMMAND
+        if ((GRAPHIC4_OR_6 == 1'b1)) begin
+          // GRAPHIC4,6 (SCREEN 5, 7)
+          if ((DIX == 1'b0)) begin
+            XCOUNTDELTA = 11'b00000000010;  // +2
+          end else begin
+            XCOUNTDELTA = 11'b11111111110;  // -2
+          end
+
+        end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
+          // GRAPHIC5 (SCREEN 6)
+          if ((DIX == 1'b0)) begin
+            XCOUNTDELTA = 11'b00000000100;  // +4
+          end else begin
+            XCOUNTDELTA = 11'b11111111100;  // -4;
+          end
+
+        end else begin
+          // GRAPHIC7 (SCREEN 8) AND OTHER
+          if ((DIX == 1'b0)) begin
+            XCOUNTDELTA = 11'b00000000001;  // +1
+          end else begin
+            XCOUNTDELTA = 11'b11111111111;  // -1
+          end
+        end
+      end
+
+      default: begin
+        // DOT COMMAND
+        if ((DIX == 1'b0)) begin
+          XCOUNTDELTA = 11'b00000000001;  // +1;
+        end else begin
+          XCOUNTDELTA = 11'b11111111111;  // -1;
+        end
+      end
+    endcase
+  end
+
   always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
-    reg [10:0] XCOUNTDELTA;
     reg DYEND;
     reg SYEND;
     reg NYLOOPEND;
@@ -356,7 +398,6 @@ module VDP_COMMAND (
       STATE <= STIDLE;
       // VERY IMPORTANT FOR XILINX SYNTHESIS TOOL(XST)
       INITIALIZING = 1'b0;
-      XCOUNTDELTA  = {1{1'b0}};
       RDXLOW <= 2'b00;
       SX             = {9{1'b0}};  // R32
       SY             = {10{1'b0}};  // R34
@@ -386,48 +427,6 @@ module VDP_COMMAND (
       VRAMACCESSADDR = {17{1'b0}};
 
     end else begin
-      case (CMR[7:6])
-        2'b11: begin
-          // BYTE COMMAND
-          if ((GRAPHIC4_OR_6 == 1'b1)) begin
-            // GRAPHIC4,6 (SCREEN 5, 7)
-            if ((DIX == 1'b0)) begin
-              XCOUNTDELTA = 11'b00000000010;  // +2
-            end else begin
-              XCOUNTDELTA = 11'b11111111110;  // -2
-            end
-
-          end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
-            // GRAPHIC5 (SCREEN 6)
-            if ((DIX == 1'b0)) begin
-              XCOUNTDELTA = 11'b00000000100;  // +4
-            end else begin
-              XCOUNTDELTA = 11'b11111111100;  // -4;
-            end
-
-          end else begin
-            // GRAPHIC7 (SCREEN 8) AND OTHER
-            if ((DIX == 1'b0)) begin
-              XCOUNTDELTA = 11'b00000000001;  // +1
-            end else begin
-              XCOUNTDELTA = 11'b11111111111;  // -1
-            end
-          end
-        end
-
-        default: begin
-          // DOT COMMAND
-          if ((DIX == 1'b0)) begin
-            XCOUNTDELTA = 11'b00000000001;  // +1;
-          end else begin
-            XCOUNTDELTA = 11'b11111111111;  // -1;
-          end
-        end
-      endcase
-
-
-
-
       // PROCESS REGISTER UPDATE REQUEST, CLEAR 'TRANSFER READY' REQUEST
       // OR PROCESS ANY ONGOING COMMAND.
       if ((REGWRREQ != REGWRACK)) begin
