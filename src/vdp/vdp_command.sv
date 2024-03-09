@@ -203,10 +203,12 @@ module VDP_COMMAND (
   reg [9:0] NXCOUNT;
   assign NXCOUNT = CMR[7:6] == 2'b11 && GRAPHIC4_OR_6 == 1'b1 ? {1'b0, NX[9:1]} : CMR[7:6] == 2'b11 && VDPMODEGRAPHIC5 == 1'b1 ? {2'b00, NX[9:2]} : NX;
 
+  reg [9:0] YCOUNTDELTA;
+  assign YCOUNTDELTA = (DIY == 1'b0) ? 10'b0000000001 : 10'b1111111111;
+
   always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
     reg [10:0] XCOUNTDELTA;
-    reg [9:0] YCOUNTDELTA;
     reg NXLOOPEND;
     reg DYEND;
     reg SYEND;
@@ -227,7 +229,6 @@ module VDP_COMMAND (
       INITIALIZING   = 1'b0;
       NXLOOPEND      = 1'b0;
       XCOUNTDELTA    = {1{1'b0}};
-      YCOUNTDELTA    = {1{1'b0}};
       COLMASK        = {1{1'b1}};
       RDXLOW         = 2'b00;
       SX             = {9{1'b0}};  // R32
@@ -258,12 +259,6 @@ module VDP_COMMAND (
       VRAMACCESSADDR = {17{1'b0}};
 
     end else begin
-      // if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1))) begin
-      //   GRAPHIC4_OR_6 = 1'b1;
-      // end else begin
-      //   GRAPHIC4_OR_6 = 1'b0;
-      // end
-
       case (CMR[7:6])
         2'b11: begin
           // BYTE COMMAND
@@ -310,12 +305,6 @@ module VDP_COMMAND (
           end
         end
       endcase
-
-      if ((DIY == 1'b0)) begin
-        YCOUNTDELTA = 10'b0000000001;
-      end else begin
-        YCOUNTDELTA = 10'b1111111111;
-      end
 
       if ((VDPMODEISHIGHRES == 1'b1)) begin
         // GRAPHIC 5,6 (SCREEN 6, 7)
