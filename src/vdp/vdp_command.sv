@@ -247,6 +247,55 @@ module VDP_COMMAND (
     end
   end
 
+  reg [7:0] COLMASK;
+  always_comb begin
+    case (CMR[7:6])
+      2'b11: begin
+        COLMASK = 8'b000000001;
+      end
+
+      default: begin
+        if ((GRAPHIC4_OR_6 == 1'b1)) begin
+          COLMASK = 8'b00001111;
+        end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
+          COLMASK = 8'b00000011;
+        end else begin
+          COLMASK = 8'b00000001;
+        end
+      end
+    endcase
+  end
+
+  reg [7:0] LOGOPDESTCOL;
+  always_comb begin
+    // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
+    // ON THE POINT TO BE WRITTEN.
+    if (((CMR[3] == 1'b0) || ((VRAMWRDATA & COLMASK) != 8'b00000000))) begin
+      case (CMR[2:0])
+        IMPB210: begin
+          LOGOPDESTCOL = VRAMWRDATA & COLMASK;
+        end
+        ANDB210: begin
+          LOGOPDESTCOL = (VRAMWRDATA & COLMASK) & RDPOINT;
+        end
+        ORB210: begin
+          LOGOPDESTCOL = (VRAMWRDATA & COLMASK) | RDPOINT;
+        end
+        EORB210: begin
+          LOGOPDESTCOL = (VRAMWRDATA & COLMASK) ^ RDPOINT;
+        end
+        NOTB210: begin
+          LOGOPDESTCOL = ~(VRAMWRDATA & COLMASK);
+        end
+        default: begin
+          LOGOPDESTCOL = RDPOINT;
+        end
+      endcase
+    end else begin
+      LOGOPDESTCOL = RDPOINT;
+    end
+  end
+
   always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
     reg [10:0] XCOUNTDELTA;
@@ -255,8 +304,6 @@ module VDP_COMMAND (
     reg SYEND;
     reg NYLOOPEND;
     reg [9:0] NX_MINUS_ONE;
-    reg [7:0] COLMASK;
-    reg [7:0] LOGOPDESTCOL;
     reg SRCHEQRSLT;
     reg [9:0] VDPVRAMACCESSY;
     reg [8:0] VDPVRAMACCESSX;
@@ -267,7 +314,6 @@ module VDP_COMMAND (
       INITIALIZING = 1'b0;
       NXLOOPEND    = 1'b0;
       XCOUNTDELTA  = {1{1'b0}};
-      COLMASK      = {1{1'b1}};
       RDXLOW <= 2'b00;
       SX             = {9{1'b0}};  // R32
       SY             = {10{1'b0}};  // R34
@@ -324,7 +370,6 @@ module VDP_COMMAND (
               XCOUNTDELTA = 11'b11111111111;  // -1
             end
           end
-          COLMASK = {1{1'b1}};
         end
 
         default: begin
@@ -333,13 +378,6 @@ module VDP_COMMAND (
             XCOUNTDELTA = 11'b00000000001;  // +1;
           end else begin
             XCOUNTDELTA = 11'b11111111111;  // -1;
-          end
-          if ((GRAPHIC4_OR_6 == 1'b1)) begin
-            COLMASK = 8'b00001111;
-          end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
-            COLMASK = 8'b00000011;
-          end else begin
-            COLMASK = {1{1'b1}};
           end
         end
       endcase
@@ -387,32 +425,7 @@ module VDP_COMMAND (
       endcase
 
 
-      // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
-      // ON THE POINT TO BE WRITTEN.
-      if (((CMR[3] == 1'b0) || ((VRAMWRDATA & COLMASK) != 8'b00000000))) begin
-        case (CMR[2:0])
-          IMPB210: begin
-            LOGOPDESTCOL = VRAMWRDATA & COLMASK;
-          end
-          ANDB210: begin
-            LOGOPDESTCOL = (VRAMWRDATA & COLMASK) & RDPOINT;
-          end
-          ORB210: begin
-            LOGOPDESTCOL = (VRAMWRDATA & COLMASK) | RDPOINT;
-          end
-          EORB210: begin
-            LOGOPDESTCOL = (VRAMWRDATA & COLMASK) ^ RDPOINT;
-          end
-          NOTB210: begin
-            LOGOPDESTCOL = ~(VRAMWRDATA & COLMASK);
-          end
-          default: begin
-            LOGOPDESTCOL = RDPOINT;
-          end
-        endcase
-      end else begin
-        LOGOPDESTCOL = RDPOINT;
-      end
+
 
       // PROCESS REGISTER UPDATE REQUEST, CLEAR 'TRANSFER READY' REQUEST
       // OR PROCESS ANY ONGOING COMMAND.
