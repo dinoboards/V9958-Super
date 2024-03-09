@@ -190,7 +190,6 @@ module VDP_COMMAND (
   // 1 = VDP COMMAND ON TEXT/GRAPHIC1/GRAPHIC2/GRAPHIC3/MOSAIC MODE
   assign W_VDPCMD_EN = ((VDPMODEGRAPHIC4 | VDPMODEGRAPHIC5 | VDPMODEGRAPHIC6) == 1'b0) ? VDPMODEGRAPHIC7 | REG_R25_CMD : VDPMODEGRAPHIC4 | VDPMODEGRAPHIC5 | VDPMODEGRAPHIC6;
 
-
   reg GRAPHIC4_OR_6;
   always_comb begin
     if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1))) begin
@@ -206,6 +205,9 @@ module VDP_COMMAND (
   reg [9:0] YCOUNTDELTA;
   assign YCOUNTDELTA = (DIY == 1'b0) ? 10'b0000000001 : 10'b1111111111;
 
+  reg [1:0] MAXXMASK;
+  assign MAXXMASK = (VDPMODEISHIGHRES == 1'b1) ? 2'b10 : 2'b01;  // GRAPHIC 5,6 (SCREEN 6, 7)
+
   always @(posedge RESET, posedge CLK21M) begin
     reg INITIALIZING;
     reg [10:0] XCOUNTDELTA;
@@ -217,7 +219,6 @@ module VDP_COMMAND (
     reg [1:0] RDXLOW;
     reg [7:0] RDPOINT;
     reg [7:0] COLMASK;
-    reg [1:0] MAXXMASK;
     reg [7:0] LOGOPDESTCOL;
     reg SRCHEQRSLT;
     reg [9:0] VDPVRAMACCESSY;
@@ -305,13 +306,6 @@ module VDP_COMMAND (
           end
         end
       endcase
-
-      if ((VDPMODEISHIGHRES == 1'b1)) begin
-        // GRAPHIC 5,6 (SCREEN 6, 7)
-        MAXXMASK = 2'b10;
-      end else begin
-        MAXXMASK = 2'b01;
-      end
 
       // DETERMINE IF X-LOOP IS FINISHED
       case (CMR[7:4])
