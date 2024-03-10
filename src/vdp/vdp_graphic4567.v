@@ -1,4 +1,4 @@
-//  vdp_graphic4567.vhd
+//  converted from vdp_graphic4567.vhd
 //    Imprementation of Graphic Mode 4,5,6 and 7.
 //
 //  Copyright (C) 2006 Kunihiko Ohnaka
@@ -55,42 +55,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-// Memo
-//   Japanese comment lines are starts with "JP:".
-//   JP: 日本語のコメント行は JP:を頭に付ける事にする
 //
-//-----------------------------------------------------------------------------
-// Revision History
-//
-// 12th,August,2006 created by Kunihiko Ohnaka
-// JP: VDPのコアの実装とスクリーンモードの実装を分離した
-// (Extracted the implementation of the VDP core and the implementation of the screen mode)
-//
-// 29th,October,2006 modified by Kunihiko Ohnaka
-//   - Insert the license text.
-//   - Add the document part below.
-//
-// 20th,March,2008 modified by t.hara
-// JP: リファクタリング, VDP_PACKAGE の参照を削除
-// (Refactoring, removed the reference to VDP_PACKAGE)
-//
-// 9th,April,2008 modified by t.hara
-// Supported YJK mode.
-//
-// 11th,September,2019 modified by Oduvaldo Pavan Junior
-// Fixed the lack of page flipping (R13) capability
-//
-// Added the undocumented feature where R1 bit #2 change the blink counter
-// clock source from VSYNC to HSYNC
-//
-// 19th,July,2022 modified by t.hara
-// Changed W_B_YJKP from rounding down to rounding up.
-//-----------------------------------------------------------------------------
-// Document
-//
-// JP: GRAPHICモード4,5,6,7のメイン処理回路です。
-// (Main processing circuit of GRAPHIC mode 4,5,6,7.)
-//
+// Main processing circuit of GRAPHIC mode 4,5,6,7.
 
 module VDP_GRAPHIC4567 (
     input wire CLK21M,
@@ -120,8 +86,6 @@ module VDP_GRAPHIC4567 (
     output reg [5:0] P_YJK_B,
     output reg P_YJK_EN
 );
-
-  // VDP CLOCK ... 21.477MHZ
 
   wire [16:0] LOGICALVRAMADDRG45;
   wire [16:0] LOGICALVRAMADDRG67;

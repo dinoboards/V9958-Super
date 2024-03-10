@@ -1,4 +1,4 @@
-//  vdp_text12.vhd
+//  converted from vdp_text12.vhd
 //    Imprementation of Text Mode 1,2.
 //
 //  Copyright (C) 2006 Kunihiko Ohnaka
@@ -55,48 +55,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-// Contributors
 //
-//   Alex Wulms
-//     - Improvement of the TEXT2 mode such as 'blink function'.
-//
-//-----------------------------------------------------------------------------
-// Memo
-//   Japanese comment lines are starts with "JP:".
-//   JP: 日本語のコメント行は JP:を頭に付ける事にする
-//
-//-----------------------------------------------------------------------------
-// Revision History
-//
-// 29th,October,2006 modified by Kunihiko Ohnaka
-//   - Insert the license text.
-//   - Add the document part below.
-//
-// 12th,August,2006 created by Kunihiko Ohnaka
-// JP: VDPのコアの実装とスクリーンモードの実装を分離した
-// (Extracted the VDP core implementation and the screen mode implementation)
-//
-// 13th,March,2008
-// Fixed Blink by caro
-//
-// 22nd,March,2008
-// JP: タイミング緩和と、リファクタリング by t.hara
-// (Timing relaxation and refactoring by t.hara)
-//
-// 11th,September,2019 modified by Oduvaldo Pavan Junior
-// Fixed the lack of page flipping (R13) capability
-//
-// Added the undocumented feature where R1 bit #2 change the blink counter
-// clock source from VSYNC to HSYNC
-//
-//-----------------------------------------------------------------------------
-// Document
-//
-// JP: TEXTモード1,2のメイン処理回路です。
 // Main processing circuit of TEXT mode 1, 2.
-//
-//-----------------------------------------------------------------------------
-//
 
 module VDP_TEXT12 (
     input wire CLK21M,

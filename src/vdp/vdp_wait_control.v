@@ -1,4 +1,4 @@
-// vdp_wait_control.vhd
+// converted from vdp_wait_control.vhd
 //   VDP wait controller for VDP command
 //   Revision 1.00
 //
@@ -27,28 +27,6 @@
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 // OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Revision History
-//
-// 2nd,Jun,2021 modified by KdL
-//  - LMMV is reverted to previous speed in accordance with current VDP module
-//
-// 9th,Jan,2020 modified by KdL
-//  - LMMV fix which improves the Sunrise logo a bit (temporary solution?)
-//    Some glitches appear to be unrelated to the VDP_COMMAND entity and
-//    the correct speed is not yet reached
-//
-// 20th,May,2019 modified by KdL
-//  - Optimization of speed parameters for greater game compatibility
-//
-// 14th,May,2018 modified by KdL
-//  - Improved the speed accuracy of SRCH, LINE, LMMV, LMMM, HMMV, HMMM and YMMM
-//  - Guidelines at http://map.grauw.nl/articles/vdp_commands_speed.php
-//
-//  - Some evaluation tests:
-//    - overall duration of the SPACE MANBOW game intro at 3.58MHz
-//    - uncorrupted music in the FRAY game intro at 3.58MHz, 5.37MHz and 8.06MHz
-//    - amount of artifacts in the BREAKER game at 5.37MHz
 //
 
 module VDP_WAIT_CONTROL (

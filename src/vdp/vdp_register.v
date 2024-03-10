@@ -1,4 +1,4 @@
-//  vdp_register.vhd
+//  converted from vdp_register.vhd
 //
 //  Copyright (C) 2000-2006 Kunihiko Ohnaka
 //  All rights reserved.
@@ -53,33 +53,7 @@
 //  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //  POSSIBILITY OF SUCH DAMAGE.
 //----------------------------------------------------------------------------
-//  23rd,March,2008
-//      JP: vdp.vhd から分離 by t.hara
-//      (Extracted from vdp.vhd by t.hara")
-//
-//  28th,March,2008
-//      added "S#0 bit6 5th sprite (9th sprite) flag support" by t.hara
-//
-//  29th,March,2008
-//      added V9958 registers (R25,R26,R27) by t.hara
-//
-//  26th,January,2017
-//      patch yuukun status R0 S#5 timing
-//
-//  5th,September,2019 modified by Oduvaldo Pavan Junior
-//      Fixed the lack of page flipping (R13) capability
-//
-//      Added the undocumented feature where R1 bit #2 change the blink counter
-//      clock source from VSYNC to HSYNC
-//
-//  30th,May,2021 by t.hara
-//      In the register writing by address auto-increment mode,
-//      the bug that the address is incremented even if it exceeds R#47 is corrected.
-//
-//  2nd,June,2021 by t.hara
-//      Fixed behavior of address auto-increment.
-//      Fixed the write operation to the invalid register.
-//
+
 
 `include "vdp_constants.vh"
 

@@ -1,4 +1,4 @@
-//  vdp_spinforam.vhd
+//  converted from vdp_spinforam.vhd
 //   Sprite information table memory.
 //
 //  Copyright (C) 2006 Kunihiko Ohnaka

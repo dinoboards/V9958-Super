@@ -1,5 +1,5 @@
 //
-//  vdp_command.vhd
+//  converted from vdp_command.vhd
 //
 //  Copyright (C) 2000-2006 Kunihiko Ohnaka
 //  All rights reserved.
@@ -54,10 +54,6 @@
 //  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //  POSSIBILITY OF SUCH DAMAGE.
 //----------------------------------------------------------------------------
-//  20th,March,2008
-//      JP: VDP.VHD から分離 by t.hara
-//      Translation: VDP.VHD extracted by t.hara
-//
 
 module VDP_COMMAND (
     input wire RESET,

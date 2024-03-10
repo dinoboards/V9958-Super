@@ -1,5 +1,5 @@
 //
-//  vdp_hvcounter.vhd
+//  converted from vdp_hvcounter.vhd
 //   horizontal and vertical counter of ESE-VDP.
 //
 //  Copyright (C) 2000-2006 Kunihiko Ohnaka

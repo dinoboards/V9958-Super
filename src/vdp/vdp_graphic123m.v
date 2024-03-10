@@ -1,4 +1,4 @@
-//  vdp_graphic123M.vhd
+//  converted from vdp_graphic123M.vhd
 //    Imprementation of Graphic Mode 1,2,3 and Multicolor Mode.
 //
 //  Copyright (C) 2006 Kunihiko Ohnaka
@@ -55,30 +55,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-// Memo
-//   Japanese comment lines are starts with "JP:".
-//   JP: 日本語のコメント行は JP:を頭に付ける事にする
 //
-//-----------------------------------------------------------------------------
-// Revision History
-//
-// 12th,August,2006 created by Kunihiko Ohnaka
-// JP: VDPのコアの実装とスクリーンモードの実装を分離した
-// (Separated the implementation of VDP core and the screen mode)
-//
-// 29th,October,2006 modified by Kunihiko Ohnaka
-//   - Insert the license text.
-//   - Add the document part below.
-//
-// 16th, March, 2008 Refactoring by t.hara
-// JP: リファクタリング, VDP_PACKAGE の参照を削除
-// (Refactoring, Remove the reference to VDP_PACKAGE)
-//
-//-----------------------------------------------------------------------------
-// Document
-//
-// JP: GRAPHICモード1,2,3および MULTICOLORモードのメイン処理回路です。
-// (This is the main processing circuit of GRAPHIC mode 1,2,3 and MULTICOLOR mode.)
+// This is the main processing circuit of GRAPHIC mode 1,2,3 and MULTICOLOR mode.
 //
 
 module VDP_GRAPHIC123M (
@@ -102,10 +80,6 @@ module VDP_GRAPHIC123M (
     output wire [16:0] PRAMADR,
     output wire [3:0] PCOLORCODE
 );
-
-  //  21.477MHZ
-  // CONTROL SIGNALS
-  // REGISTERS
 
   reg [16:0] FF_REQ_ADDR;
   reg [3:0] FF_COL_CODE;

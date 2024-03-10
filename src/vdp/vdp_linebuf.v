@@ -1,4 +1,4 @@
-//  vdp_linebuf.vhd
+//  converted from vdp_linebuf.vhd
 //    Line buffer for VGA upscan converter.
 //
 //  Copyright (C) 2006 Kunihiko Ohnaka
@@ -54,40 +54,7 @@
 //  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //  POSSIBILITY OF SUCH DAMAGE.
 //
-///////////////////////////////////////////////////////////////////////////////
-// Memo
-//   Japanese comment lines are starts with "JP:".
-//   JP: 日本語のコメント行は JP:を頭に付ける事にする
-//
-///////////////////////////////////////////////////////////////////////////////
-// Revision History
-//
-// 29th,October,2006 modified by Kunihiko Ohnaka
-//   - Insert the license text.
-//   - Add the document part below.
-//
-// 21st,March,2008 modified by t.hara
-//   JP: リファクタリング, 桁揃えなど些細な修正。
-//   (Refactoring, minor fixes such as alignment.)
-//
-//////////////////////////////////////////////////////////////////////////////-
-// Document
-//
-// JP: NTSCタイミングの 15kHzで出力されるビデオ信号をVGAタイミングに
-// JP: 合わせた31kHzの倍レートで出力するためのラインバッファモジュール
-// JP: です。
-// JP: ESE-VDPのメインクロックである21.477MHzで動作させるため、
-// JP: ドットクロックは一般的な 640x480ドットVGAモードの25.175MHz
-// JP: とは異なります。そのため、液晶モニタ等で表示させるとドットの形が
-// JP: いびつな形になる事があります。
-// (Convert NTSC timing 15kHz video signal to VGA timing.)
-// (This is a line buffer module to convert NTSC timing 15kHz video)
-// (signal to VGA timing 31kHz.)
-// (This module is designed to operate at 21.477MHz, which is the)
-// (dot clock of the general 640x480 dot VGA mode is 25.175MHz.)
-// (Therefore, the shape of the dot is distorted when displayed on)
-// (an LCD monitor, etc.)
-//
+// Convert 15kHz video signal to 31Khz VGA/DVI timing.
 
 module VDP_LINEBUF (
     input wire [9:0] ADDRESS,

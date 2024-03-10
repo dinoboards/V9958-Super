@@ -1,5 +1,5 @@
 //
-//  vdp_colordec.vhd
+//  converted from vdp_colordec.vhd
 //
 //  Copyright (C) 2000-2006 Kunihiko Ohnaka
 //  All rights reserved.
@@ -54,14 +54,7 @@
 //  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //  POSSIBILITY OF SUCH DAMAGE.
 //----------------------------------------------------------------------------
-//  21st,March,2008
-//      JP: VDP.VHD から分離 by t.hara
-//      (Extracted from VDP.VHD by t.hara)
-//
-//  22nd,March,2008
-//      JP: 不要な信号間の相関を除去 by t.hara
-//      (Removed unnecessary signal correlation by t.hara)
-//
+
 
 module VDP_COLORDEC (
     input wire RESET,
@@ -100,23 +93,6 @@ module VDP_COLORDEC (
     input wire REG_R8_COL0_ON,
     input wire REG_R25_YJK
 );
-
-  // JP: 有効表示領域だけ 1 になる
-  // JP: スプライトの画素位置だけ 1 になる
-  // JP: TEXT1, 2 の色
-  // JP: GRAPHIC1,2,3,MOSAIC の色
-  // JP: GRAPHIC4,5,6,7 の色
-  // JP: スプライトの色
-  // JP: モニタへ出力する色
-  // REGISTERS
-
-  // EN: Only the effective display area becomes 1
-  // EN: Only the pixel position of the sprite becomes 1
-  // EN: Color of TEXT1, 2
-  // EN: Color of GRAPHIC1,2,3,MOSAIC
-  // EN: Color of GRAPHIC4,5,6,7
-  // EN: Color of the sprite
-  // EN: Color output to the monitor
 
   reg [5:0] FF_VIDEO_R;
   reg [5:0] FF_VIDEO_G;

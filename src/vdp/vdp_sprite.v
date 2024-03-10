@@ -1,4 +1,4 @@
-//  vdp_sprite.vhd
+//  converted from vdp_sprite.vhd
 //    Sprite module.
 //
 //  Copyright (C) 2004-2006 Kunihiko Ohnaka
@@ -55,130 +55,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //
 //---------------------------------------------------------------------------
-// Memo
-//   Japanese comment lines are starts with "JP:".
-//   JP: 日本語のコメント行は JP:を頭に付ける事にする
 //
-//---------------------------------------------------------------------------
-// Revision History
-//
-// 29th,October,2006 modified by Kunihiko Ohnaka
-//   - Insert the license text.
-//   - Add the document part below.
-//
-// 26th,August,2006 modified by Kunihiko Ohnaka
-//   - latch the base addresses every eight dot cycle
-//     (DRAM RAS/CAS access emulation)
-//
-// 20th,August,2006 modified by Kunihiko Ohnaka
-//   - Change the drawing algorithm.
-//   - Add sprite collision checking function.
-//   - Add sprite over-mapped checking function.
-//   - Many bugs are fixed, and it works fine.
-//   - (first release virsion)
-//
-// 17th,August,2004 created by Kunihiko Ohnaka
-//   - Start new sprite module implementing.
-//     * This module uses Block RAMs so that shrink the
-//       circuit size.
-//     * Separate sprite module from vdp.vhd.
-//
-//---------------------------------------------------------------------------
-// Document
-//
-// JP: この実装ではBLOCKRAMを使い、消費するSLICEを節約するのが狙い。
-// JP: この実装を使わない状態での vdp.vhdをコンパイルした時の
-// JP: SLICE使用数は1900前後。
-// JP: 2006/8/16。このスプライトを使わない最新版(Cyclone)では、
-// JP:            2726LCだった.
-// JP: 2006/8/19。このスプライトを使ったところ、2278LCまで減少。
-// JP:
-// JP: [用語]
-// JP: ・ローカルプレーン番号
-// JP:   あるライン上に並んでいるスプライト(プレーン)だけを抜き出して
-// JP:   スプライトプレーン番号順に並べた時の順位。
-// JP:   例えばあるラインにスプライトプレーン#1,#4,#5が存在する場合、
-// JP:   それぞれのスプライトのローカルプレーン番号は#0,#1,#2となる。
-// JP:   スプライトモード2でも横一列に最大8枚しか並ばないので、
-// JP:   ローカルプレーン番号は最大で#7となる。
-// JP:
-// JP: ・画面描画帯域
-// JP:    VDPの実機は8ドット(32クロック)で連続アドレス上のデータ4バイト
-// JP:    (GRAPHIC6,7ではRAMのインターリーブアクセスによりバイト)
-// JP:    のリードに加え、ランダムアドレスへの2サイクル(2バイト)の
-// JP:    アクセスが加納
-// JP:    それらのDRAMアクセスサイクルに以下のように名前を付ける。
-// JP:     * 画面描画リードサイクル
-// JP:     * スプライトY座標検査サイクル
-// JP:     * ランダムアクセスサイクル
-// JP:
-// JP: ○似非VDPでのVRAMアクセスサイクル
-// JP:    似非VDPでは旧式のDRAMではなくより高速なメモリを使用している。
-// JP:    そのため、４クロックに1回確実にランダムアクセスを実行できる
-// JP:    メモリを持っている事を前提としてコーディングします。
-// JP:    また、Cyclone版似非MSXでは、16ビット幅のSDRAMを用いている
-// JP:    ため、一回のアクセスで連続する16ビットのデータを読む事も可能
-// JP:    です。
-// JP:    似非VDPでは、D0～D7の下位8ビットをVRAMの前半64Kバイト、
-// JP:    D8～D15の上位8ビットを後半64Kバイトにマッピングしています。
-// JP:    このような変則的な割り当てをするのは、実機のVDPのメモリ
-// JP:    マップをまねるためです。実際、4クロックで2バイトのメモリを
-// JP:    読み出す帯域が必要になるのはGRAPHIC6,7のモードだけです。
-// JP:    実機のVDPは、GRAPHIC6,7ではメモリのインターリーブを用い、
-// JP:    (GRAPHIC7における)偶数ドットをVRAMの前半64Kバイトに
-// JP:    わりあて、奇数ドットを後半64Kバイトに割り当てています。
-// JP:    そのため、似非VDPでも前半64Kと後半64Kの同一アドレス上の
-// JP:    データを１サイクル(4クロック)で読み出せる必要があるので
-// JP:    このようなマッピングになっています。
-// JP:    単純に言えば、SDRAMの16ビットアクセスを、実機のDRAMの
-// JP:    インターリーブアクセスに見立てているということです。
-// JP:
-// JP:    いろいろな現象から、VDPの内部は8ドットサイクルで動いていると
-// JP:    推測されています。8ドット、つまり32クロックのどうさをメモリ
-// JP:    の帯域から推測すると、以下のようになります。
-// JP:
-// JP:   　　ドット　：<=0=><=1=><=2=><=3=><=4=><=5=><=6=><=7=>
-// JP:   通常アクセス： A0   A1   A2   A3   A4  (A5)  A6  (A7)
-// JP: インターリーブ： B0   B1   B2   B3
-// JP:
-// JP:    - 描画中
-// JP:   　　・A0～A3 (B0～B3)
-// JP:        画面描画のために使用。B0～B3はインターリーブで同時に
-// JP:        読み出せるデータで、GRAPHIC6,7でしか使わない。
-// JP:   　　・A4     スプライトY座標検査
-// JP:   　　・A6     VRAM R/W or VDPコマンド (2回に一回ずつ、交互に割り当てる)
-// JP:
-// JP:     - 非描画中(スプライト準備中)
-// JP:    　　・A0     スプライトX座標リード
-// JP:    　　・A1     スプライトパターン番号リード
-// JP:    　　・A2     スプライトパターン左リード
-// JP:    　　・A3     スプライトパターン右リード
-// JP:    　　・A4     スプライトカラーリード
-// JP:    　　・A6     VRAM R/W or VDPコマンド (2回に一回ずつ、交互に割り当てる)
-// JP:
-// JP:   A5とA7のスロットは実際には使用することもできるのですが、
-// JP:   これを使ってしまうと実機よりも帯域が増えてしまうので、
-// JP:   あえて使わずに残しています。
-// JP:   また、非描画中のサイクルは、実機とは異なります。実機では
-// JP:   64クロックで 2つのスプライトをまとめて処理する事で、DRAMの
-// JP:   ページモードサイクルを有効利用できるようにしています。
-// JP:   また、その64クロックの中にはVRAMやVDPコマンドに割くための
-// JP:   スロットが無いので、64クロックサイクルの隙間にVRAMアク
-// JP:   セスのための隙間を空けているのかもしれません。（未確認）
-// JP:   似非VDPでもその動作を完全に真似する事は可能ですが、
-// JP:   ソースが必要以上に複雑に見えてしまうのと、2のn乗サイクル
-// JP:   からずれてしまうのがちょっぴり嫌だったので、上記のような
-// JP:   きれいなサイクルにしています。
-// JP:   どうしても実機と同じタイミングにしたいという方は
-// JP:   チャレンジしてみてください。
-// JP:
-// Translation:
-// The aim of this implementation is to use BLOCKRAM and save SLICE consumption.
-// The number of SLICEs used when compiling vdp.vhd without this implementation is around 1900.
-// As of 2006/8/16, the latest version (Cyclone) without this sprite was 2726LC.
-// As of 2006/8/19, using this sprite reduced it to 2278LC.
-//
-// [Terms]
+//  [Terms]
 // ・Local plane number
 //   The rank when the sprites (planes) lined up on a certain line are extracted and arranged in the order of sprite plane numbers.
 //   For example, if sprite planes #1, #4, and #5 exist on a certain line, the local plane numbers of each sprite are #0, #1, and #2.
@@ -194,38 +72,7 @@
 // ・VRAM access cycle in pseudo VDP
 //   Pseudo VDP uses faster memory than old DRAM.
 //   Therefore, it is coded on the assumption that it has memory that can perform random access reliably once every 4 clocks.
-//   In addition, in the Cyclone version of pseudo MSX, 16-bit wide SDRAM is used, so it is also possible to read 16 bits of continuous data at one access.
-//   In pseudo VDP, the lower 8 bits of D0-D7 are mapped to the first half of 64K bytes of VRAM, and the upper 8 bits of D8-D15 are mapped to the second half of 64K bytes.
-//   This irregular assignment is to mimic the memory map of the actual VDP machine. In fact, the bandwidth required to read 2 bytes of memory in 4 clocks is only in GRAPHIC6,7 mode.
-//   The actual VDP machine uses memory interleaving in GRAPHIC6,7, assigning even dots to the first half of 64K bytes of VRAM and odd dots to the second half of 64K bytes.
-//   Therefore, in pseudo VDP, it is necessary to be able to read data on the same address in the first half of 64K and the second half of 64K in one cycle (4 clocks), so it is mapped like this.
-//   Simply put, it is likening the 16-bit access of SDRAM to the interleaved access of the actual DRAM.
-//
-//   From various phenomena, it is inferred that the inside of the VDP is operating in an 8-dot cycle. If you infer the movement of memory from the bandwidth of 8 dots, or 32 clocks, it will be as follows.
-//
-//   　　      Dot：<=0=><=1=><=2=><=3=><=4=><=5=><=6=><=7=>
-//   Normal Access： A0   A1   A2   A3   A4  (A5)  A6  (A7)
-//      Interleave： B0   B1   B2   B3
-//
-//    - During drawing
-//   　　・A0～A3 (B0～B3)
-//        Used for screen drawing. B0-B3 is data that can be read at the same time by interleaving, and is not used except in GRAPHIC6,7.
-//   　　・A4     Sprite Y coordinate inspection
-//   　　・A6     VRAM R/W or VDP command (allocated alternately once every 2 times)
-//
-//     - Non-drawing (during sprite preparation)
-//    　　・A0     Sprite X coordinate read
-//    　　・A1     Sprite pattern number read
-//    　　・A2     Sprite pattern left read
-//    　　・A3     Sprite pattern right read
-//    　　・A4     Sprite color read
-//    　　・A6     VRAM R/W or VDP command (allocated alternately once every 2 times)
-//
-//   Although the slots of A5 and A7 can actually be used, if you use this, the bandwidth will increase more than the actual machine, so it is intentionally left unused.
-//   Also, the cycle during non-drawing is different from the actual machine. The actual machine processes 2 sprites together in 64 clocks to effectively use the page mode cycle of DRAM.
-//   Also, there are no slots to allocate to VRAM and VDP commands in the 64 clock cycle, so it may be leaving a gap for VRAM access in the gap of the 64 clock cycle. (Unconfirmed)
-//   It is possible to completely mimic this operation in pseudo VDP, but the source looks unnecessarily complicated, and it was a little annoying to deviate from the 2^n power cycle, so it has a clean cycle as described above.
-//   If you want to have the same timing as the actual machine, please challenge.
+//   The memory module is expected to present a 16-bit wide data bus -- meaning its possible to read 2 bytes of data at once.
 //
 
 module VDP_SPRITE (
@@ -262,15 +109,6 @@ module VDP_SPRITE (
     input wire REG_R9_Y_DOTS,
     input wire SPMAXSPR
 );
-
-  // VDP CLOCK ... 21.477MHZ
-  // VDP STATUS REGISTERS OF SPRITE
-  // VDP REGISTERS
-  // JP: スプライトを描画した時に'1'になる。カラーコード0で
-  // JP: 描画する事もできるので、このビットが必要
-  // (Becomes '1' when a sprite is drawn. Since it is possible to)
-  // (draw with color code 0, this bit is necessary)
-  // OUTPUT COLOR
 
   reg FF_SP_EN;
   reg [8:0] FF_CUR_Y;

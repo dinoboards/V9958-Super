@@ -1,5 +1,5 @@
 //
-//  vdp_interrupt.vhd
+//  converted from vdp_interrupt.vhd
 //   Interrupt controller of ESE-VDP.
 //
 //  Copyright (C) 2000-2006 Kunihiko Ohnaka

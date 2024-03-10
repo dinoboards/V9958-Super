@@ -1,4 +1,4 @@
-//  vdp_ssg.vhd
+//  converted from vdp_ssg.vhd
 //   Synchronous Signal Generator of ESE-VDP.
 //
 //  Copyright (C) 2000-2006 Kunihiko Ohnaka
@@ -55,10 +55,6 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//  30th,March,2008
-//  JP: VDP.VHD から分離 by t.hara
-//  (Extracted from by t.hara)
-//
 
 module VDP_SSG (
     input wire RESET,
