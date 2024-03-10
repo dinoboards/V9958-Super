@@ -81,7 +81,6 @@ module VDP (
     output wire [5:0] PVIDEOR,
     output wire [5:0] PVIDEOG,
     output wire [5:0] PVIDEOB,
-    output wire PVIDEOHS_N,
     output wire PVIDEODHCLK,
     output wire PVIDEODLCLK,
     output wire PAL_MODE,

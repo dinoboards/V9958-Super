@@ -79,36 +79,35 @@ module VDP_VGA (
   import custom_timings::*;
 
   // VIDEO OUTPUT ENABLE
-  reg VIDEOOUTX;
+  bit video_out_x;
 
   // DOUBLE BUFFER SIGNAL
   wire [9:0] XPOSITIONW;
   reg [9:0] XPOSITIONR;
-  wire EVENODD;
+  bit even_odd;
   wire [5:0] DATAROUT;
   wire [5:0] DATAGOUT;
   wire [5:0] DATABOUT;
 
-  assign VIDEOROUT = (VIDEOOUTX == 1'b1) ? DATAROUT : 0;
-  assign VIDEOGOUT = (VIDEOOUTX == 1'b1) ? DATAGOUT : 0;
-  assign VIDEOBOUT = (VIDEOOUTX == 1'b1) ? DATABOUT : 0;
+  assign VIDEOROUT = (video_out_x) ? DATAROUT : 0;
+  assign VIDEOGOUT = (video_out_x) ? DATAGOUT : 0;
+  assign VIDEOBOUT = (video_out_x) ? DATABOUT : 0;
 
-  VDP_DOUBLEBUF DBUF (
-      .CLK(CLK21M),
-      .XPOSITIONW(XPOSITIONW),
-      .XPOSITIONR(XPOSITIONR),
-      .EVENODD(EVENODD),
-      .WE(1),
-      .DATARIN(VIDEORIN),
-      .DATAGIN(VIDEOGIN),
-      .DATABIN(VIDEOBIN),
-      .DATAROUT(DATAROUT),
-      .DATAGOUT(DATAGOUT),
-      .DATABOUT(DATABOUT)
+  vdp_double_buffer DBUF (
+      .clk(CLK21M),
+      .x_position_wr(XPOSITIONW),
+      .x_position_rd(XPOSITIONR),
+      .even_odd(even_odd),
+      .data_red_in(VIDEORIN),
+      .data_green_in(VIDEOGIN),
+      .data_blue_in(VIDEOBIN),
+      .data_red_out(DATAROUT),
+      .data_green_out(DATAGOUT),
+      .data_blue_out(DATABOUT)
   );
 
   assign XPOSITIONW = HCOUNTERIN[10:1];
-  assign EVENODD = VCOUNTERIN[1];
+  assign even_odd   = VCOUNTERIN[1];
 
   // GENERATE DATA READ TIMING
   always_ff @(posedge RESET, posedge CLK21M) begin
@@ -123,13 +122,9 @@ module VDP_VGA (
     end
   end
 
-  // GENERATE VIDEO OUTPUT TIMING
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if (RESET) begin
-      VIDEOOUTX <= 1'b0;
-    end else begin
-      VIDEOOUTX <= 1'b1;
-    end
+    if (RESET) video_out_x <= 0;
+    else video_out_x <= 1;
   end
 
 endmodule

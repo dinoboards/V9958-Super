@@ -61,87 +61,86 @@
 // Used for up scan conversion by vdp_vga.v
 //
 
-module VDP_DOUBLEBUF (
-    input wire CLK,
-    input wire [9:0] XPOSITIONW,
-    input wire [9:0] XPOSITIONR,
-    input wire EVENODD,
-    input wire WE,
-    input wire [5:0] DATARIN,
-    input wire [5:0] DATAGIN,
-    input wire [5:0] DATABIN,
-    output wire [5:0] DATAROUT,
-    output wire [5:0] DATAGOUT,
-    output wire [5:0] DATABOUT
+module vdp_double_buffer (
+    input bit clk,
+    input bit [9:0] x_position_wr,
+    input bit [9:0] x_position_rd,
+    input bit even_odd,
+    input bit [5:0] data_red_in,
+    input bit [5:0] data_green_in,
+    input bit [5:0] data_blue_in,
+    output bit [5:0] data_red_out,
+    output bit [5:0] data_green_out,
+    output bit [5:0] data_blue_out
 );
 
-  wire WE_E;
-  wire WE_O;
-  wire [9:0] ADDR_E;
-  wire [9:0] ADDR_O;
-  wire [5:0] OUTR_E;
-  wire [5:0] OUTG_E;
-  wire [5:0] OUTB_E;
-  wire [5:0] OUTR_O;
-  wire [5:0] OUTG_O;
-  wire [5:0] OUTB_O;
+  bit we_even;
+  bit we_odd;
+  bit [9:0] address_even;
+  bit [9:0] address_odd;
+  bit [5:0] out_red_even;
+  bit [5:0] out_green_even;
+  bit [5:0] out_blue_even;
+  bit [5:0] out_red_odd;
+  bit [5:0] out_green_odd;
+  bit [5:0] out_blue_odd;
 
-  assign WE_E = (EVENODD == 1'b0) ? WE : 1'b0;
-  assign WE_O = (EVENODD == 1'b1) ? WE : 1'b0;
+  assign we_even = ~even_odd;
+  assign we_odd = even_odd;
 
-  assign ADDR_E = (EVENODD == 1'b0) ? XPOSITIONW : XPOSITIONR;
-  assign ADDR_O = (EVENODD == 1'b1) ? XPOSITIONW : XPOSITIONR;
+  assign address_even = (!even_odd) ? x_position_wr : x_position_rd;
+  assign address_odd = (even_odd) ? x_position_wr : x_position_rd;
 
-  assign DATAROUT = (EVENODD == 1'b1) ? OUTR_E : OUTR_O;
-  assign DATAGOUT = (EVENODD == 1'b1) ? OUTG_E : OUTG_O;
-  assign DATABOUT = (EVENODD == 1'b1) ? OUTB_E : OUTB_O;
+  assign data_red_out = (even_odd) ? out_red_even : out_red_odd;
+  assign data_green_out = (even_odd) ? out_green_even : out_green_odd;
+  assign data_blue_out = (even_odd) ? out_blue_even : out_blue_odd;
 
   VDP_LINEBUF U_BUF_RE (
-      .ADDRESS(ADDR_E),
-      .INCLOCK(CLK),
-      .WE(WE_E),
-      .DATA(DATARIN),
-      .Q(OUTR_E)
+      .ADDRESS(address_even),
+      .INCLOCK(clk),
+      .WE(we_even),
+      .DATA(data_red_in),
+      .Q(out_red_even)
   );
 
   VDP_LINEBUF U_BUF_GE (
-      .ADDRESS(ADDR_E),
-      .INCLOCK(CLK),
-      .WE(WE_E),
-      .DATA(DATAGIN),
-      .Q(OUTG_E)
+      .ADDRESS(address_even),
+      .INCLOCK(clk),
+      .WE(we_even),
+      .DATA(data_green_in),
+      .Q(out_green_even)
   );
 
   VDP_LINEBUF U_BUF_BE (
-      .ADDRESS(ADDR_E),
-      .INCLOCK(CLK),
-      .WE(WE_E),
-      .DATA(DATABIN),
-      .Q(OUTB_E)
+      .ADDRESS(address_even),
+      .INCLOCK(clk),
+      .WE(we_even),
+      .DATA(data_blue_in),
+      .Q(out_blue_even)
   );
 
   VDP_LINEBUF U_BUF_RO (
-      .ADDRESS(ADDR_O),
-      .INCLOCK(CLK),
-      .WE(WE_O),
-      .DATA(DATARIN),
-      .Q(OUTR_O)
+      .ADDRESS(address_odd),
+      .INCLOCK(clk),
+      .WE(we_odd),
+      .DATA(data_red_in),
+      .Q(out_red_odd)
   );
 
   VDP_LINEBUF U_BUF_GO (
-      .ADDRESS(ADDR_O),
-      .INCLOCK(CLK),
-      .WE(WE_O),
-      .DATA(DATAGIN),
-      .Q(OUTG_O)
+      .ADDRESS(address_odd),
+      .INCLOCK(clk),
+      .WE(we_odd),
+      .DATA(data_green_in),
+      .Q(out_green_odd)
   );
 
   VDP_LINEBUF U_BUF_BO (
-      .ADDRESS(ADDR_O),
-      .INCLOCK(CLK),
-      .WE(WE_O),
-      .DATA(DATABIN),
-      .Q(OUTB_O)
+      .ADDRESS(address_odd),
+      .INCLOCK(clk),
+      .WE(we_odd),
+      .DATA(data_blue_in),
+      .Q(out_blue_odd)
   );
 
 endmodule

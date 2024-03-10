@@ -790,7 +790,7 @@ module VDP_COMMAND (
                 SXTMP <= {2'b00, SX};
               end
               DXTMP <= {1'b0, DX};
-              NY <= NY - 1;
+              NY <= 10'(NY - 1);
               if ((CMR[5] != CMR[4])) begin
                 // BIT5 /= BIT4 IS TRUE FOR COMMANDS YMMM, HMMM, LMCM, LMMM
                 SY <= SY + YCOUNTDELTA;
