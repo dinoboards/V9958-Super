@@ -31,12 +31,12 @@ add_file src\\hdmi\\tmds_channel.sv
 
 add_file src\\vdp\\vdp_colordec.v
 add_file src\\vdp\\vdp_command.sv
-add_file src\\vdp\\vdp_doublebuf.v
+add_file src\\vdp\\vdp_double_buffer.v
 add_file src\\vdp\\vdp_graphic123m.v
 add_file src\\vdp\\vdp_graphic4567.v
 add_file src\\vdp\\vdp_hvcounter.v
 add_file src\\vdp\\vdp_interrupt.v
-add_file src\\vdp\\vdp_linebuf.v
+add_file src\\vdp\\vdp_line_buffer.v
 add_file src\\vdp\\vdp_package.v
 add_file src\\vdp\\vdp_register.v
 add_file src\\vdp\\vdp_spinforam.v

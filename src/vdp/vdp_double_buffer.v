@@ -1,7 +1,8 @@
-//  converted from vdp_linebuf.vhd
-//    Line buffer for VGA upscan converter.
 //
-//  Copyright (C) 2006 Kunihiko Ohnaka
+//  converted from vdp_doublebuf.vhd
+//    Double Buffered Line Memory.
+//
+//  Copyright (C) 2000-2006 Kunihiko Ohnaka
 //  All rights reserved.
 //                                     http://www.ohnaka.jp/ese-vdp/
 //
@@ -54,28 +55,92 @@
 //  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //  POSSIBILITY OF SUCH DAMAGE.
 //
-// Convert 15kHz video signal to 31Khz VGA/DVI timing.
+///////////////////////////////////////////////////////////////////////////////
+//
+// Line buffer module with double buffering function
+// Used for up scan conversion by vdp_vga.v
+//
 
-module VDP_LINEBUF (
-    input wire [9:0] ADDRESS,
-    input wire INCLOCK,
-    input wire WE,
-    input wire [5:0] DATA,
-    output reg [5:0] Q
+module vdp_double_buffer (
+    input bit clk,
+    input bit [9:0] x_position_wr,
+    input bit [9:0] x_position_rd,
+    input bit even_odd,
+    input bit [5:0] data_red_in,
+    input bit [5:0] data_green_in,
+    input bit [5:0] data_blue_in,
+    output bit [5:0] data_red_out,
+    output bit [5:0] data_green_out,
+    output bit [5:0] data_blue_out
 );
 
-  reg [4:0] IMEM[0:639];
-  reg [9:0] IADDRESS;
+  bit wr_even;
+  bit wr_odd;
+  bit [9:0] address_even;
+  bit [9:0] address_odd;
+  bit [5:0] out_red_even;
+  bit [5:0] out_green_even;
+  bit [5:0] out_blue_even;
+  bit [5:0] out_red_odd;
+  bit [5:0] out_green_odd;
+  bit [5:0] out_blue_odd;
 
-  always_ff @(posedge INCLOCK) begin
-    if (WE) begin
-      IMEM[ADDRESS] <= DATA[5:1];  // data range required by YJK mode
-    end
-    IADDRESS <= ADDRESS;
-  end
+  assign wr_even = ~even_odd;
+  assign wr_odd = even_odd;
 
-  always_comb begin
-    Q = {IMEM[IADDRESS], 1'b0};
-  end
+  assign address_even = (!even_odd) ? x_position_wr : x_position_rd;
+  assign address_odd = (even_odd) ? x_position_wr : x_position_rd;
+
+  assign data_red_out = (even_odd) ? out_red_even : out_red_odd;
+  assign data_green_out = (even_odd) ? out_green_even : out_green_odd;
+  assign data_blue_out = (even_odd) ? out_blue_even : out_blue_odd;
+
+  vdp_line_buffer buf_red_even (
+      .address(address_even),
+      .clk(clk),
+      .wr(wr_even),
+      .data_in(data_red_in),
+      .data_out(out_red_even)
+  );
+
+  vdp_line_buffer buf_green_even (
+      .address(address_even),
+      .clk(clk),
+      .wr(wr_even),
+      .data_in(data_green_in),
+      .data_out(out_green_even)
+  );
+
+  vdp_line_buffer buf_blue_even (
+      .address(address_even),
+      .clk(clk),
+      .wr(wr_even),
+      .data_in(data_blue_in),
+      .data_out(out_blue_even)
+  );
+
+  vdp_line_buffer buf_red_odd (
+      .address(address_odd),
+      .clk(clk),
+      .wr(wr_odd),
+      .data_in(data_red_in),
+      .data_out(out_red_odd)
+  );
+
+  vdp_line_buffer buf_green_odd (
+      .address(address_odd),
+      .clk(clk),
+      .wr(wr_odd),
+      .data_in(data_green_in),
+      .data_out(out_green_odd)
+  );
+
+  vdp_line_buffer buf_blue_odd (
+      .address(address_odd),
+      .clk(clk),
+      .wr(wr_odd),
+      .data_in(data_blue_in),
+      .data_out(out_blue_odd)
+  );
 
 endmodule

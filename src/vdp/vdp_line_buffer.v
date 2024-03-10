@@ -1,8 +1,7 @@
+//  converted from vdp_linebuf.vhd
+//    Line buffer for VGA upscan converter.
 //
-//  converted from vdp_doublebuf.vhd
-//    Double Buffered Line Memory.
-//
-//  Copyright (C) 2000-2006 Kunihiko Ohnaka
+//  Copyright (C) 2006 Kunihiko Ohnaka
 //  All rights reserved.
 //                                     http://www.ohnaka.jp/ese-vdp/
 //
@@ -55,92 +54,23 @@
 //  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //  POSSIBILITY OF SUCH DAMAGE.
 //
-///////////////////////////////////////////////////////////////////////////////
-//
-// Line buffer module with double buffering function
-// Used for up scan conversion by vdp_vga.v
-//
+// Convert 15kHz video signal to 31Khz VGA/DVI timing.
 
-module vdp_double_buffer (
+module vdp_line_buffer (
+    input bit [9:0] address,
     input bit clk,
-    input bit [9:0] x_position_wr,
-    input bit [9:0] x_position_rd,
-    input bit even_odd,
-    input bit [5:0] data_red_in,
-    input bit [5:0] data_green_in,
-    input bit [5:0] data_blue_in,
-    output bit [5:0] data_red_out,
-    output bit [5:0] data_green_out,
-    output bit [5:0] data_blue_out
+    input bit wr,
+    input bit [5:0] data_in,
+    output bit [5:0] data_out
 );
 
-  bit we_even;
-  bit we_odd;
-  bit [9:0] address_even;
-  bit [9:0] address_odd;
-  bit [5:0] out_red_even;
-  bit [5:0] out_green_even;
-  bit [5:0] out_blue_even;
-  bit [5:0] out_red_odd;
-  bit [5:0] out_green_odd;
-  bit [5:0] out_blue_odd;
+  reg [4:0] memory[0:639];
 
-  assign we_even = ~even_odd;
-  assign we_odd = even_odd;
-
-  assign address_even = (!even_odd) ? x_position_wr : x_position_rd;
-  assign address_odd = (even_odd) ? x_position_wr : x_position_rd;
-
-  assign data_red_out = (even_odd) ? out_red_even : out_red_odd;
-  assign data_green_out = (even_odd) ? out_green_even : out_green_odd;
-  assign data_blue_out = (even_odd) ? out_blue_even : out_blue_odd;
-
-  VDP_LINEBUF U_BUF_RE (
-      .ADDRESS(address_even),
-      .INCLOCK(clk),
-      .WE(we_even),
-      .DATA(data_red_in),
-      .Q(out_red_even)
-  );
-
-  VDP_LINEBUF U_BUF_GE (
-      .ADDRESS(address_even),
-      .INCLOCK(clk),
-      .WE(we_even),
-      .DATA(data_green_in),
-      .Q(out_green_even)
-  );
-
-  VDP_LINEBUF U_BUF_BE (
-      .ADDRESS(address_even),
-      .INCLOCK(clk),
-      .WE(we_even),
-      .DATA(data_blue_in),
-      .Q(out_blue_even)
-  );
-
-  VDP_LINEBUF U_BUF_RO (
-      .ADDRESS(address_odd),
-      .INCLOCK(clk),
-      .WE(we_odd),
-      .DATA(data_red_in),
-      .Q(out_red_odd)
-  );
-
-  VDP_LINEBUF U_BUF_GO (
-      .ADDRESS(address_odd),
-      .INCLOCK(clk),
-      .WE(we_odd),
-      .DATA(data_green_in),
-      .Q(out_green_odd)
-  );
-
-  VDP_LINEBUF U_BUF_BO (
-      .ADDRESS(address_odd),
-      .INCLOCK(clk),
-      .WE(we_odd),
-      .DATA(data_blue_in),
-      .Q(out_blue_odd)
-  );
+  always_ff @(posedge clk) begin
+    if (wr) begin
+      memory[address] <= data_in[5:1];  // strip out the YJK mode bit
+    end
+    data_out <= {memory[address], 1'b0};
+  end
 
 endmodule
