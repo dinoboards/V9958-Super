@@ -254,7 +254,6 @@ module VDP_SPRITE (
     input wire [7:0] REG_R23_VSTART_LINE,
     input wire [2:0] REG_R27_H_SCROLL,
     input wire SPMODE2,
-    input wire VRAMINTERLEAVEMODE,
     output reg SPVRAMACCESSING,
     input wire [7:0] PRAMDAT,
     output wire [16:0] PRAMADR,
@@ -457,7 +456,7 @@ module VDP_SPRITE (
   // JP: VRAMアクセスアドレスの出力
   // (Output of VRAM access address)
   assign IRAMADR = (SPSTATE == SPSTATE_YTEST_DRAW) ? FF_Y_TEST_VRAM_ADDR : IRAMADRPREPARE;
-  assign PRAMADR = (VRAMINTERLEAVEMODE == 1'b0) ? IRAMADR[16:0] : {IRAMADR[0], IRAMADR[16:1]};
+  assign PRAMADR = IRAMADR;
 
   //---------------------------------------------------------------------------
   // STATE MACHINE

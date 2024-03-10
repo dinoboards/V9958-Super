@@ -104,7 +104,6 @@ module v9958_top (
 
   bit ram_busy, ram_fail;
 
-  bit [19:0] ram_total_written;
   bit ram_enabled;
 
   memory_controller #(
@@ -116,13 +115,12 @@ module v9958_top (
       .read(WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
       .write(~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
       .refresh(~VideoDLClk & ~VideoDHClk & ~ram_busy),
-      .addr({6'b0, VdpAdr[15:0]}),
+      .addr({6'b0, VdpAdr[16:1]}),
       .din({VrmDbo, VrmDbo}),
-      .wdm({~VdpAdr[16], VdpAdr[16]}),
+      .wdm({~VdpAdr[0], VdpAdr[0]}),
       .dout(VrmDbi),
       .busy(ram_busy),
       .fail(ram_fail),
-      .total_written(ram_total_written),
       .enabled(ram_enabled),
 
       .SDRAM_DQ(IO_sdram_dq),

@@ -170,7 +170,10 @@ module VDP_GRAPHIC4567 (
   assign FIFOADDR = (FIFOIN == 1'b1) ? FIFOADDR_IN : FIFOADDR_OUT;
   assign FIFOWE = (FIFOIN == 1'b1) ? 1'b1 : 1'b0;
   assign FIFODATA_IN = ((DOTSTATE == 2'b00) || (DOTSTATE == 2'b01)) ? PRAMDAT : PRAMDATPAIR;
-  RAM U_FIFOMEM (
+
+  RAM #(
+      .MEM_SIZE(128)
+  ) U_FIFOMEM (
       .ADR(FIFOADDR),
       .CLK(CLK21M),
       .WE (FIFOWE),
@@ -392,7 +395,7 @@ module VDP_GRAPHIC4567 (
         if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC5 == 1'b1))) begin
           PRAMADR <= LOGICALVRAMADDRG45[16:0];
         end else begin
-          PRAMADR <= {LOGICALVRAMADDRG67[0], LOGICALVRAMADDRG67[16:1]};
+          PRAMADR <= LOGICALVRAMADDRG67[16:0];
         end
       end
     end

@@ -175,8 +175,7 @@ module VDP_REGISTER (
     output wire VDPMODEGRAPHIC6,
     output wire VDPMODEGRAPHIC7,
     output wire VDPMODEISHIGHRES,
-    output wire SPMODE2,
-    output wire VDPMODEISVRAMINTERLEAVE
+    output wire SPMODE2
 );
 
   // S#2
@@ -246,7 +245,6 @@ module VDP_REGISTER (
   assign VDPMODEGRAPHIC7 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100) ? 1'b1 : 1'b0;
   assign VDPMODEISHIGHRES = (REG_R0_DISP_MODE[3:2] == 2'b10 && REG_R1_DISP_MODE == 2'b00) ? 1'b1 : 1'b0;
   assign SPMODE2 = (REG_R1_DISP_MODE == 2'b00 && (REG_R0_DISP_MODE[3] | REG_R0_DISP_MODE[2]) == 1'b1) ? 1'b1 : 1'b0;
-  assign VDPMODEISVRAMINTERLEAVE = ((REG_R0_DISP_MODE[3] & REG_R0_DISP_MODE[1]) == 1'b1) ? 1'b1 : 1'b0;
 
   //--------------------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin

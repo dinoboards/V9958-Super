@@ -37,7 +37,9 @@ module RAM (
     output wire [7:0] DBI
 );
 
-  reg [7:0] blkram[255:0];
+  parameter int MEM_SIZE = 256;
+
+  reg [7:0] blkram[MEM_SIZE:0];
   reg [7:0] iadr;
 
   always @(posedge CLK) begin

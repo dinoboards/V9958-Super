@@ -1,22 +1,42 @@
+/*
+The memory_controller module is designed to interface with the GOWIN's SDRAM memory module. It provides
+upto 8MBytes of storage, organized as 4M 16-bit words. The module supports read, write, and auto-
+refresh operations, controlled by the read, write, and refresh inputs respectively.
+
+For write operations, the wdm (write data mask) input is used to specify which byte (or bytes) of the
+16-bit data word is to be updated. For read operations, both bytes of the 16-bit word are retrieved.
+
+* If wdm is 01, then only the lower 8 bits are written;
+* if wdm is 10, then only the upper 8 bits are written;
+* if wdm is 11, then both bytes are written;
+* if wdm is 00, then nothing will be updated.
+
+The module provides a busy output to indicate when an operation is in progress, and a fail output
+to indicate a timing mistake or SDRAM malfunction.
+
+The physical interface to the SDRAM is provided by the SDRAM_DQ, SDRAM_A, SDRAM_BA, SDRAM_nCS,
+SDRAM_nWE, SDRAM_nRAS, SDRAM_nCAS, SDRAM_CLK, SDRAM_CKE, and SDRAM_DQM signals.  These must map to
+the gowin special pins to access the onchip SDRAM
+*/
+
 module memory_controller #(
     parameter int FREQ = 54_000_000
 ) (
-    input             clk,        // Main logic clock
-    input             clk_sdram,  // 180-degree of clk
-    input             resetn,
-    input             read,       // Set to 1 to read from RAM
-    input             write,      // Set to 1 to write to RAM
-    input             refresh,    // Set to 1 to auto-refresh RAM
-    input      [21:0] addr,       // Address to read / write
-    input      [15:0] din,        // Data to write
-    input      [ 1:0] wdm,
-    output     [15:0] dout,       // Last read data available 4 cycles after read is set
-    output reg        busy,       // 1 while an operation is in progress
-    output            enabled,
+    input             clk,        // Main logic clock (max speed is 166.7Mh - see SRAM.v)
+    input             clk_sdram,  // A clock signal that is 180 degrees out of phase with the main clock.
+    input             resetn,     // Active low reset signal.
+    input             read,       // Signal to initiate a read operation from the SDRAM
+    input             write,      // Signal to initiate a write operation to the SDRAM
+    input             refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
+    input      [21:0] addr,       // The address to read from or write to in the SDRAM
+    input      [15:0] din,        // The data to be written to the SDRAM (only the byte specified by wdm is written)
+    input      [ 1:0] wdm,        // Write data mask
+    output     [15:0] dout,       // The data read from the SDRAM. Available 4 cycles after the read signal is set.
+    output reg        busy,       // Signal indicating that an operation is in progress.
+    output            enabled,    // Signal indicating that the memory controller is enabled.
 
     // debug interface
-    output reg        fail,          // timing mistake or sdram malfunction detected
-    output reg [19:0] total_written,
+    output reg fail,  // Signal indicating a timing mistake or SDRAM malfunction
 
     // Physical SDRAM interface
     inout [31:0] SDRAM_DQ,  // 16 bit bidirectional data bus
@@ -79,7 +99,6 @@ module memory_controller #(
     if (~resetn) begin
       busy <= 1'b1;
       fail <= 1'b0;
-      total_written <= 0;
       MemInitializing <= 1'b1;
     end else begin
       MemWR <= 1'b0;
@@ -99,7 +118,6 @@ module memory_controller #(
           cycles <= 3'd1;
           r_read <= read;
 
-          if (write) total_written <= 20'(total_written + 1);
         end
       end else if (MemInitializing) begin
         if (~MemBusy) begin

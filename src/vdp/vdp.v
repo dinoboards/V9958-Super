@@ -356,7 +356,7 @@ module VDP (
 
   wire [10:0] H_CNT;
   wire [10:0] H_CNT_IN_FIELD;
-  wire [9:0] V_CNT;
+  wire [ 9:0] V_CNT;
 
   // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
   wire [ 6:0] ADJUST_X;
@@ -464,7 +464,6 @@ module VDP (
   wire        VDPMODEGRAPHIC6;  // GRAPHIC MODE 6   (SCREEN7)
   wire        VDPMODEGRAPHIC7;  // GRAPHIC MODE 7   (SCREEN8,10,11,12)
   wire        VDPMODEISHIGHRES;  // TRUE WHEN MODE GRAPHIC5, 6
-  wire        VDPMODEISVRAMINTERLEAVE;  // TRUE WHEN MODE GRAPHIC6, 7
 
   // FOR TEXT 1 AND 2
   wire [16:0] PRAMADRT12;
@@ -572,7 +571,7 @@ module VDP (
   assign PAL_MODE = VDPR9PALMODE;
 
   assign PRAMADR = IRAMADR;
-  assign XRAMSEL = IRAMADR[16];
+  assign XRAMSEL = IRAMADR[0];
   assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI[7:0] : PRAMDBI[15:8];
   assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI[7:0] : PRAMDBI[15:8];
 
@@ -869,16 +868,8 @@ module VDP (
       // VRAM ACCESS ADDRESS SWITCH
       //
       if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUW)) begin
-        // VRAM WRITE BY CPU
-        // JP: GRAPHIC6,7ではVRAM上のアドレスと RAM上のアドレスの関係が
-        // JP: 他の画面モードと異るので注意
-        // (In GRAPHIC6,7, note that the relationship between the address on VRAM and the address on RAM)
-        // (is different from other screen modes.)
-        if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
-          IRAMADR <= {VDPVRAMACCESSADDR[0], VDPVRAMACCESSADDR[16:1]};
-        end else begin
-          IRAMADR <= VDPVRAMACCESSADDR;
-        end
+        IRAMADR <= VDPVRAMACCESSADDR;
+
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
           VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDR[13:0] + 1);
         end else begin
@@ -898,15 +889,8 @@ module VDP (
           VDPVRAMACCESSADDRV = VDPVRAMACCESSADDR;
         end
 
-        // JP: GRAPHIC6,7ではVRAM上のアドレスと RAM上のアドレスの関係が
-        // JP: 他の画面モードと異るので注意
-        // (In GRAPHIC6,7, note that the relationship between the address on VRAM and the address on RAM)
-        // (is different from other screen modes)
-        if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
-          IRAMADR <= {VDPVRAMACCESSADDRV[0], VDPVRAMACCESSADDRV[16:1]};
-        end else begin
-          IRAMADR <= VDPVRAMACCESSADDRV;
-        end
+        IRAMADR <= VDPVRAMACCESSADDRV;
+
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
           VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDRV[13:0] + 1);
         end else begin
@@ -918,32 +902,13 @@ module VDP (
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
         VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW)) begin
-        // VRAM WRITE BY VDP COMMAND
-        // VDP COMMAND WRITE VRAM.
-        // JP: GRAPHIC6,7ではアドレスと RAM上の位置が他の画面モードと
-        // JP: 異るので注意
-        // (In GRAPHIC6,7, note that the relationship between the address and the position on RAM)
-        // (is different from other screen modes.)
-        if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
-          IRAMADR <= {VDPCMDVRAMACCESSADDR[0], VDPCMDVRAMACCESSADDR[16:1]};
-        end else begin
-          IRAMADR <= VDPCMDVRAMACCESSADDR;
-        end
+        IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO <= VDPCMDVRAMWRDATA;
         PRAMOE_N <= 1'b1;
         PRAMWE_N <= 1'b0;
         VDPCMDVRAMWRACK <= ~VDPCMDVRAMWRACK;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin
-        // VRAM READ BY VDP COMMAND
-        // JP: GRAPHIC6,7ではアドレスと RAM上の位置が他の画面モードと
-        // JP: 異るので注意
-        // (In GRAPHIC6,7, note that the relationship between the address and the position on RAM)
-        // (is different from other screen modes)
-        if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
-          IRAMADR <= {VDPCMDVRAMACCESSADDR[0], VDPCMDVRAMACCESSADDR[16:1]};
-        end else begin
-          IRAMADR <= VDPCMDVRAMACCESSADDR;
-        end
+        IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO <= {8{1'bZ}};
         PRAMOE_N <= 1'b0;
         PRAMWE_N <= 1'b1;
@@ -1136,7 +1101,6 @@ module VDP (
       .REG_R23_VSTART_LINE(REG_R23_VSTART_LINE),
       .REG_R27_H_SCROLL(REG_R27_H_SCROLL),
       .SPMODE2(SPMODE2),
-      .VRAMINTERLEAVEMODE(VDPMODEISVRAMINTERLEAVE),
       .SPVRAMACCESSING(SPVRAMACCESSING),
       .PRAMDAT(PRAMDAT),
       .PRAMADR(PRAMADRSPRITE),
@@ -1241,8 +1205,7 @@ module VDP (
       .VDPMODEGRAPHIC6(VDPMODEGRAPHIC6),
       .VDPMODEGRAPHIC7(VDPMODEGRAPHIC7),
       .VDPMODEISHIGHRES(VDPMODEISHIGHRES),
-      .SPMODE2(SPMODE2),
-      .VDPMODEISVRAMINTERLEAVE(VDPMODEISVRAMINTERLEAVE)
+      .SPMODE2(SPMODE2)
   );
 
   //---------------------------------------------------------------------------
