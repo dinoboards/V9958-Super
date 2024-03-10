@@ -339,7 +339,6 @@ module VDP (
     output wire [5:0] PVIDEOG,
     output wire [5:0] PVIDEOB,
     output wire PVIDEOHS_N,
-    output wire PVIDEOVS_N,
     output wire PVIDEODHCLK,
     output wire PVIDEODLCLK,
     output wire PAL_MODE,
@@ -545,8 +544,6 @@ module VDP (
   wire [ 5:0] IVIDEOR_VGA;
   wire [ 5:0] IVIDEOG_VGA;
   wire [ 5:0] IVIDEOB_VGA;
-  wire        IVIDEOHS_N_VGA;
-  wire        IVIDEOVS_N_VGA;
 
   reg  [16:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
@@ -598,8 +595,6 @@ module VDP (
       .VIDEOROUT(IVIDEOR_VGA),
       .VIDEOGOUT(IVIDEOG_VGA),
       .VIDEOBOUT(IVIDEOB_VGA),
-      .VIDEOHSOUT_N(IVIDEOHS_N_VGA),
-      .VIDEOVSOUT_N(IVIDEOVS_N_VGA),
       .RATIOMODE(RATIOMODE)
   );
 
@@ -608,11 +603,6 @@ module VDP (
   assign PVIDEOG = IVIDEOG_VGA;
   assign PVIDEOB = IVIDEOB_VGA;
 
-  // H SYNC SIGNAL
-  assign PVIDEOHS_N = IVIDEOHS_N_VGA;
-
-  // V SYNC SIGNAL
-  assign PVIDEOVS_N = IVIDEOVS_N_VGA;
 
   //---------------------------------------------------------------------------
   // INTERRUPT

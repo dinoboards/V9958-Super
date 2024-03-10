@@ -117,23 +117,10 @@ module VDP_VGA (
     output wire [5:0] VIDEOROUT,
     output wire [5:0] VIDEOGOUT,
     output wire [5:0] VIDEOBOUT,
-    output wire VIDEOHSOUT_N,
-    output wire VIDEOVSOUT_N,
     input wire [2:0] RATIOMODE
 );
 
   import custom_timings::*;
-
-  // VDP CLOCK ... 21.477MHZ
-  // VIDEO INPUT
-  // MODE
-  // Added by caro
-  // VIDEO OUTPUT
-  // HDMI SUPPORT
-  // SWITCHED I/O SIGNALS
-
-  reg FF_HSYNC_N;
-  reg FF_VSYNC_N;
 
   // VIDEO OUTPUT ENABLE
   reg VIDEOOUTX;
@@ -142,7 +129,6 @@ module VDP_VGA (
   wire [9:0] XPOSITIONW;
   reg [9:0] XPOSITIONR;
   wire EVENODD;
-  wire WE_BUF;
   wire [5:0] DATAROUT;
   wire [5:0] DATAGOUT;
   wire [5:0] DATABOUT;
@@ -156,7 +142,7 @@ module VDP_VGA (
       .XPOSITIONW(XPOSITIONW),
       .XPOSITIONR(XPOSITIONR),
       .EVENODD(EVENODD),
-      .WE(WE_BUF),
+      .WE(1),
       .DATARIN(VIDEORIN),
       .DATAGIN(VIDEOGIN),
       .DATABIN(VIDEOBIN),
@@ -167,64 +153,10 @@ module VDP_VGA (
 
   assign XPOSITIONW = HCOUNTERIN[10:1];
   assign EVENODD = VCOUNTERIN[1];
-  assign WE_BUF = 1'b1;
-
-  // GENERATE H-SYNC SIGNAL
-  always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_HSYNC_N <= 1'b1;
-    end else begin
-      if (((HCOUNTERIN == 0) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE))))) begin
-        FF_HSYNC_N <= 1'b0;
-      end else if (((HCOUNTERIN == 40) || (HCOUNTERIN == ((CLOCKS_PER_HALF_LINE(PALMODE)) + 40)))) begin
-        FF_HSYNC_N <= 1'b1;
-      end
-    end
-  end
-
-  // GENERATE V-SYNC SIGNAL
-  // THE VIDEOVSIN_N SIGNAL IS NOT USED
-  always_ff @(posedge RESET, posedge CLK21M) begin : P1
-    parameter CENTER_Y = 12;  // based on HDMI AV output
-
-    if ((RESET == 1'b1)) begin
-      FF_VSYNC_N <= 1'b1;
-    end else begin
-      if ((PALMODE == 1'b0)) begin
-        if ((INTERLACEMODE == 1'b0)) begin
-          if (((VCOUNTERIN == (3 * 2 + CENTER_Y)) || (VCOUNTERIN == (524 + 3 * 2 + CENTER_Y)))) begin
-            FF_VSYNC_N <= 1'b0;
-          end else if (((VCOUNTERIN == (6 * 2 + CENTER_Y)) || (VCOUNTERIN == (524 + 6 * 2 + CENTER_Y)))) begin
-            FF_VSYNC_N <= 1'b1;
-          end
-        end else begin
-          if (((VCOUNTERIN == (3 * 2 + CENTER_Y)) || (VCOUNTERIN == (525 + 3 * 2 + CENTER_Y)))) begin
-            FF_VSYNC_N <= 1'b0;
-          end else if (((VCOUNTERIN == (6 * 2 + CENTER_Y)) || (VCOUNTERIN == (525 + 6 * 2 + CENTER_Y)))) begin
-            FF_VSYNC_N <= 1'b1;
-          end
-        end
-      end else begin
-        if ((INTERLACEMODE == 1'b0)) begin
-          if (((VCOUNTERIN == (3 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (626 + 3 * 2 + CENTER_Y + 6)))) begin
-            FF_VSYNC_N <= 1'b0;
-          end else if (((VCOUNTERIN == (6 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (626 + 6 * 2 + CENTER_Y + 6)))) begin
-            FF_VSYNC_N <= 1'b1;
-          end
-        end else begin
-          if (((VCOUNTERIN == (3 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (625 + 3 * 2 + CENTER_Y + 6)))) begin
-            FF_VSYNC_N <= 1'b0;
-          end else if (((VCOUNTERIN == (6 * 2 + CENTER_Y + 6)) || (VCOUNTERIN == (625 + 6 * 2 + CENTER_Y + 6)))) begin
-            FF_VSYNC_N <= 1'b1;
-          end
-        end
-      end
-    end
-  end
 
   // GENERATE DATA READ TIMING
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       XPOSITIONR <= 0;
     end else begin
       if (((HCOUNTERIN == 0) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE))))) begin
@@ -237,14 +169,11 @@ module VDP_VGA (
 
   // GENERATE VIDEO OUTPUT TIMING
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       VIDEOOUTX <= 1'b0;
     end else begin
       VIDEOOUTX <= 1'b1;
     end
   end
-
-  assign VIDEOHSOUT_N = FF_HSYNC_N;
-  assign VIDEOVSOUT_N = FF_VSYNC_N;
 
 endmodule

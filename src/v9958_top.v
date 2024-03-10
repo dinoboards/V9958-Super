@@ -175,8 +175,6 @@ module v9958_top (
       .PVIDEOR        (VideoR),
       .PVIDEOG        (VideoG),
       .PVIDEOB        (VideoB),
-      .PVIDEOHS_N     (),
-      .PVIDEOVS_N     (),
       .PVIDEODHCLK    (VideoDHClk),
       .PVIDEODLCLK    (VideoDLClk),
       .PAL_MODE       (pal_mode),
