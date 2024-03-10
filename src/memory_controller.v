@@ -14,9 +14,9 @@ For write operations, the wdm (write data mask) input is used to specify which b
 The module provides a busy output to indicate when an operation is in progress, and a fail output
 to indicate a timing mistake or SDRAM malfunction.
 
-The physical interface to the SDRAM is provided by the SDRAM_DQ, SDRAM_A, SDRAM_BA, SDRAM_nCS,
-SDRAM_nWE, SDRAM_nRAS, SDRAM_nCAS, SDRAM_CLK, SDRAM_CKE, and SDRAM_DQM signals.  These must map to
-the gowin special pins to access the onchip SDRAM
+The physical interface to the SDRAM is provided by the IO_sdram_dq, O_sdram_addr, O_sdram_ba, O_sdram_cs_n,
+O_sdram_wen_n, O_sdram_ras_n, O_sdram_cas_n, O_sdram_clk, O_sdram_cke, and O_sdram_dqm signals.  These must
+map to the gowin special pins to access the onchip SDRAM
 */
 
 module memory_controller #(
@@ -38,17 +38,17 @@ module memory_controller #(
     // debug interface
     output reg fail,  // Signal indicating a timing mistake or SDRAM malfunction
 
-    // Physical SDRAM interface
-    inout [31:0] SDRAM_DQ,  // 16 bit bidirectional data bus
-    output [10:0] SDRAM_A,  // 13 bit multiplexed address bus
-    output [1:0] SDRAM_BA,  // 4 banks
-    output SDRAM_nCS,  // a single chip select
-    output SDRAM_nWE,  // write enable
-    output SDRAM_nRAS,  // row address select
-    output SDRAM_nCAS,  // columns address select
-    output SDRAM_CLK,
-    output SDRAM_CKE,
-    output [3:0] SDRAM_DQM
+    // GoWin's Physical SDRAM interface
+    inout  [31:0] IO_sdram_dq,    // 32 bit bidirectional data bus
+    output [10:0] O_sdram_addr,   // 11 bit multiplexed address bus
+    output [ 1:0] O_sdram_ba,     // 4 banks
+    output        O_sdram_cs_n,   // chip select
+    output        O_sdram_wen_n,  // write enable
+    output        O_sdram_ras_n,  // row address strobe
+    output        O_sdram_cas_n,  // columns address strobe
+    output        O_sdram_clk,    // sdram's clock
+    output        O_sdram_cke,    // sdram's clock enable
+    output [ 3:0] O_sdram_dqm     // data mask control
 );
 
   reg [22:0] MemAddr;
@@ -80,16 +80,16 @@ module memory_controller #(
       .data_ready(MemDataReady),
       .enabled(enabled),
 
-      .SDRAM_DQ(SDRAM_DQ),
-      .SDRAM_A(SDRAM_A),
-      .SDRAM_BA(SDRAM_BA),
-      .SDRAM_nCS(SDRAM_nCS),
-      .SDRAM_nWE(SDRAM_nWE),
-      .SDRAM_nRAS(SDRAM_nRAS),
-      .SDRAM_nCAS(SDRAM_nCAS),
-      .SDRAM_CLK(SDRAM_CLK),
-      .SDRAM_CKE(SDRAM_CKE),
-      .SDRAM_DQM(SDRAM_DQM),
+      .IO_sdram_dq(IO_sdram_dq),
+      .O_sdram_addr(O_sdram_addr),
+      .O_sdram_ba(O_sdram_ba),
+      .O_sdram_cs_n(O_sdram_cs_n),
+      .O_sdram_wen_n(O_sdram_wen_n),
+      .O_sdram_ras_n(O_sdram_ras_n),
+      .O_sdram_cas_n(O_sdram_cas_n),
+      .O_sdram_clk(O_sdram_clk),
+      .O_sdram_cke(O_sdram_cke),
+      .O_sdram_dqm(O_sdram_dqm),
 
       .dout32()
   );

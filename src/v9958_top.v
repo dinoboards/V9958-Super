@@ -123,16 +123,16 @@ module v9958_top (
       .fail(ram_fail),
       .enabled(ram_enabled),
 
-      .SDRAM_DQ(IO_sdram_dq),
-      .SDRAM_A(O_sdram_addr),
-      .SDRAM_BA(O_sdram_ba),
-      .SDRAM_nCS(O_sdram_cs_n),
-      .SDRAM_nWE(O_sdram_wen_n),
-      .SDRAM_nRAS(O_sdram_ras_n),
-      .SDRAM_nCAS(O_sdram_cas_n),
-      .SDRAM_CLK(O_sdram_clk),
-      .SDRAM_CKE(O_sdram_cke),
-      .SDRAM_DQM(O_sdram_dqm)
+      .IO_sdram_dq(IO_sdram_dq),
+      .O_sdram_addr(O_sdram_addr),
+      .O_sdram_ba(O_sdram_ba),
+      .O_sdram_cs_n(O_sdram_cs_n),
+      .O_sdram_wen_n(O_sdram_wen_n),
+      .O_sdram_ras_n(O_sdram_ras_n),
+      .O_sdram_cas_n(O_sdram_cas_n),
+      .O_sdram_clk(O_sdram_clk),
+      .O_sdram_cke(O_sdram_cke),
+      .O_sdram_dqm(O_sdram_dqm)
   );
 
   cpu_io cpu_io (

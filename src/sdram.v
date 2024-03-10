@@ -43,16 +43,16 @@ module sdram #(
     parameter [3:0] T_RC  = 4'd4   // 60ns, ref/active to ref/active
 ) (
     // SDRAM side interface
-    inout      [DATA_WIDTH-1:0] SDRAM_DQ,
-    output reg [ ROW_WIDTH-1:0] SDRAM_A,
-    output reg [BANK_WIDTH-1:0] SDRAM_BA,
-    output                      SDRAM_nCS,   // not strictly necessary, always 0
-    output reg                  SDRAM_nWE,
-    output reg                  SDRAM_nRAS,
-    output reg                  SDRAM_nCAS,
-    output                      SDRAM_CLK,
-    output                      SDRAM_CKE,   // not strictly necessary, always 1
-    output reg [           3:0] SDRAM_DQM,
+    inout      [DATA_WIDTH-1:0] IO_sdram_dq,
+    output reg [ ROW_WIDTH-1:0] O_sdram_addr,
+    output reg [BANK_WIDTH-1:0] O_sdram_ba,
+    output                      O_sdram_cs_n,   // not strictly necessary, always 0
+    output reg                  O_sdram_wen_n,
+    output reg                  O_sdram_ras_n,
+    output reg                  O_sdram_cas_n,
+    output                      O_sdram_clk,
+    output                      O_sdram_cke,    // not strictly necessary, always 1
+    output reg [           3:0] O_sdram_dqm,
 
     // Logic side interface
     input                   clk,
@@ -74,15 +74,15 @@ module sdram #(
   // Tri-state DQ input/output
   reg                  dq_oen;  // 0 means output
   reg [DATA_WIDTH-1:0] dq_out;
-  assign SDRAM_DQ = dq_oen ? 32'bzzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz : dq_out;
-  wire [DATA_WIDTH-1:0] dq_in = SDRAM_DQ;  // DQ input
+  assign IO_sdram_dq = dq_oen ? 32'bzzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz : dq_out;
+  wire [DATA_WIDTH-1:0] dq_in = IO_sdram_dq;  // DQ input
 
   reg off;  // byte offset
   assign dout = off == 0 ? dq_in[15:0] : dq_in[31:16];
   assign dout32 = dq_in;
-  assign SDRAM_CLK = clk_sdram;
-  assign SDRAM_CKE = 1'b1;
-  assign SDRAM_nCS = 1'b0;
+  assign O_sdram_clk = clk_sdram;
+  assign O_sdram_cke = 1'b1;
+  assign O_sdram_cs_n = 1'b0;
 
   reg [ ROW_WIDTH-1:0] FF_SDRAM_A;
   reg [BANK_WIDTH-1:0] FF_SDRAM_BA;
@@ -93,12 +93,12 @@ module sdram #(
   reg                  ff_busy;
   reg                  ff_data_ready;
 
-  assign SDRAM_A = FF_SDRAM_A;
-  assign SDRAM_BA = FF_SDRAM_BA;
-  assign SDRAM_nWE = FF_SDRAM_nWE;
-  assign SDRAM_nRAS = FF_SDRAM_nRAS;
-  assign SDRAM_nCAS = FF_SDRAM_nCAS;
-  assign SDRAM_DQM = FF_SDRAM_DQM;
+  assign O_sdram_addr = FF_SDRAM_A;
+  assign O_sdram_ba = FF_SDRAM_BA;
+  assign O_sdram_wen_n = FF_SDRAM_nWE;
+  assign O_sdram_ras_n = FF_SDRAM_nRAS;
+  assign O_sdram_cas_n = FF_SDRAM_nCAS;
+  assign O_sdram_dqm = FF_SDRAM_DQM;
   assign busy = ff_busy;
   assign data_ready = ff_data_ready;
 
