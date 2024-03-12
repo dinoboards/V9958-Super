@@ -445,13 +445,19 @@ module VDP (
   assign WINDOW = WINDOW_X & PREWINDOW_Y;
   assign PREWINDOW = PREWINDOW_X & PREWINDOW_Y;
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    bit CX_FOR_NTSC;
+    bit CX_FOR_PAL;
+
+    if (RESET) begin
       PREWINDOW_X <= 1'b0;
     end else begin
-      if(((H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({3'b100}), 2'b10}) && (REG_R25_YJK == 1'b0) && VDPR9PALMODE == 1'b0) ||
-          (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({3'b100}), 2'b10}) && (REG_R25_YJK == 1'b0) && VDPR9PALMODE == 1'b1))) begin
-        // HOLD
-      end else if ((H_CNT[1:0] == 2'b10)) begin
+      CX_FOR_NTSC = CY[0] == 0 && CX == {2'b000, `OFFSET_X + `LED_TV_X_NTSC - {3'b100}, 1'b1};
+      CX_FOR_PAL  = CY[0] == 0 && CX == {2'b000, `OFFSET_X + `LED_TV_X_PAL - {3'b100}, 1'b1};
+
+      if (!REG_R25_YJK && ((CX_FOR_NTSC && !VDPR9PALMODE) || (CX_FOR_PAL && VDPR9PALMODE))) begin
+        // why is there this hold?  doesnt seem to break anything if removed.
+
+      end else if (CX[1:0] == 2'b10) begin
         if ((PREDOTCOUNTER_X == 9'b111111111)) begin
           // JP: PREDOTCOUNTER_X が -1から0にカウントアップする時にWINDOWを1にする
           // (PREDOTCOUNTER_X is set to 0 when it counts up from -1 to 0)
