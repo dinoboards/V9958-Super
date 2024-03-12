@@ -130,9 +130,7 @@ module VDP (
   wire        PREWINDOW_SP;
 
   // FOR FRAME ZONE
-  reg         BWINDOW_X;
   reg         BWINDOW_Y;
-  reg         BWINDOW;
 
   // DOT COUNTER - 8 ( READING ADDR )
   wire [ 8:0] PREDOTCOUNTER_X;
@@ -416,19 +414,6 @@ module VDP (
       .CENTERYJK_R25_N(CENTERYJK_R25_N)
   );
 
-  // GENERATE BWINDOW
-  always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      BWINDOW_X <= 1'b0;
-    end else begin
-      if ((H_CNT == 200)) begin
-        BWINDOW_X <= 1'b1;
-      end else if ((H_CNT == (CLOCKS_PER_LINE(VDPR9PALMODE) - 1 - 1))) begin
-        BWINDOW_X <= 1'b0;
-      end
-    end
-  end
-
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       BWINDOW_Y <= 1'b0;
@@ -453,14 +438,6 @@ module VDP (
           BWINDOW_Y <= 1'b0;
         end
       end
-    end
-  end
-
-  always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      BWINDOW <= 1'b0;
-    end else begin
-      BWINDOW <= BWINDOW_X & BWINDOW_Y;
     end
   end
 
