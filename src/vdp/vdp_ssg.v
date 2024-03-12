@@ -60,7 +60,8 @@ module VDP_SSG (
     input wire RESET,
     input wire CLK21M,
     input wire [10:0] H_CNT,
-    input wire [9:0] cy,
+    input bit [10:0] cx,
+    input bit [9:0] cy,
     output wire [1:0] DOTSTATE,
     output wire [2:0] EIGHTDOTSTATE,
     output wire [8:0] PREDOTCOUNTER_X,
@@ -103,7 +104,6 @@ module VDP_SSG (
   reg [5:0] FF_PRE_X_CNT_START1;
   reg [8:0] FF_RIGHT_MASK;
   reg FF_WINDOW_X;
-  wire [10:0] W_H_CNT;
   wire [9:0] W_V_CNT_IN_FRAME;
   wire [9:0] W_V_CNT_IN_FIELD;
   wire W_FIELD;
@@ -121,7 +121,6 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   //  PORT ASSIGNMENT
   //---------------------------------------------------------------------------
-  assign W_H_CNT = H_CNT;
   assign W_V_CNT_IN_FRAME = cy;
   assign DOTSTATE = FF_DOTSTATE;
   assign EIGHTDOTSTATE = FF_EIGHTDOTSTATE;
@@ -134,7 +133,7 @@ module VDP_SSG (
   assign PREDOTCOUNTER_YP = FF_MONITOR_LINE;
   assign HD = W_H_BLANK;
   assign VD = W_V_BLANK;
-  assign HSYNC = (W_H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
+  assign HSYNC = (H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
   assign V_BLANKING_START = W_V_BLANKING_START;
 
   //---------------------------------------------------------------------------
@@ -143,7 +142,7 @@ module VDP_SSG (
   VDP_HVCOUNTER U_HVCOUNTER (
       .RESET(RESET),
       .CLK21M(CLK21M),
-      .H_CNT(W_H_CNT),
+      .H_CNT(H_CNT),
       .V_CNT_IN_FIELD(W_V_CNT_IN_FIELD),
       .V_CNT_IN_FRAME(W_V_CNT_IN_FRAME),
       .FIELD(W_FIELD),
@@ -165,7 +164,7 @@ module VDP_SSG (
       FF_VIDEO_DH_CLK <= 1'b0;
       FF_VIDEO_DL_CLK <= 1'b0;
     end else begin
-      if ((W_H_CNT == (CLOCKS_PER_LINE(VDPR9PALMODE) - 1))) begin
+      if ((H_CNT == (CLOCKS_PER_LINE(VDPR9PALMODE) - 1))) begin
         FF_DOTSTATE <= 2'b00;
         FF_VIDEO_DH_CLK <= 1'b1;
         FF_VIDEO_DL_CLK <= 1'b1;
@@ -205,7 +204,7 @@ module VDP_SSG (
     if ((RESET == 1'b1)) begin
       FF_EIGHTDOTSTATE <= 0;
     end else begin
-      if ((W_H_CNT[1:0] == 2'b11)) begin
+      if ((H_CNT[1:0] == 2'b11)) begin
         if ((FF_PRE_X_CNT == 0)) begin
           FF_EIGHTDOTSTATE <= 0;
         end else begin
@@ -235,12 +234,12 @@ module VDP_SSG (
     if ((RESET == 1'b1)) begin
       FF_PRE_X_CNT <= 0;
     end else begin
-      if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
-        (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
-        (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
-        (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      if(((H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
+        (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
+        (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
+        (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         FF_PRE_X_CNT <= W_PRE_X_CNT_START2;
-      end else if ((W_H_CNT[1:0] == 2'b10)) begin
+      end else if ((H_CNT[1:0] == 2'b10)) begin
         FF_PRE_X_CNT <= 9'(FF_PRE_X_CNT + 1);
       end
     end
@@ -250,12 +249,12 @@ module VDP_SSG (
     if ((RESET == 1'b1)) begin
       FF_X_CNT <= 0;
     end else begin
-      if(((W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
-         (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
-         (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
-         (W_H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      if(((H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
+         (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
+         (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
+         (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
         // HOLD
-      end else if ((W_H_CNT[1:0] == 2'b10)) begin
+      end else if ((H_CNT[1:0] == 2'b10)) begin
         if ((FF_PRE_X_CNT == 9'b111111111)) begin
           // JP: FF_PRE_X_CNT が -1から0にカウントアップする時にFF_X_CNTを-8にする
           // (When FF_PRE_X_CNT counts up from -1 to 0, FF_X_CNT is set to -8.)
@@ -299,7 +298,7 @@ module VDP_SSG (
   assign W_LEFT_MASK = (REG_R25_MSK == 1'b0) ? {9{1'b0}} : {5'b00000, {1'b0, ~REG_R27_H_SCROLL} + 1};
   always_ff @(posedge CLK21M) begin
     // MAIN WINDOW
-    if ((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
+    if ((H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
       // WHEN DOTCOUNTER_X = 0
       FF_RIGHT_MASK <= 9'b100000000 - ({6'b000000, REG_R27_H_SCROLL});
     end
@@ -310,10 +309,10 @@ module VDP_SSG (
       FF_WINDOW_X <= 1'b0;
     end else begin
       // MAIN WINDOW
-      if ((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
+      if ((H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
         // WHEN DOTCOUNTER_X = 0
         FF_WINDOW_X <= 1'b1;
-      end else if ((W_H_CNT[1:0] == 2'b01 && FF_X_CNT == FF_RIGHT_MASK)) begin
+      end else if ((H_CNT[1:0] == 2'b01 && FF_X_CNT == FF_RIGHT_MASK)) begin
         // WHEN DOTCOUNTER_X = 256
         FF_WINDOW_X <= 1'b0;
       end
@@ -323,7 +322,7 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   // Y
   //---------------------------------------------------------------------------
-  assign W_HSYNC = (W_H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
+  assign W_HSYNC = (H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
 
   assign W_Y_ADJ = {REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7:4]};
 

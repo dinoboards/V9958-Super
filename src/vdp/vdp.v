@@ -376,10 +376,10 @@ module VDP (
   // SYNCHRONOUS SIGNAL GENERATOR
   //---------------------------------------------------------------------------
   VDP_SSG U_SSG (
-      .RESET (RESET),
+      .RESET(RESET),
       .CLK21M(CLK21M),
-
       .H_CNT(H_CNT),
+      .cx(CX),
       .cy(CY),
       .DOTSTATE(DOTSTATE),
       .EIGHTDOTSTATE(EIGHTDOTSTATE),
