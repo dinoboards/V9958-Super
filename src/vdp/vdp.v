@@ -355,7 +355,8 @@ module VDP (
   VDP_INTERRUPT U_INTERRUPT (
       .RESET(RESET),
       .CLK21M(CLK21M),
-      .H_CNT(H_CNT),
+      .cx(CX),
+      .cy(CY),
       .Y_CNT(PREDOTCOUNTER_Y[7:0]),
       .ACTIVE_LINE(ACTIVE_LINE),
       .V_BLANKING_START(V_BLANKING_START),
