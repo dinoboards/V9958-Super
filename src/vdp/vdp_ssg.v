@@ -111,7 +111,6 @@ module VDP_SSG (
   wire W_V_BLANK;
   wire [4:0] W_PRE_X_CNT_START0;
   wire [8:0] W_PRE_X_CNT_START2;
-  wire W_HSYNC;
   wire [8:0] W_LEFT_MASK;
   wire [8:0] W_Y_ADJ;
   wire [1:0] W_LINE_MODE;
@@ -133,7 +132,7 @@ module VDP_SSG (
   assign PREDOTCOUNTER_YP = FF_MONITOR_LINE;
   assign HD = W_H_BLANK;
   assign VD = W_V_BLANK;
-  assign HSYNC = (H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
+  assign HSYNC = cx[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111;
   assign V_BLANKING_START = W_V_BLANKING_START;
 
   //---------------------------------------------------------------------------
@@ -322,7 +321,6 @@ module VDP_SSG (
   //---------------------------------------------------------------------------
   // Y
   //---------------------------------------------------------------------------
-  assign W_HSYNC = (H_CNT[1:0] == 2'b10 && FF_PRE_X_CNT == 9'b111111111) ? 1'b1 : 1'b0;
 
   assign W_Y_ADJ = {REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7], REG_R18_ADJ[7:4]};
 
@@ -335,7 +333,7 @@ module VDP_SSG (
       FF_MONITOR_LINE <= {9{1'b0}};
       PREWINDOW_Y <= 1'b0;
     end else begin
-      if ((W_HSYNC == 1'b1)) begin
+      if (HSYNC) begin
         // JP: PREWINDOW_Xが 1になるタイミングと同じタイミングでY座標の計算
         // (Y coordinate calculation at the same timing as when PREWINDOW_X becomes 1)
         if ((W_V_BLANKING_END == 1'b1)) begin

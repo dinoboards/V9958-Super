@@ -284,7 +284,6 @@ module VDP (
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
 
-  wire        HSYNC;
   wire        ENAHSYNC;
   wire        FF_BWINDOW_Y_DL;
 
