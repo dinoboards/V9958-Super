@@ -92,7 +92,6 @@ module VDP (
   import custom_timings::*;
 
   wire [10:0] H_CNT;
-  wire [10:0] H_CNT_IN_FIELD;
 
   // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
   wire [ 6:0] ADJUST_X;
@@ -381,8 +380,7 @@ module VDP (
       .CLK21M(CLK21M),
 
       .H_CNT(H_CNT),
-      .H_CNT_IN_FIELD(H_CNT_IN_FIELD),
-      .V_CNT(CY),
+      .cy(CY),
       .DOTSTATE(DOTSTATE),
       .EIGHTDOTSTATE(EIGHTDOTSTATE),
       .PREDOTCOUNTER_X(PREDOTCOUNTER_X),

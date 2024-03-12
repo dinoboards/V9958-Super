@@ -60,8 +60,7 @@ module VDP_SSG (
     input wire RESET,
     input wire CLK21M,
     input wire [10:0] H_CNT,
-    output wire [10:0] H_CNT_IN_FIELD,
-    input wire [9:0] V_CNT,
+    input wire [9:0] cy,
     output wire [1:0] DOTSTATE,
     output wire [2:0] EIGHTDOTSTATE,
     output wire [8:0] PREDOTCOUNTER_X,
@@ -105,7 +104,6 @@ module VDP_SSG (
   reg [8:0] FF_RIGHT_MASK;
   reg FF_WINDOW_X;
   wire [10:0] W_H_CNT;
-  wire [10:0] W_H_CNT_IN_FIELD;
   wire [9:0] W_V_CNT_IN_FRAME;
   wire [9:0] W_V_CNT_IN_FIELD;
   wire W_FIELD;
@@ -124,8 +122,7 @@ module VDP_SSG (
   //  PORT ASSIGNMENT
   //---------------------------------------------------------------------------
   assign W_H_CNT = H_CNT;
-  assign H_CNT_IN_FIELD = W_H_CNT_IN_FIELD;
-  assign W_V_CNT_IN_FRAME = V_CNT;
+  assign W_V_CNT_IN_FRAME = cy;
   assign DOTSTATE = FF_DOTSTATE;
   assign EIGHTDOTSTATE = FF_EIGHTDOTSTATE;
   assign FIELD = W_FIELD;
@@ -147,7 +144,6 @@ module VDP_SSG (
       .RESET(RESET),
       .CLK21M(CLK21M),
       .H_CNT(W_H_CNT),
-      .H_CNT_IN_FIELD(W_H_CNT_IN_FIELD),
       .V_CNT_IN_FIELD(W_V_CNT_IN_FIELD),
       .V_CNT_IN_FRAME(W_V_CNT_IN_FRAME),
       .FIELD(W_FIELD),

@@ -64,7 +64,6 @@ module VDP_HVCOUNTER (
     input wire RESET,
     input wire CLK21M,
     input wire [10:0] H_CNT,
-    output wire [10:0] H_CNT_IN_FIELD,
     output wire [9:0] V_CNT_IN_FIELD,
     input wire [9:0] V_CNT_IN_FRAME,
     output wire FIELD,
@@ -100,7 +99,6 @@ module VDP_HVCOUNTER (
   wire [8:0] W_V_SYNC_INTR_START_LINE;
 
   assign FF_H_CNT = H_CNT;
-  assign H_CNT_IN_FIELD = H_CNT;
   assign V_CNT_IN_FIELD = V_CNT_IN_FRAME;
   assign FIELD = FF_FIELD;
   assign FF_V_CNT_IN_FRAME = V_CNT_IN_FRAME;
