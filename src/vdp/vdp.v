@@ -93,7 +93,6 @@ module VDP (
 
   wire [10:0] H_CNT;
   wire [10:0] H_CNT_IN_FIELD;
-  wire [ 9:0] V_CNT;
 
   // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
   wire [ 6:0] ADJUST_X;
@@ -300,7 +299,6 @@ module VDP (
   parameter VRAM_ACCESS_VDPS = 7;
 
   assign H_CNT = CY[0] ? CX + CLOCKS_PER_HALF_LINE(PAL_MODE) : CX;
-  assign V_CNT = CY;
   assign PAL_MODE = VDPR9PALMODE;
 
   assign PRAMADR = IRAMADR;
@@ -320,12 +318,12 @@ module VDP (
   VDP_VGA U_VDP_VGA (
       .CLK21M(CLK21M),
       .RESET(RESET),
+      .cx(CX),
+      .cy(CY),
       .VIDEORIN(IVIDEOR),
       .VIDEOGIN(IVIDEOG),
       .VIDEOBIN(IVIDEOB),
       .VIDEOVSIN_N(IVIDEOVS_N),
-      .HCOUNTERIN(H_CNT),
-      .VCOUNTERIN(V_CNT),
       .PALMODE(VDPR9PALMODE),
       .INTERLACEMODE(REG_R9_INTERLACE_MODE),
       .VIDEOROUT(IVIDEOR_VGA),
@@ -384,7 +382,7 @@ module VDP (
 
       .H_CNT(H_CNT),
       .H_CNT_IN_FIELD(H_CNT_IN_FIELD),
-      .V_CNT(V_CNT),
+      .V_CNT(CY),
       .DOTSTATE(DOTSTATE),
       .EIGHTDOTSTATE(EIGHTDOTSTATE),
       .PREDOTCOUNTER_X(PREDOTCOUNTER_X),
@@ -422,9 +420,9 @@ module VDP (
       if ((REG_R9_INTERLACE_MODE == 1'b0)) begin
         // NON-INTERLACE
         // 3+3+16 = 19
-        if (((V_CNT == (20 * 2)) || ((V_CNT == (524 + 20 * 2)) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == (626 + 20 * 2)) && (VDPR9PALMODE == 1'b1)))) begin
+        if (((CY == (20 * 2)) || ((CY == (524 + 20 * 2)) && (VDPR9PALMODE == 1'b0)) || ((CY == (626 + 20 * 2)) && (VDPR9PALMODE == 1'b1)))) begin
           BWINDOW_Y <= 1'b1;
-        end else if ((((V_CNT == 524) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == 626) && (VDPR9PALMODE == 1'b1)) || (V_CNT == 0))) begin
+        end else if ((((CY == 524) && (VDPR9PALMODE == 1'b0)) || ((CY == 626) && (VDPR9PALMODE == 1'b1)) || (CY == 0))) begin
           BWINDOW_Y <= 1'b0;
         end
       end else begin
@@ -433,9 +431,9 @@ module VDP (
         // BECAUSE ODD FIELD'S START IS DELAYED HALF LINE.
         // SO THE START POSITION OF DISPLAY TIME SHOULD BE
         // DELAYED MORE HALF LINE.
-        if (((V_CNT == (20 * 2)) || ((V_CNT == (525 + 20 * 2 + 1)) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == (625 + 20 * 2 + 1)) && (VDPR9PALMODE == 1'b1)))) begin
+        if (((CY == (20 * 2)) || ((CY == (525 + 20 * 2 + 1)) && (VDPR9PALMODE == 1'b0)) || ((CY == (625 + 20 * 2 + 1)) && (VDPR9PALMODE == 1'b1)))) begin
           BWINDOW_Y <= 1'b1;
-        end else if ((((V_CNT == 525) && (VDPR9PALMODE == 1'b0)) || ((V_CNT == 625) && (VDPR9PALMODE == 1'b1)) || (V_CNT == 0))) begin
+        end else if ((((CY == 525) && (VDPR9PALMODE == 1'b0)) || ((CY == 625) && (VDPR9PALMODE == 1'b1)) || (CY == 0))) begin
           BWINDOW_Y <= 1'b0;
         end
       end

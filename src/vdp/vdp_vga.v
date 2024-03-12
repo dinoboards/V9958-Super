@@ -62,12 +62,12 @@
 module VDP_VGA (
     input wire CLK21M,
     input wire RESET,
+    input [10:0] cx,
+    input [9:0] cy,
     input wire [5:0] VIDEORIN,
     input wire [5:0] VIDEOGIN,
     input wire [5:0] VIDEOBIN,
     input wire VIDEOVSIN_N,
-    input wire [10:0] HCOUNTERIN,
-    input wire [9:0] VCOUNTERIN,
     input wire PALMODE,
     input wire INTERLACEMODE,
     output wire [5:0] VIDEOROUT,
@@ -82,20 +82,24 @@ module VDP_VGA (
   bit video_out_x;
 
   // DOUBLE BUFFER SIGNAL
-  wire [9:0] XPOSITIONW;
+  wire [9:0] x_position_wr;
   reg [9:0] XPOSITIONR;
   bit even_odd;
   wire [5:0] DATAROUT;
   wire [5:0] DATAGOUT;
   wire [5:0] DATABOUT;
+  bit [10:0] h_cnt;
 
   assign VIDEOROUT = (video_out_x) ? DATAROUT : 0;
   assign VIDEOGOUT = (video_out_x) ? DATAGOUT : 0;
   assign VIDEOBOUT = (video_out_x) ? DATABOUT : 0;
 
+  assign h_cnt = cy[0] ? cx + CLOCKS_PER_HALF_LINE(PALMODE) : cx;
+  assign x_position_wr = h_cnt[10:1];
+
   vdp_double_buffer DBUF (
       .clk(CLK21M),
-      .x_position_wr(XPOSITIONW),
+      .x_position_wr(x_position_wr),
       .x_position_rd(XPOSITIONR),
       .even_odd(even_odd),
       .data_red_in(VIDEORIN),
@@ -106,15 +110,14 @@ module VDP_VGA (
       .data_blue_out(DATABOUT)
   );
 
-  assign XPOSITIONW = HCOUNTERIN[10:1];
-  assign even_odd   = VCOUNTERIN[1];
+  assign even_odd = cy[1];
 
   // GENERATE DATA READ TIMING
   always_ff @(posedge RESET, posedge CLK21M) begin
     if (RESET) begin
       XPOSITIONR <= 0;
     end else begin
-      if (((HCOUNTERIN == 0) || (HCOUNTERIN == (CLOCKS_PER_HALF_LINE(PALMODE))))) begin
+      if (((h_cnt == 0) || (h_cnt == (CLOCKS_PER_HALF_LINE(PALMODE))))) begin
         XPOSITIONR <= 0;
       end else begin
         XPOSITIONR <= 10'(XPOSITIONR + 1);
