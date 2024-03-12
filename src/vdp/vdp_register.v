@@ -232,11 +232,12 @@ module VDP_REGISTER (
   //--------------------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      REG_R1_DISP_ON <= 1'b0;
-      REG_R0_DISP_MODE <= 3'b000;
-      REG_R1_DISP_MODE <= 2'b00;
-      REG_R25_SP2 <= 1'b0;
-      REG_R26_H_SCROLL <= {6{1'b0}};
+      REG_R1_DISP_ON <= 1'd0;
+      REG_R0_DISP_MODE <= 3'd0;
+      REG_R1_DISP_MODE <= 2'd0;
+      REG_R25_SP2 <= 1'd0;
+      REG_R26_H_SCROLL <= 6'd0;
+
     end else begin
       if ((HSYNC == 1'b1)) begin
         REG_R1_DISP_ON <= FF_R1_DISP_ON;
@@ -311,7 +312,7 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      DBI <= {8{1'b0}};
+      DBI <= 8'd0;
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
         // READ REQUEST
@@ -352,7 +353,7 @@ module VDP_REGISTER (
                 DBI <= {7'b1111111, VDPCMDSXTMP[8]};
               end
               default: begin
-                DBI <= {8{1'b0}};
+                DBI <= 8'd0;
               end
             endcase
           end
@@ -420,59 +421,59 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   always_ff @(posedge RESET or posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      VDPP1DATA <= {8{1'b0}};
+      VDPP1DATA <= 8'd0;
       VDPP1IS1STBYTE <= 1'b1;
       VDPP2IS1STBYTE <= 1'b1;
       VDPREGWRPULSE <= 1'b0;
-      VDPREGPTR <= {6{1'b0}};
+      VDPREGPTR <= 6'd0;
       VDPVRAMWRREQ <= 1'b0;
       VDPVRAMRDREQ <= 1'b0;
       VDPVRAMADDRSETREQ <= 1'b0;
-      VDPVRAMACCESSADDRTMP <= {17{1'b0}};
-      VDPVRAMACCESSDATA <= {8{1'b0}};
-      FF_R0_DISP_MODE <= {3{1'b0}};
+      VDPVRAMACCESSADDRTMP <= 17'd0;
+      VDPVRAMACCESSDATA <= 8'd0;
+      FF_R0_DISP_MODE <= 3'd0;
       REG_R0_HSYNC_INT_EN <= 1'b0;
-      FF_R1_DISP_MODE <= {2{1'b0}};
+      FF_R1_DISP_MODE <= 2'd0;
       REG_R1_SP_SIZE <= 1'b0;
       REG_R1_SP_ZOOM <= 1'b0;
       REG_R1_BL_CLKS <= 1'b0;
       REG_R1_VSYNC_INT_EN <= 1'b0;
       FF_R1_DISP_ON <= 1'b0;
       FF_R2_PT_NAM_ADDR <= {7{1'b0}};
-      REG_R12_BLINK_MODE <= {8{1'b0}};
-      REG_R13_BLINK_PERIOD <= {8{1'b0}};
-      REG_R7_FRAME_COL <= {8{1'b0}};
+      REG_R12_BLINK_MODE <= 8'd0;
+      REG_R13_BLINK_PERIOD <= 8'd0;
+      REG_R7_FRAME_COL <= 8'd0;
       REG_R8_SP_OFF <= 1'b0;
       REG_R8_COL0_ON <= 1'b0;
       REG_R9_PAL_MODE <= 1'b0;
       FF_R9_2PAGE_MODE <= 1'b0;
       REG_R9_INTERLACE_MODE <= 1'b0;
       REG_R9_Y_DOTS <= 1'b0;
-      VDPR15STATUSREGNUM <= {4{1'b0}};
+      VDPR15STATUSREGNUM <= 4'd0;
       VDPR16PALNUM <= 0;
-      VDPR17REGNUM <= {6{1'b0}};
+      VDPR17REGNUM <= 6'd0;
       VDPR17INCREGNUM <= 1'b0;
-      REG_R18_VERT <= {4{1'b0}};
-      REG_R18_HORZ <= {4{1'b0}};
-      REG_R19_HSYNC_INT_LINE <= {8{1'b0}};
-      REG_R23_VSTART_LINE <= {8{1'b0}};
-      REG_R25_CMD <= 1'b0;
-      REG_R25_YAE <= 1'b0;
-      REG_R25_YJK <= 1'b0;
-      REG_R25_MSK <= 1'b0;
-      FF_R25_SP2 <= 1'b0;
-      FF_R26_H_SCROLL <= {6{1'b0}};
-      REG_R27_H_SCROLL <= {3{1'b0}};
-      VDPCMDREGNUM <= {4{1'b0}};
-      VDPCMDREGDATA <= {8{1'b0}};
+      REG_R18_VERT <= 4'd0;
+      REG_R18_HORZ <= 4'd0;
+      REG_R19_HSYNC_INT_LINE <= 8'd0;
+      REG_R23_VSTART_LINE <= 8'd0;
+      REG_R25_CMD <= 1'd0;
+      REG_R25_YAE <= 1'd0;
+      REG_R25_YJK <= 1'd0;
+      REG_R25_MSK <= 1'd0;
+      FF_R25_SP2 <= 1'd0;
+      FF_R26_H_SCROLL <= 6'd0;
+      REG_R27_H_SCROLL <= 3'd0;
+      VDPCMDREGNUM <= 4'd0;
+      VDPCMDREGDATA <= 8'd0;
       VDPCMDREGWRREQ <= 1'b0;
       VDPCMDTRCLRREQ <= 1'b0;
 
       // PALETTE
-      PALETTEDATARB_IN <= {8{1'b0}};
-      PALETTEDATAG_IN <= {8{1'b0}};
+      PALETTEDATARB_IN <= 8'd0;
+      PALETTEDATAG_IN <= 8'd0;
       FF_PALETTE_WR_REQ <= 1'b0;
-      PALETTEWRNUM <= {4{1'b0}};
+      PALETTEWRNUM <= 4'd0;
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
         case (mode[1:0])
