@@ -170,8 +170,6 @@ module v9958_top (
       .PRAMDBI        (VrmDbi),
       .PRAMDBO        (VrmDbo),
       .VDPSPEEDMODE   (1'b1),                    // for V9958 MSX2+/tR VDP
-      .RATIOMODE      (3'b000),                  // for V9958 MSX2+/tR VDP
-      .CENTERYJK_R25_N(1'b0),                    // for V9958 MSX2+/tR VDP
       .PVIDEOR        (VideoR),
       .PVIDEOG        (VideoG),
       .PVIDEOB        (VideoB),

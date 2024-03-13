@@ -76,8 +76,6 @@ module VDP (
     input wire [15:0] PRAMDBI,
     output reg [7:0] PRAMDBO,
     input wire VDPSPEEDMODE,
-    input wire [2:0] RATIOMODE,
-    input wire CENTERYJK_R25_N,
     output wire [5:0] PVIDEOR,
     output wire [5:0] PVIDEOG,
     output wire [5:0] PVIDEOB,
@@ -323,8 +321,7 @@ module VDP (
       .INTERLACEMODE(REG_R9_INTERLACE_MODE),
       .VIDEOROUT(IVIDEOR_VGA),
       .VIDEOGOUT(IVIDEOG_VGA),
-      .VIDEOBOUT(IVIDEOB_VGA),
-      .RATIOMODE(RATIOMODE)
+      .VIDEOBOUT(IVIDEOB_VGA)
   );
 
   // CHANGE DISPLAY MODE BY EXTERNAL INPUT PORT.
@@ -402,8 +399,7 @@ module VDP (
       .REG_R23_VSTART_LINE(REG_R23_VSTART_LINE),
       .REG_R25_MSK(REG_R25_MSK),
       .REG_R27_H_SCROLL(REG_R27_H_SCROLL),
-      .REG_R25_YJK(REG_R25_YJK),
-      .CENTERYJK_R25_N(CENTERYJK_R25_N)
+      .REG_R25_YJK(REG_R25_YJK)
   );
 
   always_ff @(posedge RESET, posedge CLK21M) begin

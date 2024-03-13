@@ -85,8 +85,7 @@ module VDP_SSG (
     input wire [7:0] REG_R23_VSTART_LINE,
     input wire REG_R25_MSK,
     input wire [2:0] REG_R27_H_SCROLL,
-    input wire REG_R25_YJK,
-    input wire CENTERYJK_R25_N
+    input wire REG_R25_YJK
 );
 
   import custom_timings::*;

@@ -72,8 +72,7 @@ module VDP_VGA (
     input wire INTERLACEMODE,
     output wire [5:0] VIDEOROUT,
     output wire [5:0] VIDEOGOUT,
-    output wire [5:0] VIDEOBOUT,
-    input wire [2:0] RATIOMODE
+    output wire [5:0] VIDEOBOUT
 );
 
   import custom_timings::*;
