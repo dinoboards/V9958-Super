@@ -163,7 +163,7 @@ module VDP_SSG (
       FF_VIDEO_DH_CLK <= 1'b0;
       FF_VIDEO_DL_CLK <= 1'b0;
     end else begin
-      if ((H_CNT == (CLOCKS_PER_LINE(VDPR9PALMODE) - 1))) begin
+      if (cy[0] == 1 && cx == CLOCKS_PER_HALF_LINE(VDPR9PALMODE) - 1) begin
         FF_DOTSTATE <= 2'b00;
         FF_VIDEO_DH_CLK <= 1'b1;
         FF_VIDEO_DL_CLK <= 1'b1;
@@ -189,8 +189,6 @@ module VDP_SSG (
             FF_VIDEO_DH_CLK <= 1'b1;
             FF_VIDEO_DL_CLK <= 1'b1;
           end
-          default: begin
-          end
         endcase
       end
     end
@@ -203,7 +201,7 @@ module VDP_SSG (
     if ((RESET == 1'b1)) begin
       FF_EIGHTDOTSTATE <= 0;
     end else begin
-      if ((H_CNT[1:0] == 2'b11)) begin
+      if ((cx[1:0] == 2'b11)) begin
         if ((FF_PRE_X_CNT == 0)) begin
           FF_EIGHTDOTSTATE <= 0;
         end else begin
@@ -227,33 +225,34 @@ module VDP_SSG (
     end
   end
 
+  bit pre_x_count_mark;
+
+  assign pre_x_count_mark = cy[0] == 0 &&
+    ((cx == ({2'b00, `OFFSET_X + `LED_TV_X_NTSC - 4, 2'b10}) && !VDPR9PALMODE) ||
+    (cx == ({2'b00, `OFFSET_X + `LED_TV_X_PAL - 4, 2'b10}) && VDPR9PALMODE));
+
   assign W_PRE_X_CNT_START2[8:6] = {3{FF_PRE_X_CNT_START1[5]}};
   assign W_PRE_X_CNT_START2[5:0] = FF_PRE_X_CNT_START1;
+
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       FF_PRE_X_CNT <= 0;
     end else begin
-      if(((H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
-        (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
-        (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
-        (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      if (pre_x_count_mark) begin
         FF_PRE_X_CNT <= W_PRE_X_CNT_START2;
-      end else if ((H_CNT[1:0] == 2'b10)) begin
+      end else if ((cx[1:0] == 2'b10)) begin
         FF_PRE_X_CNT <= 9'(FF_PRE_X_CNT + 1);
       end
     end
   end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       FF_X_CNT <= 0;
     end else begin
-      if(((H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b0) ||
-         (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_NTSC - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b0) ||
-         (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}) + 4,2'b10}) && REG_R25_YJK == 1'b1 && CENTERYJK_R25_N == 1'b1 && VDPR9PALMODE == 1'b1) ||
-         (H_CNT == ({2'b00,`OFFSET_X + `LED_TV_X_PAL - ({~CENTERYJK_R25_N,2'b00}),2'b10}) && (REG_R25_YJK == 1'b0 || CENTERYJK_R25_N == 1'b0) && VDPR9PALMODE == 1'b1))) begin
+      if (pre_x_count_mark) begin
         // HOLD
-      end else if ((H_CNT[1:0] == 2'b10)) begin
+      end else if ((cx[1:0] == 2'b10)) begin
         if ((FF_PRE_X_CNT == 9'b111111111)) begin
           // JP: FF_PRE_X_CNT が -1から0にカウントアップする時にFF_X_CNTを-8にする
           // (When FF_PRE_X_CNT counts up from -1 to 0, FF_X_CNT is set to -8.)
@@ -297,7 +296,7 @@ module VDP_SSG (
   assign W_LEFT_MASK = (REG_R25_MSK == 1'b0) ? {9{1'b0}} : {5'b00000, {1'b0, ~REG_R27_H_SCROLL} + 1};
   always_ff @(posedge CLK21M) begin
     // MAIN WINDOW
-    if ((H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
+    if ((cx[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
       // WHEN DOTCOUNTER_X = 0
       FF_RIGHT_MASK <= 9'b100000000 - ({6'b000000, REG_R27_H_SCROLL});
     end
@@ -308,10 +307,10 @@ module VDP_SSG (
       FF_WINDOW_X <= 1'b0;
     end else begin
       // MAIN WINDOW
-      if ((H_CNT[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
+      if ((cx[1:0] == 2'b01 && FF_X_CNT == W_LEFT_MASK)) begin
         // WHEN DOTCOUNTER_X = 0
         FF_WINDOW_X <= 1'b1;
-      end else if ((H_CNT[1:0] == 2'b01 && FF_X_CNT == FF_RIGHT_MASK)) begin
+      end else if ((cx[1:0] == 2'b01 && FF_X_CNT == FF_RIGHT_MASK)) begin
         // WHEN DOTCOUNTER_X = 256
         FF_WINDOW_X <= 1'b0;
       end
