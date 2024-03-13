@@ -91,8 +91,6 @@ module VDP (
 
   import custom_timings::*;
 
-  wire [10:0] H_CNT;
-
   // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
   wire [ 6:0] ADJUST_X;
 
@@ -296,7 +294,6 @@ module VDP (
   parameter VRAM_ACCESS_VDPR = 6;
   parameter VRAM_ACCESS_VDPS = 7;
 
-  assign H_CNT = CY[0] ? CX + CLOCKS_PER_HALF_LINE(PAL_MODE) : CX;
   assign PAL_MODE = VDPR9PALMODE;
 
   assign PRAMADR = IRAMADR;
@@ -377,7 +374,6 @@ module VDP (
   VDP_SSG U_SSG (
       .RESET(RESET),
       .CLK21M(CLK21M),
-      .H_CNT(H_CNT),
       .cx(CX),
       .cy(CY),
       .DOTSTATE(DOTSTATE),

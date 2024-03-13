@@ -59,7 +59,6 @@
 module VDP_SSG (
     input wire RESET,
     input wire CLK21M,
-    input wire [10:0] H_CNT,
     input bit [10:0] cx,
     input bit [9:0] cy,
     output wire [1:0] DOTSTATE,
@@ -141,7 +140,8 @@ module VDP_SSG (
   VDP_HVCOUNTER U_HVCOUNTER (
       .RESET(RESET),
       .CLK21M(CLK21M),
-      .H_CNT(H_CNT),
+      .cx(cx),
+      .cy(cy),
       .V_CNT_IN_FIELD(W_V_CNT_IN_FIELD),
       .V_CNT_IN_FRAME(W_V_CNT_IN_FRAME),
       .FIELD(W_FIELD),

@@ -61,44 +61,42 @@
 `include "vdp_constants.vh"
 
 module VDP_HVCOUNTER (
-    input wire RESET,
-    input wire CLK21M,
-    input wire [10:0] H_CNT,
-    output wire [9:0] V_CNT_IN_FIELD,
-    input wire [9:0] V_CNT_IN_FRAME,
-    output wire FIELD,
-    output wire H_BLANK,
-    output wire V_BLANK,
-    input wire PAL_MODE,
-    input wire INTERLACE_MODE,
-    input wire Y212_MODE,
-    input wire BLANKING_START,
-    input wire BLANKING_END
+    input bit RESET,
+    input bit CLK21M,
+    input bit [10:0] cx,
+    input bit [9:0] cy,
+    output bit [9:0] V_CNT_IN_FIELD,
+    input bit [9:0] V_CNT_IN_FRAME,
+    output bit FIELD,
+    output bit H_BLANK,
+    output bit V_BLANK,
+    input bit PAL_MODE,
+    input bit INTERLACE_MODE,
+    input bit Y212_MODE,
+    input bit BLANKING_START,
+    input bit BLANKING_END
 );
 
   import custom_timings::*;
 
-  reg [10:0] FF_H_CNT;
-  reg [10:0] FF_H_CNT_IN_FIELD;
-  reg [9:0] FF_V_CNT_IN_FIELD;
-  reg FF_FIELD;
-  reg [9:0] FF_V_CNT_IN_FRAME;
-  reg FF_H_BLANK;
-  reg FF_V_BLANK;
-  wire [9:0] FF_FIELD_END_CNT;
-  reg FF_FIELD_END;
-  wire W_FIELD;
-  wire W_H_CNT_HALF;
-  wire W_H_CNT_END;
-  wire [9:0] W_FIELD_END_CNT;
-  wire W_FIELD_END;
-  wire [1:0] W_DISPLAY_MODE;
-  wire [1:0] W_LINE_MODE;
-  wire W_H_BLANK_START;
-  wire W_H_BLANK_END;
-  wire [8:0] W_V_SYNC_INTR_START_LINE;
+  bit [9:0] FF_V_CNT_IN_FIELD;
+  bit FF_FIELD;
+  bit [9:0] FF_V_CNT_IN_FRAME;
+  bit FF_H_BLANK;
+  bit FF_V_BLANK;
+  bit [9:0] FF_FIELD_END_CNT;
+  bit FF_FIELD_END;
+  bit W_FIELD;
+  bit W_H_CNT_HALF;
+  bit W_H_CNT_END;
+  bit [9:0] W_FIELD_END_CNT;
+  bit W_FIELD_END;
+  bit [1:0] W_DISPLAY_MODE;
+  bit [1:0] W_LINE_MODE;
+  bit W_H_BLANK_START;
+  bit W_H_BLANK_END;
+  bit [8:0] W_V_SYNC_INTR_START_LINE;
 
-  assign FF_H_CNT = H_CNT;
   assign V_CNT_IN_FIELD = V_CNT_IN_FRAME;
   assign FIELD = FF_FIELD;
   assign FF_V_CNT_IN_FRAME = V_CNT_IN_FRAME;
@@ -109,20 +107,8 @@ module VDP_HVCOUNTER (
   //------------------------------------------------------------------------
   //  HORIZONTAL COUNTER
   //------------------------------------------------------------------------
-  assign W_H_CNT_HALF = (FF_H_CNT == ((CLOCKS_PER_HALF_LINE(PAL_MODE)) - 1)) ? 1'b1 : 1'b0;
-  assign W_H_CNT_END = (FF_H_CNT == (CLOCKS_PER_LINE(PAL_MODE) - 1)) ? 1'b1 : 1'b0;
-
-  always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_H_CNT_IN_FIELD <= 0;
-    end else begin
-      if ((W_H_CNT_END == 1'b1 || W_H_CNT_HALF == 1'b1)) begin
-        FF_H_CNT_IN_FIELD <= 0;
-      end else begin
-        FF_H_CNT_IN_FIELD <= 11'(FF_H_CNT_IN_FIELD + 1);
-      end
-    end
-  end
+  assign W_H_CNT_HALF = (cy[0] == 0 && cx == ((CLOCKS_PER_HALF_LINE(PAL_MODE)) - 1));
+  assign W_H_CNT_END = (cy[0] == 1 && cx == ((CLOCKS_PER_HALF_LINE(PAL_MODE)) - 1));
 
   //------------------------------------------------------------------------
   //  VERTICAL COUNTER
@@ -132,8 +118,7 @@ module VDP_HVCOUNTER (
     if (RESET) begin
       FF_FIELD_END <= 1'b0;
     end else begin
-      if ((PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) ||
-          (PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624)) begin
+      if ((PAL_MODE == 1'b0 && FF_V_CNT_IN_FIELD == 10'd524) || (PAL_MODE == 1'b1 && FF_V_CNT_IN_FIELD == 10'd624)) begin
         FF_FIELD_END <= 1'b1;
       end else begin
         FF_FIELD_END <= 1'b0;
@@ -142,7 +127,7 @@ module VDP_HVCOUNTER (
   end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       FF_V_CNT_IN_FIELD <= 0;
     end else begin
       if (((W_H_CNT_HALF | W_H_CNT_END) == 1'b1)) begin
@@ -159,7 +144,7 @@ module VDP_HVCOUNTER (
   //  FIELD ID
   //------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       FF_FIELD <= 1'b0;
     end else begin
       if (((W_H_CNT_HALF | W_H_CNT_END) == 1'b1)) begin
@@ -174,14 +159,14 @@ module VDP_HVCOUNTER (
   // H BLANKING
   //---------------------------------------------------------------------------
   assign W_H_BLANK_START = W_H_CNT_END;
-  assign W_H_BLANK_END   = (FF_H_CNT == `LEFT_BORDER) ? 1'b1 : 1'b0;
+  assign W_H_BLANK_END   = cy[0] == 0 && cx == `LEFT_BORDER;
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       FF_H_BLANK <= 1'b0;
     end else begin
-      if ((W_H_BLANK_START == 1'b1)) begin
+      if (W_H_BLANK_START) begin
         FF_H_BLANK <= 1'b1;
-      end else if ((W_H_BLANK_END == 1'b1)) begin
+      end else if (W_H_BLANK_END) begin
         FF_H_BLANK <= 1'b0;
       end
     end
@@ -191,13 +176,13 @@ module VDP_HVCOUNTER (
   // V BLANKING
   //---------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       FF_V_BLANK <= 1'b0;
     end else begin
-      if ((W_H_BLANK_END == 1'b1)) begin
-        if ((BLANKING_END == 1'b1)) begin
+      if (W_H_BLANK_END) begin
+        if (BLANKING_END) begin
           FF_V_BLANK <= 1'b0;
-        end else if ((BLANKING_START == 1'b1)) begin
+        end else if (BLANKING_START) begin
           FF_V_BLANK <= 1'b1;
         end
       end
