@@ -228,8 +228,10 @@ module v9958_top (
       .reset(reset_w),
       .audio_sample_word(audio_sample_word_w),
       .pal_mode(pal_mode),
-      .cx(cx),
-      .cy(cy),
+      .cx(),
+      .cy(),
+      .nx(cx),
+      .ny(cy),
       .tmds(tmds)
   );
 
