@@ -70,7 +70,6 @@ module VDP (
     output wire [7:0] DBI,
     input wire [7:0] DBO,
     output wire INT_N,
-    output reg PRAMOE_N,
     output reg PRAMWE_N,
     output wire [16:0] PRAMADR,
     input wire [15:0] PRAMDBI,
@@ -498,7 +497,6 @@ module VDP (
     if ((RESET == 1'b1)) begin
       IRAMADR <= {17{1'b1}};
       PRAMDBO <= {8{1'bZ}};
-      PRAMOE_N <= 1'b1;
       PRAMWE_N <= 1'b1;
       VDPVRAMREADINGR <= 1'b0;
       VDPVRAMRDACK <= 1'b0;
@@ -557,6 +555,7 @@ module VDP (
       end else begin
         VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
       end
+
       if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW || VRAMACCESSSWITCH == VRAM_ACCESS_VDPR || VRAMACCESSSWITCH == VRAM_ACCESS_VDPS)) begin
         VDP_COMMAND_DRIVE <= 1'b1;
       end else begin
@@ -575,7 +574,6 @@ module VDP (
           VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDR + 1);
         end
         PRAMDBO <= VDPVRAMACCESSDATA;
-        PRAMOE_N <= 1'b1;
         PRAMWE_N <= 1'b0;
         VDPVRAMWRACK <= ~VDPVRAMWRACK;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUR)) begin
@@ -596,26 +594,22 @@ module VDP (
           VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDRV + 1);
         end
         PRAMDBO <= {8{1'bZ}};
-        PRAMOE_N <= 1'b0;
         PRAMWE_N <= 1'b1;
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
         VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO <= VDPCMDVRAMWRDATA;
-        PRAMOE_N <= 1'b1;
         PRAMWE_N <= 1'b0;
         VDPCMDVRAMWRACK <= ~VDPCMDVRAMWRACK;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO <= {8{1'bZ}};
-        PRAMOE_N <= 1'b0;
         PRAMWE_N <= 1'b1;
         VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_SPRT)) begin
         // VRAM READ BY SPRITE MODULE
         IRAMADR  <= PRAMADRSPRITE;
-        PRAMOE_N <= 1'b0;
         PRAMWE_N <= 1'b1;
         PRAMDBO  <= {8{1'bZ}};
       end else begin
@@ -624,7 +618,6 @@ module VDP (
         case (DOTSTATE)
           2'b10: begin
             PRAMDBO  <= {8{1'bZ}};
-            PRAMOE_N <= 1'b0;
             PRAMWE_N <= 1'b1;
             if ((TEXT_MODE == 1'b1)) begin
               IRAMADR <= PRAMADRT12;
@@ -636,7 +629,6 @@ module VDP (
           end
           2'b01: begin
             PRAMDBO  <= {8{1'bZ}};
-            PRAMOE_N <= 1'b0;
             PRAMWE_N <= 1'b1;
             if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
               IRAMADR <= PRAMADRG4567;

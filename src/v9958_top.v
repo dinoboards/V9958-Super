@@ -90,7 +90,6 @@ module v9958_top (
   bit          VideoDLClk;
   bit          VideoDHClk;
   bit          WeVdp_n;
-  bit          ReVdp_n;
   bit   [16:0] VdpAdr;
   bit   [ 7:0] VrmDbo;
   bit   [15:0] VrmDbi;
@@ -164,30 +163,29 @@ module v9958_top (
   wire pal_mode;
 
   VDP u_v9958 (
-      .CLK21M         (clk_w),
-      .RESET          (reset_w | ~ram_enabled),
-      .REQ            (CpuReq),
-      .ACK            (),
-      .WRT            (CpuWrt),
-      .mode           (mode),
-      .DBI            (CpuDbi),
-      .DBO            (CpuDbo),
-      .INT_N          (int_n),
-      .PRAMOE_N       (ReVdp_n),
-      .PRAMWE_N       (WeVdp_n),
-      .PRAMADR        (VdpAdr),
-      .PRAMDBI        (VrmDbi),
-      .PRAMDBO        (VrmDbo),
-      .VDPSPEEDMODE   (1'b1),                    // for V9958 MSX2+/tR VDP
-      .PVIDEOR        (VideoR),
-      .PVIDEOG        (VideoG),
-      .PVIDEOB        (VideoB),
-      .PVIDEODHCLK    (VideoDHClk),
-      .PVIDEODLCLK    (VideoDLClk),
-      .PAL_MODE       (pal_mode),
-      .SPMAXSPR       (1'b0),
-      .CX             (cx),
-      .CY             (cy)
+      .CLK21M      (clk_w),
+      .RESET       (reset_w | ~ram_enabled),
+      .REQ         (CpuReq),
+      .ACK         (),
+      .WRT         (CpuWrt),
+      .mode        (mode),
+      .DBI         (CpuDbi),
+      .DBO         (CpuDbo),
+      .INT_N       (int_n),
+      .PRAMWE_N    (WeVdp_n),
+      .PRAMADR     (VdpAdr),
+      .PRAMDBI     (VrmDbi),
+      .PRAMDBO     (VrmDbo),
+      .VDPSPEEDMODE(1'b1),                    // for V9958 MSX2+/tR VDP
+      .PVIDEOR     (VideoR),
+      .PVIDEOG     (VideoG),
+      .PVIDEOB     (VideoB),
+      .PVIDEODHCLK (VideoDHClk),
+      .PVIDEODLCLK (VideoDLClk),
+      .PAL_MODE    (pal_mode),
+      .SPMAXSPR    (1'b0),
+      .CX          (cx),
+      .CY          (cy)
   );
 
   //--------------------------------------------------------------
