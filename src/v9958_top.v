@@ -103,8 +103,16 @@ module v9958_top (
   logic [ 9:0] cy;
 
   bit ram_busy, ram_fail;
-
   bit ram_enabled;
+
+  bit v9958_read;
+  bit v9958_write;
+  bit memory_refresh;
+  bit [31:0] vrm_32;
+
+  assign v9958_read = (WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy);
+  assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
+  assign memory_refresh = ~VideoDLClk & ~VideoDHClk & ~ram_busy;
 
   memory_controller #(
       .FREQ(108_000_000)
@@ -112,13 +120,14 @@ module v9958_top (
       .clk(clk_sdramp_w),
       .clk_sdram(clk_sdram_w),
       .resetn(reset_n_w),
-      .read(WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
-      .write(~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy),
-      .refresh(~VideoDLClk & ~VideoDHClk & ~ram_busy),
-      .addr({6'b0, VdpAdr[16:1]}),
+      .read(v9958_read),
+      .write(v9958_write),
+      .refresh(memory_refresh),
+      .addr({7'b0, VdpAdr[16:1]}),
       .din({VrmDbo, VrmDbo}),
       .wdm({~VdpAdr[0], VdpAdr[0]}),
       .dout(VrmDbi),
+      .dout32(vrm_32),
       .busy(ram_busy),
       .fail(ram_fail),
       .enabled(ram_enabled),

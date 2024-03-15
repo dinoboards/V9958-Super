@@ -28,12 +28,13 @@ module memory_controller #(
     input             read,       // Signal to initiate a read operation from the SDRAM
     input             write,      // Signal to initiate a write operation to the SDRAM
     input             refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
-    input      [21:0] addr,       // The address to read from or write to in the SDRAM
+    input      [22:0] addr,       // The address to read from or write to in the SDRAM
     input      [15:0] din,        // The data to be written to the SDRAM (only the byte specified by wdm is written)
     input      [ 1:0] wdm,        // Write data mask
     output     [15:0] dout,       // The data read from the SDRAM. Available 4 cycles after the read signal is set.
     output reg        busy,       // Signal indicating that an operation is in progress.
     output            enabled,    // Signal indicating that the memory controller is enabled.
+    output     [31:0] dout32,
 
     // debug interface
     output reg fail,  // Signal indicating a timing mistake or SDRAM malfunction
@@ -55,12 +56,15 @@ module memory_controller #(
   reg MemRD, MemWR, MemRefresh, MemInitializing;
   reg [15:0] MemDin;
   wire [15:0] MemDout;
+  bit [31:0] MemDout32;
   reg [2:0] cycles;
   reg r_read;
   reg [15:0] data;
+  bit [31:0] data32;
   wire MemBusy, MemDataReady;
 
-  assign dout = (cycles == 3'd4 && r_read) ? MemDout : data;
+  assign dout   = (cycles == 3'd4 && r_read) ? MemDout : data;
+  assign dout32 = (cycles == 3'd4 && r_read) ? MemDout32 : data32;
 
   // SDRAM driver
   sdram #(
@@ -69,13 +73,14 @@ module memory_controller #(
       .clk(clk),
       .clk_sdram(clk_sdram),
       .resetn(resetn),
-      .addr(busy ? MemAddr : {1'b0, addr}),
+      .addr(busy ? MemAddr : addr),
       .rd(busy ? MemRD : read),
       .wr(busy ? MemWR : write),
       .refresh(busy ? MemRefresh : refresh),
       .din(busy ? MemDin : din),
       .wdm(wdm),
       .dout(MemDout),
+      .dout32(MemDout32),
       .busy(MemBusy),
       .data_ready(MemDataReady),
       .enabled(enabled),
@@ -89,9 +94,7 @@ module memory_controller #(
       .O_sdram_cas_n(O_sdram_cas_n),
       .O_sdram_clk(O_sdram_clk),
       .O_sdram_cke(O_sdram_cke),
-      .O_sdram_dqm(O_sdram_dqm),
-
-      .dout32()
+      .O_sdram_dqm(O_sdram_dqm)
   );
 
   always @(posedge clk or negedge resetn) begin
@@ -109,7 +112,7 @@ module memory_controller #(
       // Initiate read or write
       if (!busy) begin
         if (read || write || refresh) begin
-          MemAddr <= {1'b0, addr};
+          MemAddr <= addr;
           MemWR <= write;
           MemRD <= read;
           MemRefresh <= refresh;
@@ -132,7 +135,10 @@ module memory_controller #(
           if (r_read) begin
             if (~MemDataReady)  // assert data ready
               fail <= 1'b1;
-            if (r_read) data <= MemDout;
+            if (r_read) begin
+              data   <= MemDout;
+              data32 <= MemDout32;
+            end
             r_read <= 1'b0;
           end
         end
