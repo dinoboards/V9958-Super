@@ -83,17 +83,24 @@ module VDP (
     output wire PAL_MODE,
     input wire SPMAXSPR,
     input wire [10:0] CX,
-    input wire [9:0] CY
+    input wire [9:0] CY,
+
+    output bit super_high_res,  //true when running super high res HDMI/DVI native resolutions
+    output bit [7:0] REG_R31,
+
+    output bit [1:0] dot_state
 );
 
   import custom_timings::*;
 
   // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
-  wire [ 6:0] ADJUST_X;
+  wire [6:0] ADJUST_X;
 
   // DOT STATE REGISTER
-  wire [ 1:0] DOTSTATE;
-  wire [ 2:0] EIGHTDOTSTATE;
+  wire [1:0] DOTSTATE;
+  wire [2:0] EIGHTDOTSTATE;
+
+  assign dot_state = DOTSTATE;
 
   // DISPLAY FIELD SIGNAL
   wire        FIELD;
@@ -290,6 +297,7 @@ module VDP (
   parameter VRAM_ACCESS_VDPW = 5;
   parameter VRAM_ACCESS_VDPR = 6;
   parameter VRAM_ACCESS_VDPS = 7;
+  parameter VRAM_ACCESS_SUPER_HIGHRES_DRAW = 8;
 
   assign PAL_MODE = VDPR9PALMODE;
 
@@ -490,6 +498,8 @@ module VDP (
   end
 
   assign TEXT_MODE = VDPMODETEXT1 | VDPMODETEXT1Q | VDPMODETEXT2;
+  bit super_high_res_on_screen;
+
   always_ff @(posedge RESET, posedge CLK21M) begin : P1
     reg [16:0] VDPVRAMACCESSADDRV;
     reg [31:0] VRAMACCESSSWITCH;
@@ -506,9 +516,8 @@ module VDP (
       VDPCMDVRAMWRACK <= 1'b0;
       VDPCMDVRAMREADINGR <= 1'b0;
       VDP_COMMAND_DRIVE <= 1'b0;
+      super_high_res_on_screen <= 0;
     end else begin
-      //----------------------------------------
-
       // MAIN STATE
       //----------------------------------------
       //
@@ -896,7 +905,9 @@ module VDP (
       .VDPMODEGRAPHIC6(VDPMODEGRAPHIC6),
       .VDPMODEGRAPHIC7(VDPMODEGRAPHIC7),
       .VDPMODEISHIGHRES(VDPMODEISHIGHRES),
-      .SPMODE2(SPMODE2)
+      .super_high_res(super_high_res),
+      .SPMODE2(SPMODE2),
+      .REG_R31(REG_R31)
   );
 
   //---------------------------------------------------------------------------

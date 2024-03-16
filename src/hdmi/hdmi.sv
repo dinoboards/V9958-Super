@@ -80,7 +80,7 @@ module hdmi #(
     output logic [10:0] cx,
     output logic [ 9:0] cy,
 
-    output logic [10:0] nx,  // expected value of cx on next clock (eg: nx = cx-1)
+    output logic [10:0] nx,  //expected value of cx on next clock (eg: nx = cx-1)
     output logic [ 9:0] ny,  //expected value of cy on next clock (eg: ny = cy-1)
 
     // The screen is at the upper left corner of the frame.

@@ -149,7 +149,10 @@ module VDP_REGISTER (
     output wire VDPMODEGRAPHIC6,
     output wire VDPMODEGRAPHIC7,
     output wire VDPMODEISHIGHRES,
-    output wire SPMODE2
+    output bit super_high_res,
+    output wire SPMODE2,
+
+    output bit [7:0] REG_R31
 );
 
   // S#2
@@ -203,22 +206,26 @@ module VDP_REGISTER (
   wire W_EVEN_DOTSTATE;
   wire W_IS_BITMAP_MODE;
 
+  bit [7:0] FF_REG_R31;
+  assign REG_R31 = FF_REG_R31;
+
   assign ACK = FF_ACK;
   assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;
-  assign VDPMODEGRAPHIC1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000) ? 1'b1 : 1'b0;
-  assign VDPMODETEXT1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001) ? 1'b1 : 1'b0;
-  assign VDPMODEMULTI = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00010) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC2 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00100) ? 1'b1 : 1'b0;
-  assign VDPMODETEXT1Q = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00101) ? 1'b1 : 1'b0;
-  assign VDPMODEMULTIQ = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00110) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC3 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01000) ? 1'b1 : 1'b0;
-  assign VDPMODETEXT2 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01001) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC4 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01100) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC5 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10000) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC6 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10100) ? 1'b1 : 1'b0;
-  assign VDPMODEGRAPHIC7 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100) ? 1'b1 : 1'b0;
-  assign VDPMODEISHIGHRES = (REG_R0_DISP_MODE[3:2] == 2'b10 && REG_R1_DISP_MODE == 2'b00) ? 1'b1 : 1'b0;
-  assign SPMODE2 = (REG_R1_DISP_MODE == 2'b00 && (REG_R0_DISP_MODE[3] | REG_R0_DISP_MODE[2]) == 1'b1) ? 1'b1 : 1'b0;
+  assign super_high_res = FF_REG_R31[0]; // 8 bit RGB colours - 3 bytes per pixel - resolution of 50Hz:180x144 (77750Bytes), 60Hz:180x120 (64800bytes)
+  assign VDPMODEGRAPHIC1 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000);
+  assign VDPMODETEXT1 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001);
+  assign VDPMODEMULTI = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00010);
+  assign VDPMODEGRAPHIC2 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00100);
+  assign VDPMODETEXT1Q = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00101);
+  assign VDPMODEMULTIQ = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00110);
+  assign VDPMODEGRAPHIC3 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01000);
+  assign VDPMODETEXT2 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01001);
+  assign VDPMODEGRAPHIC4 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01100);
+  assign VDPMODEGRAPHIC5 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10000);
+  assign VDPMODEGRAPHIC6 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10100);
+  assign VDPMODEGRAPHIC7 = !super_high_res && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
+  assign VDPMODEISHIGHRES = !super_high_res && (REG_R0_DISP_MODE[3:2] == 2'b10 && REG_R1_DISP_MODE == 2'b00);
+  assign SPMODE2 = (REG_R1_DISP_MODE == 2'b00 && (REG_R0_DISP_MODE[3] | REG_R0_DISP_MODE[2]) == 1'b1);
 
   //--------------------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
@@ -474,6 +481,9 @@ module VDP_REGISTER (
       PALETTEDATAG_IN <= 8'd0;
       FF_PALETTE_WR_REQ <= 1'b0;
       PALETTEWRNUM <= 4'd0;
+
+      //extension
+      FF_REG_R31 <= 0;
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
         case (mode[1:0])
@@ -670,7 +680,9 @@ module VDP_REGISTER (
             5'b11011: begin  // #27
               REG_R27_H_SCROLL <= VDPP1DATA[2:0];
             end
-            default: begin
+
+            5'b11111: begin  //#31 - special!
+              FF_REG_R31 <= VDPP1DATA;
             end
           endcase
         end else if ((VDPREGPTR[4] == 1'b0)) begin

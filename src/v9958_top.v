@@ -3,6 +3,11 @@
 `include "vdp_constants.vh"
 
 module v9958_top (
+    output led5_n,
+    output led4_n,
+    output led3_n,
+    output led2_n,
+
     //high => send a HDMI single without any audio encoded
     //low => send HDMI single with audio encoded
     input exclude_audio,
@@ -44,6 +49,8 @@ module v9958_top (
     output [ 1:0] O_sdram_ba,     // two banks
     output [ 3:0] O_sdram_dqm     // 32/4
 );
+
+  import custom_timings::*;
 
   // ----------------------------------------
   // All Clocks
@@ -108,6 +115,12 @@ module v9958_top (
   bit v9958_write;
   bit memory_refresh;
   bit [31:0] vrm_32;
+  bit [16:0] high_res_vram_addr;
+  bit super_high_res;
+
+//   bit [31:0] _vrm_32;
+
+//   assign vrm_32 = super_high_res ? '{_vrm_32[31:24], _vrm_32[23:16], _vrm_32[15:8], _vrm_32[7:0]} : '{default: 0};  //optimising issue workaround???
 
   assign v9958_read = (WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy);
   assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
@@ -122,7 +135,7 @@ module v9958_top (
       .read(v9958_read),
       .write(v9958_write),
       .refresh(memory_refresh),
-      .addr({7'b0, VdpAdr[16:1]}),
+      .addr((super_high_res && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : {7'b0, VdpAdr[16:1]}),
       .din({VrmDbo, VrmDbo}),
       .wdm({~VdpAdr[0], VdpAdr[0]}),
       .dout(VrmDbi),
@@ -160,32 +173,63 @@ module v9958_top (
       .cs_n  (cs_n)
   );
 
-  wire pal_mode;
+  bit pal_mode;
+
+  bit [7:0] REG_R31;
+  bit [1:0] dot_state;
+
+  bit [7:0] high_res_red;
+  bit [7:0] high_res_green;
+  bit [7:0] high_res_blue;
+
+  assign led2_n = 0;  // 17
+  assign led3_n = 0;  //18
+  assign led4_n = high_res_vram_addr[1];  // 19
+  assign led5_n = cx == 724 && cy == (FRAME_HEIGHT(pal_mode) - 1);  // 20
+
+
+  vdp_super_high_res vdp_super_high_res (
+      .reset(reset_w),
+      .clk(clk_w),
+      .super_high_res(super_high_res),
+      .cx(cx),
+      .cy(cy),
+      .dot_state(dot_state),
+      .pal_mode(pal_mode),
+      .vrm_32(vrm_32),
+      .high_res_vram_addr(high_res_vram_addr),
+      .high_res_red(high_res_red),
+      .high_res_green(high_res_green),
+      .high_res_blue(high_res_blue)
+  );
 
   VDP u_v9958 (
-      .CLK21M      (clk_w),
-      .RESET       (reset_w | ~ram_enabled),
-      .REQ         (CpuReq),
-      .ACK         (),
-      .WRT         (CpuWrt),
-      .mode        (mode),
-      .DBI         (CpuDbi),
-      .DBO         (CpuDbo),
-      .INT_N       (int_n),
-      .PRAMWE_N    (WeVdp_n),
-      .PRAMADR     (VdpAdr),
-      .PRAMDBI     (VrmDbi),
-      .PRAMDBO     (VrmDbo),
-      .VDPSPEEDMODE(1'b1),                    // for V9958 MSX2+/tR VDP
-      .PVIDEOR     (VideoR),
-      .PVIDEOG     (VideoG),
-      .PVIDEOB     (VideoB),
-      .PVIDEODHCLK (VideoDHClk),
-      .PVIDEODLCLK (VideoDLClk),
-      .PAL_MODE    (pal_mode),
-      .SPMAXSPR    (1'b0),
-      .CX          (cx),
-      .CY          (cy)
+      .CLK21M        (clk_w),
+      .RESET         (reset_w | ~ram_enabled),
+      .REQ           (CpuReq),
+      .ACK           (),
+      .WRT           (CpuWrt),
+      .mode          (mode),
+      .DBI           (CpuDbi),
+      .DBO           (CpuDbo),
+      .INT_N         (int_n),
+      .PRAMWE_N      (WeVdp_n),
+      .PRAMADR       (VdpAdr),
+      .PRAMDBI       (VrmDbi),
+      .PRAMDBO       (VrmDbo),
+      .VDPSPEEDMODE  (1'b1),                    // for V9958 MSX2+/tR VDP
+      .PVIDEOR       (VideoR),
+      .PVIDEOG       (VideoG),
+      .PVIDEOB       (VideoB),
+      .PVIDEODHCLK   (VideoDHClk),
+      .PVIDEODLCLK   (VideoDLClk),
+      .PAL_MODE      (pal_mode),
+      .SPMAXSPR      (1'b0),
+      .CX            (cx),
+      .CY            (cy),
+      .super_high_res(super_high_res),
+      .REG_R31       (REG_R31),
+      .dot_state     (dot_state)
   );
 
   //--------------------------------------------------------------
@@ -203,9 +247,9 @@ module v9958_top (
 
   assign scanlin = 1'b0;
 
-  assign dvi_r = (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
-  assign dvi_g = (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
-  assign dvi_b = (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
+  assign dvi_r = super_high_res ? high_res_red : (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
+  assign dvi_g = super_high_res ? high_res_green : (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
+  assign dvi_b = super_high_res ? high_res_blue : (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
 
   assign hdmi_reset = reset_w | ~ram_enabled;
 
