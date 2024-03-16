@@ -1,8 +1,17 @@
 
 ## Super high res modes
 
-If Bit 0 of REG31 is set, then super high res
-* 8 bit RGB colours - 3 bytes per pixel - resolution of 50Hz:180x144 (77750Bytes), 60Hz:180x120 (64800bytes)
+If bit 0 of REG31 is set, then VDP's super modes are activated.
+There are 3 modes.  The specific super mode is determined by bits 2:1 or REG31
+
+* 00: 8 bit RGB colours - 3 bytes per pixel - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)*
+* 01: 2 bytes per pixel `GGGG GGRR RRRB BBBB` - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)**
+* 10: 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)**
+* 11: Unused
+
+\* WIP
+
+\** Not implemented yet.
 
 ## Video Timing
 
