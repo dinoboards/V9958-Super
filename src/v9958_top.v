@@ -118,9 +118,9 @@ module v9958_top (
   bit [16:0] high_res_vram_addr;
   bit super_high_res;
 
-//   bit [31:0] _vrm_32;
+  //   bit [31:0] _vrm_32;
 
-//   assign vrm_32 = super_high_res ? '{_vrm_32[31:24], _vrm_32[23:16], _vrm_32[15:8], _vrm_32[7:0]} : '{default: 0};  //optimising issue workaround???
+  //   assign vrm_32 = super_high_res ? '{_vrm_32[31:24], _vrm_32[23:16], _vrm_32[15:8], _vrm_32[7:0]} : '{default: 0};  //optimising issue workaround???
 
   assign v9958_read = (WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy);
   assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
@@ -176,7 +176,6 @@ module v9958_top (
   bit pal_mode;
 
   bit [7:0] REG_R31;
-  bit [1:0] dot_state;
 
   bit [7:0] high_res_red;
   bit [7:0] high_res_green;
@@ -187,14 +186,12 @@ module v9958_top (
   assign led4_n = high_res_vram_addr[1];  // 19
   assign led5_n = cx == 724 && cy == (FRAME_HEIGHT(pal_mode) - 1);  // 20
 
-
   vdp_super_high_res vdp_super_high_res (
       .reset(reset_w),
       .clk(clk_w),
       .super_high_res(super_high_res),
       .cx(cx),
       .cy(cy),
-      .dot_state(dot_state),
       .pal_mode(pal_mode),
       .vrm_32(vrm_32),
       .high_res_vram_addr(high_res_vram_addr),
@@ -228,8 +225,7 @@ module v9958_top (
       .CX            (cx),
       .CY            (cy),
       .super_high_res(super_high_res),
-      .REG_R31       (REG_R31),
-      .dot_state     (dot_state)
+      .REG_R31       (REG_R31)
   );
 
   //--------------------------------------------------------------
@@ -305,7 +301,6 @@ module v9958_top (
       .CS        (adc_cs),        // Chip Select
       .DATA_VALID(sample_valid)   // is high when there is a full 12 bit word.
   );
-
 
   assign adc_clk = sckclk_w & sck_enable;
 

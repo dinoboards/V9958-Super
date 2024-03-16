@@ -8,7 +8,6 @@ module vdp_super_high_res (
     input bit super_high_res,
     input bit [10:0] cx,
     input bit [9:0] cy,
-    input bit [1:0] dot_state,
     input bit pal_mode,
 
     input bit [31:0] vrm_32,
@@ -31,6 +30,9 @@ module vdp_super_high_res (
   bit [23:0] line_buffer[`WIDTH];
   bit [7:0] line_buffer_index;
 
+  bit [1:0] dot_state;
+
+
   assign high_res_red = high_res_data[23:16];
   assign high_res_green = high_res_data[15:8];
   assign high_res_blue = high_res_data[7:0];
@@ -43,7 +45,7 @@ module vdp_super_high_res (
     if (reset | ~super_high_res) begin
       super_high_res_visible_x <= 0;
     end else begin
-      if (cx == CLOCKS_PER_HALF_LINE(pal_mode) - 1) begin
+      if (cx == FRAME_WIDTH(pal_mode) - 1) begin
         super_high_res_visible_x <= 1;
       end else if (cx == (`WIDTH * 4) - 1) super_high_res_visible_x <= 0;
     end
@@ -59,6 +61,14 @@ module vdp_super_high_res (
     end
   end
 
+  always_ff @(posedge reset or posedge clk) begin
+    if (reset || cx == FRAME_WIDTH(pal_mode) - 1) begin
+      dot_state <= 0;
+
+    end else begin
+      dot_state <= 2'(dot_state + 1);
+    end
+  end
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~super_high_res) begin
@@ -116,12 +126,12 @@ module vdp_super_high_res (
                     if (active_line) next_rgb <= vrm_32[23:0];
                   end
 
-                  3: begin
+                  2: begin
                     // (AP)
                     if (active_line) high_res_vram_addr <= 17'(high_res_vram_addr + 2);
                   end
 
-                  2: begin
+                  3: begin
                     // (FS)
                   end
                 endcase

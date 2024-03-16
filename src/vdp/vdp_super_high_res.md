@@ -17,10 +17,12 @@ Loading from ram, must align with the 'DOTSTATE' of the V9958 implementation.  T
 ```
 00: DL -> Data loading (Memory controller is retFSeving request memory data)
 01: DR -> Data ready (vrm_32 has the data for latching)
-03: AL -> Address Load (update address for next read)
-02: FS -> DRAM Refresh
+02: AL -> Address Load (update address for next read)
+03: FS -> DRAM Refresh
 ```
-Not that the dot_state is not ordered from 0 to 3.  Step 3 happens on the clock proceeding step 2.  After Step 2, it returns to step 00.
+Not that the DOTSTATE within the SSG is not ordered from 0 to 3.  Step 3 happens on the clock proceeding step 2.  After Step 2, it returns to step 00.  But dot_state here is a normal order.
+
+TODO: perhaps look at revising DOTSTATE's order to be 0, 1, 2, 3
 
 ### Sequence of memory load and pixel rendering
 

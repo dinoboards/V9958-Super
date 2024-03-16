@@ -86,21 +86,17 @@ module VDP (
     input wire [9:0] CY,
 
     output bit super_high_res,  //true when running super high res HDMI/DVI native resolutions
-    output bit [7:0] REG_R31,
-
-    output bit [1:0] dot_state
+    output bit [7:0] REG_R31
 );
 
   import custom_timings::*;
 
   // DISPLAY POSITIONS, ADAPTED FOR ADJUST(X,Y)
-  wire [6:0] ADJUST_X;
+  wire [ 6:0] ADJUST_X;
 
   // DOT STATE REGISTER
-  wire [1:0] DOTSTATE;
-  wire [2:0] EIGHTDOTSTATE;
-
-  assign dot_state = DOTSTATE;
+  wire [ 1:0] DOTSTATE;
+  wire [ 2:0] EIGHTDOTSTATE;
 
   // DISPLAY FIELD SIGNAL
   wire        FIELD;
