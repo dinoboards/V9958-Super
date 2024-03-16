@@ -94,45 +94,45 @@ module VDP_COMMAND (
   // S#8, S#9
 
   // VDP COMMAND SIGNALS - CAN BE SET BY CPU
-  reg  [ 8:0] SX;  // R33,32
-  reg  [ 9:0] SY;  // R35,34
-  reg  [ 8:0] DX;  // R37,36
-  reg  [ 9:0] DY;  // R39,38
-  reg  [ 9:0] NX;  // R41,40
-  reg  [ 9:0] NY;  // R43,42
-  reg         MM;  // R45 BIT 0
-  reg         EQ;  // R45 BIT 1
-  reg         DIX;  // R45 BIT 2
-  reg         DIY;  // R45 BIT 3
+  bit  [ 8:0] SX;  // R33,32
+  bit  [ 9:0] SY;  // R35,34
+  bit  [ 8:0] DX;  // R37,36
+  bit  [ 9:0] DY;  // R39,38
+  bit  [ 9:0] NX;  // R41,40
+  bit  [ 9:0] NY;  // R43,42
+  bit         MM;  // R45 BIT 0
+  bit         EQ;  // R45 BIT 1
+  bit         DIX;  // R45 BIT 2
+  bit         DIY;  // R45 BIT 3
 
-  reg  [ 7:0] CMR;  // R46
+  bit  [ 7:0] CMR;  // R46
 
   // VDP COMMAND SIGNALS - INTERNAL REGISTERS
-  reg  [ 9:0] DXTMP;
-  reg  [ 9:0] NXTMP;
-  reg         REGWRACK;
-  reg         TRCLRACK;
-  reg         CMRWR;
+  bit  [ 9:0] DXTMP;
+  bit  [ 9:0] NXTMP;
+  bit         REGWRACK;
+  bit         TRCLRACK;
+  bit         CMRWR;
 
   // VDP COMMAND SIGNALS - COMMUNICATION BETWEEN COMMAND PROCESSOR
   // AND MEMORY INTERFACE (WHICH IS IN THE COLOR GENERATOR)
-  reg         VRAMWRREQ;
-  reg         VRAMRDREQ;
-  reg  [16:0] VRAMACCESSADDR;
-  reg  [ 7:0] VRAMWRDATA;
-  reg  [ 7:0] CLR;  // R44, S#7
+  bit         VRAMWRREQ;
+  bit         VRAMRDREQ;
+  bit  [16:0] VRAMACCESSADDR;
+  bit  [ 7:0] VRAMWRDATA;
+  bit  [ 7:0] CLR;  // R44, S#7
 
   // VDP COMMAND SIGNALS - CAN BE READ BY CPU
-  reg         CE;  // S#2 (BIT 0)
-  reg         BD;  // S#2 (BIT 4)
-  reg         TR;  // S#2 (BIT 7)
-  reg  [10:0] SXTMP;  // S#8, S#9
+  bit         CE;  // S#2 (BIT 0)
+  bit         BD;  // S#2 (BIT 4)
+  bit         TR;  // S#2 (BIT 7)
+  bit  [10:0] SXTMP;  // S#8, S#9
   wire        W_VDPCMD_EN;  // VDP COMMAND STATE REGISTER
 
   //??
-  reg  [ 1:0] RDXLOW;
-  reg  [ 9:0] VDPVRAMACCESSY;
-  reg  [ 8:0] VDPVRAMACCESSX;
+  bit  [ 1:0] RDXLOW;
+  bit  [ 9:0] VDPVRAMACCESSY;
+  bit  [ 8:0] VDPVRAMACCESSX;
 
   typedef enum logic [3:0] {
     STIDLE,
@@ -195,52 +195,35 @@ module VDP_COMMAND (
   bit graphic_4_or_6;
   assign graphic_4_or_6 = mode_graphic_4 || mode_graphic_6;
 
-  reg [9:0] NXCOUNT;
+  bit [9:0] NXCOUNT;
   assign NXCOUNT = CMR[7:6] == 2'b11 && graphic_4_or_6 ? {1'b0, NX[9:1]} : CMR[7:6] == 2'b11 && mode_graphic_5 ? {2'b00, NX[9:2]} : NX;
 
-  reg [9:0] YCOUNTDELTA;
+  bit [9:0] YCOUNTDELTA;
   assign YCOUNTDELTA = (DIY == 1'b0) ? 10'b0000000001 : 10'b1111111111;
 
-  reg [1:0] MAXXMASK;
-  assign MAXXMASK = (mode_high_res == 1'b1) ? 2'b10 : 2'b01;  // GRAPHIC 5,6 (SCREEN 6, 7)
+  bit [1:0] MAXXMASK;
+  assign MAXXMASK = mode_high_res ? 2'b10 : 2'b01;  // GRAPHIC 5,6
 
 
-  reg [7:0] RDPOINT;
+  bit [7:0] RDPOINT;
   always_comb begin
     // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
     if (graphic_4_or_6) begin
-      // SCREEN 5, 7
-      if ((RDXLOW[0] == 1'b0)) begin
-        RDPOINT = {4'b0000, VRAMRDDATA[7:4]};
-      end else begin
-        RDPOINT = {4'b0000, VRAMRDDATA[3:0]};
-      end
+      RDPOINT = RDXLOW[0] ? {4'b0000, VRAMRDDATA[3:0]} : {4'b0000, VRAMRDDATA[7:4]};
 
     end else if (mode_graphic_5) begin
-      // SCREEN 6
       case (RDXLOW)
-        2'b00: begin
-          RDPOINT = {6'b000000, VRAMRDDATA[7:6]};
-        end
-        2'b01: begin
-          RDPOINT = {6'b000000, VRAMRDDATA[5:4]};
-        end
-        2'b10: begin
-          RDPOINT = {6'b000000, VRAMRDDATA[3:2]};
-        end
-        default: begin
-          // 2'b11:
-          RDPOINT = {6'b000000, VRAMRDDATA[1:0]};
-          // NULL; -- SHOULD NEVER OCCUR
-        end
+        2'b00: RDPOINT = {6'b000000, VRAMRDDATA[7:6]};
+        2'b01: RDPOINT = {6'b000000, VRAMRDDATA[5:4]};
+        2'b10: RDPOINT = {6'b000000, VRAMRDDATA[3:2]};
+        2'b11: RDPOINT = {6'b000000, VRAMRDDATA[1:0]};
       endcase
     end else begin
-      // SCREEN 8 AND OTHER MODES
       RDPOINT = VRAMRDDATA;
     end
   end
 
-  reg [7:0] COLMASK;
+  bit [7:0] COLMASK;
   always_comb begin
     case (CMR[7:6])
       2'b11: begin
@@ -259,74 +242,43 @@ module VDP_COMMAND (
     endcase
   end
 
-  reg [7:0] LOGOPDESTCOL;
+  bit [7:0] LOGOPDESTCOL;
   always_comb begin
     // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
     // ON THE POINT TO BE WRITTEN.
     if (((CMR[3] == 1'b0) || ((VRAMWRDATA & COLMASK) != 8'b00000000))) begin
       case (CMR[2:0])
-        IMPB210: begin
-          LOGOPDESTCOL = VRAMWRDATA & COLMASK;
-        end
-        ANDB210: begin
-          LOGOPDESTCOL = (VRAMWRDATA & COLMASK) & RDPOINT;
-        end
-        ORB210: begin
-          LOGOPDESTCOL = (VRAMWRDATA & COLMASK) | RDPOINT;
-        end
-        EORB210: begin
-          LOGOPDESTCOL = (VRAMWRDATA & COLMASK) ^ RDPOINT;
-        end
-        NOTB210: begin
-          LOGOPDESTCOL = ~(VRAMWRDATA & COLMASK);
-        end
-        default: begin
-          LOGOPDESTCOL = RDPOINT;
-        end
+        IMPB210: LOGOPDESTCOL = VRAMWRDATA & COLMASK;
+        ANDB210: LOGOPDESTCOL = (VRAMWRDATA & COLMASK) & RDPOINT;
+        ORB210:  LOGOPDESTCOL = (VRAMWRDATA & COLMASK) | RDPOINT;
+        EORB210: LOGOPDESTCOL = (VRAMWRDATA & COLMASK) ^ RDPOINT;
+        NOTB210: LOGOPDESTCOL = ~(VRAMWRDATA & COLMASK);
+        default: LOGOPDESTCOL = RDPOINT;
       endcase
+
     end else begin
       LOGOPDESTCOL = RDPOINT;
     end
   end
 
-  reg NXLOOPEND;
+  bit NXLOOPEND;
   always_comb begin
     // DETERMINE IF X-LOOP IS FINISHED
     case (CMR[7:4])
       HMMV, HMMC, LMMV, LMMC: begin
-        if (((NXTMP == 0) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
-          NXLOOPEND = 1'b1;
-        end else begin
-          NXLOOPEND = 1'b0;
-        end
+        NXLOOPEND = (NXTMP == 0) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK);
       end
       YMMM: begin
-        if (((DXTMP[9:8] & MAXXMASK) == MAXXMASK)) begin
-          NXLOOPEND = 1'b1;
-        end else begin
-          NXLOOPEND = 1'b0;
-        end
+        NXLOOPEND = (DXTMP[9:8] & MAXXMASK) == MAXXMASK;
       end
       HMMM, LMMM: begin
-        if (((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
-          NXLOOPEND = 1'b1;
-        end else begin
-          NXLOOPEND = 1'b0;
-        end
+        NXLOOPEND = ((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK));
       end
       LMCM: begin
-        if (((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
-          NXLOOPEND = 1'b1;
-        end else begin
-          NXLOOPEND = 1'b0;
-        end
+        NXLOOPEND = ((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK));
       end
       SRCH: begin
-        if (((SXTMP[9:8] & MAXXMASK) == MAXXMASK)) begin
-          NXLOOPEND = 1'b1;
-        end else begin
-          NXLOOPEND = 1'b0;
-        end
+        NXLOOPEND = ((SXTMP[9:8] & MAXXMASK) == MAXXMASK);
       end
       default: begin
         NXLOOPEND = 1'b1;
@@ -334,42 +286,26 @@ module VDP_COMMAND (
     endcase
   end
 
-  reg [10:0] XCOUNTDELTA;
+  bit [10:0] XCOUNTDELTA;
 
   always_comb begin
     case (CMR[7:6])
       2'b11: begin
         // BYTE COMMAND
         if (graphic_4_or_6) begin
-          if ((DIX == 1'b0)) begin
-            XCOUNTDELTA = 11'b00000000010;  // +2
-          end else begin
-            XCOUNTDELTA = 11'b11111111110;  // -2
-          end
+          XCOUNTDELTA = DIX ? 11'b11111111110  /*-2*/ : 11'b00000000010;  /*+2*/
 
         end else if (mode_graphic_5) begin
-          if ((DIX == 1'b0)) begin
-            XCOUNTDELTA = 11'b00000000100;  // +4
-          end else begin
-            XCOUNTDELTA = 11'b11111111100;  // -4;
-          end
+          XCOUNTDELTA = DIX ? 11'b11111111100  /*-4*/ : 11'b00000000100;  /*+4*/
 
         end else begin
-          if ((DIX == 1'b0)) begin
-            XCOUNTDELTA = 11'b00000000001;  // +1
-          end else begin
-            XCOUNTDELTA = 11'b11111111111;  // -1
-          end
+          XCOUNTDELTA = DIX ? 11'b11111111111  /*-1*/ : 11'b00000000001;  /*+1*/
         end
       end
 
       default: begin
         // DOT COMMAND
-        if ((DIX == 1'b0)) begin
-          XCOUNTDELTA = 11'b00000000001;  // +1;
-        end else begin
-          XCOUNTDELTA = 11'b11111111111;  // -1;
-        end
+        XCOUNTDELTA = DIX ? 11'b11111111111  /*-1*/ : 11'b00000000001;  /*+1*/
       end
     endcase
   end
@@ -390,12 +326,12 @@ module VDP_COMMAND (
   end
 
   always @(posedge reset, posedge clk) begin
-    reg INITIALIZING;
-    reg DYEND;
-    reg SYEND;
-    reg NYLOOPEND;
-    reg [9:0] NX_MINUS_ONE;
-    reg SRCHEQRSLT;
+    bit INITIALIZING;
+    bit DYEND;
+    bit SYEND;
+    bit NYLOOPEND;
+    bit [9:0] NX_MINUS_ONE;
+    bit SRCHEQRSLT;
 
     if (reset) begin
       STATE          <= STIDLE;
