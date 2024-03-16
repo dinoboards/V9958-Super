@@ -56,13 +56,13 @@
 //----------------------------------------------------------------------------
 
 module VDP_COMMAND (
-    input wire RESET,
-    input wire CLK21M,
-    input wire VDPMODEGRAPHIC4,
-    input wire VDPMODEGRAPHIC5,
-    input wire VDPMODEGRAPHIC6,
-    input wire VDPMODEGRAPHIC7,
-    input wire VDPMODEISHIGHRES,
+    input wire reset,
+    input wire clk,
+    input wire mode_graphic_4,
+    input wire mode_graphic_5,
+    input wire mode_graphic_6,
+    input wire mode_graphic_7,
+    input wire mode_high_res,
     input wire VRAMWRACK,
     input wire VRAMRDACK,
     input wire VRAMREADINGR,
@@ -190,31 +190,25 @@ module VDP_COMMAND (
   // R25 CMD BIT
   // 0 = NORMAL
   // 1 = VDP COMMAND ON TEXT/GRAPHIC1/GRAPHIC2/GRAPHIC3/MOSAIC MODE
-  assign W_VDPCMD_EN = ((VDPMODEGRAPHIC4 | VDPMODEGRAPHIC5 | VDPMODEGRAPHIC6) == 1'b0) ? VDPMODEGRAPHIC7 | REG_R25_CMD : VDPMODEGRAPHIC4 | VDPMODEGRAPHIC5 | VDPMODEGRAPHIC6;
+  assign W_VDPCMD_EN = ((mode_graphic_4 | mode_graphic_5 | mode_graphic_6) == 1'b0) ? mode_graphic_7 | REG_R25_CMD : mode_graphic_4 | mode_graphic_5 | mode_graphic_6;
 
-  reg GRAPHIC4_OR_6;
-  always_comb begin
-    if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1))) begin
-      GRAPHIC4_OR_6 = 1'b1;
-    end else begin
-      GRAPHIC4_OR_6 = 1'b0;
-    end
-  end
+  bit graphic_4_or_6;
+  assign graphic_4_or_6 = mode_graphic_4 || mode_graphic_6;
 
   reg [9:0] NXCOUNT;
-  assign NXCOUNT = CMR[7:6] == 2'b11 && GRAPHIC4_OR_6 == 1'b1 ? {1'b0, NX[9:1]} : CMR[7:6] == 2'b11 && VDPMODEGRAPHIC5 == 1'b1 ? {2'b00, NX[9:2]} : NX;
+  assign NXCOUNT = CMR[7:6] == 2'b11 && graphic_4_or_6 ? {1'b0, NX[9:1]} : CMR[7:6] == 2'b11 && mode_graphic_5 ? {2'b00, NX[9:2]} : NX;
 
   reg [9:0] YCOUNTDELTA;
   assign YCOUNTDELTA = (DIY == 1'b0) ? 10'b0000000001 : 10'b1111111111;
 
   reg [1:0] MAXXMASK;
-  assign MAXXMASK = (VDPMODEISHIGHRES == 1'b1) ? 2'b10 : 2'b01;  // GRAPHIC 5,6 (SCREEN 6, 7)
+  assign MAXXMASK = (mode_high_res == 1'b1) ? 2'b10 : 2'b01;  // GRAPHIC 5,6 (SCREEN 6, 7)
 
 
   reg [7:0] RDPOINT;
   always_comb begin
     // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
-    if ((GRAPHIC4_OR_6 == 1'b1)) begin
+    if (graphic_4_or_6) begin
       // SCREEN 5, 7
       if ((RDXLOW[0] == 1'b0)) begin
         RDPOINT = {4'b0000, VRAMRDDATA[7:4]};
@@ -222,7 +216,7 @@ module VDP_COMMAND (
         RDPOINT = {4'b0000, VRAMRDDATA[3:0]};
       end
 
-    end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
+    end else if (mode_graphic_5) begin
       // SCREEN 6
       case (RDXLOW)
         2'b00: begin
@@ -254,9 +248,9 @@ module VDP_COMMAND (
       end
 
       default: begin
-        if ((GRAPHIC4_OR_6 == 1'b1)) begin
+        if (graphic_4_or_6) begin
           COLMASK = 8'b00001111;
-        end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
+        end else if (mode_graphic_5) begin
           COLMASK = 8'b00000011;
         end else begin
           COLMASK = 8'b11111111;
@@ -346,16 +340,14 @@ module VDP_COMMAND (
     case (CMR[7:6])
       2'b11: begin
         // BYTE COMMAND
-        if ((GRAPHIC4_OR_6 == 1'b1)) begin
-          // GRAPHIC4,6 (SCREEN 5, 7)
+        if (graphic_4_or_6) begin
           if ((DIX == 1'b0)) begin
             XCOUNTDELTA = 11'b00000000010;  // +2
           end else begin
             XCOUNTDELTA = 11'b11111111110;  // -2
           end
 
-        end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
-          // GRAPHIC5 (SCREEN 6)
+        end else if (mode_graphic_5) begin
           if ((DIX == 1'b0)) begin
             XCOUNTDELTA = 11'b00000000100;  // +4
           end else begin
@@ -363,7 +355,6 @@ module VDP_COMMAND (
           end
 
         end else begin
-          // GRAPHIC7 (SCREEN 8) AND OTHER
           if ((DIX == 1'b0)) begin
             XCOUNTDELTA = 11'b00000000001;  // +1
           end else begin
@@ -384,13 +375,13 @@ module VDP_COMMAND (
   end
 
   always_comb begin
-    if ((VDPMODEGRAPHIC4 == 1'b1)) begin
+    if (mode_graphic_4) begin
       VRAMACCESSADDR = {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[7:1]};
 
-    end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
+    end else if (mode_graphic_5) begin
       VRAMACCESSADDR = {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[8:2]};
 
-    end else if ((VDPMODEGRAPHIC6 == 1'b1)) begin
+    end else if ((mode_graphic_6 == 1'b1)) begin
       VRAMACCESSADDR = {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[8:1]};
 
     end else begin
@@ -398,7 +389,7 @@ module VDP_COMMAND (
     end
   end
 
-  always @(posedge RESET, posedge CLK21M) begin
+  always @(posedge reset, posedge clk) begin
     reg INITIALIZING;
     reg DYEND;
     reg SYEND;
@@ -406,7 +397,7 @@ module VDP_COMMAND (
     reg [9:0] NX_MINUS_ONE;
     reg SRCHEQRSLT;
 
-    if ((RESET == 1'b1)) begin
+    if (reset) begin
       STATE          <= STIDLE;
       INITIALIZING   <= 0;
       RDXLOW         <= 0;
@@ -457,7 +448,7 @@ module VDP_COMMAND (
           4'b1100: begin  // #44
             // DATA IS TRANSFERRED FROM CPU TO VDP COLOR REGISTER
             CLR <= (CE == 1'b1) ? REGDATA & COLMASK : REGDATA;
-            TR <= 1'b0;
+            TR  <= 1'b0;
           end
           4'b1101: begin  // #45
             MM  <= REGDATA[0];
@@ -475,7 +466,7 @@ module VDP_COMMAND (
         endcase
 
       end else if ((TRCLRREQ != TRCLRACK)) begin
-        // RESET THE DATA TRANSFER REGISTER (CPU HAS JUST READ THE COLOR REGISTER)
+        // reset THE DATA TRANSFER REGISTER (CPU HAS JUST READ THE COLOR REGISTER)
         TRCLRACK <= ~TRCLRACK;
         TR <= 1'b0;
 
@@ -520,7 +511,7 @@ module VDP_COMMAND (
               TR <= 1'b1;
               // VDP IS READY TO RECEIVE THE NEXT TRANSFER.
               VRAMWRDATA <= CLR;
-              STATE <= (CMR[6] == 1'b0) ?  STPRERDVRAM : STWRVRAM; // LMMC OR HMMC
+              STATE <= (CMR[6] == 1'b0) ? STPRERDVRAM : STWRVRAM;  // LMMC OR HMMC
             end
           end
 
@@ -614,14 +605,14 @@ module VDP_COMMAND (
           STWAITPRERDVRAM: begin
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
             if ((VRAMRDREQ == VRAMRDACK)) begin
-              if ((GRAPHIC4_OR_6 == 1'b1)) begin
+              if (graphic_4_or_6) begin
                 // SCREEN 5, 7
                 if ((RDXLOW[0] == 1'b0)) begin
                   VRAMWRDATA <= {LOGOPDESTCOL[3:0], VRAMRDDATA[3:0]};
                 end else begin
                   VRAMWRDATA <= {VRAMRDDATA[7:4], LOGOPDESTCOL[3:0]};
                 end
-              end else if ((VDPMODEGRAPHIC5 == 1'b1)) begin
+              end else if (mode_graphic_5) begin
                 // SCREEN 6
                 case (RDXLOW)
                   2'b00: begin

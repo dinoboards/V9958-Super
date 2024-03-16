@@ -916,13 +916,13 @@ module VDP (
   // VDP COMMAND
   //---------------------------------------------------------------------------
   VDP_COMMAND U_VDP_COMMAND (
-      .RESET(RESET),
-      .CLK21M(CLK21M),
-      .VDPMODEGRAPHIC4(VDPMODEGRAPHIC4),
-      .VDPMODEGRAPHIC5(VDPMODEGRAPHIC5),
-      .VDPMODEGRAPHIC6(VDPMODEGRAPHIC6),
-      .VDPMODEGRAPHIC7(VDPMODEGRAPHIC7),
-      .VDPMODEISHIGHRES(VDPMODEISHIGHRES),
+      .reset(RESET),
+      .clk(CLK21M),
+      .mode_graphic_4(VDPMODEGRAPHIC4),
+      .mode_graphic_5(VDPMODEGRAPHIC5),
+      .mode_graphic_6(VDPMODEGRAPHIC6),
+      .mode_graphic_7(VDPMODEGRAPHIC7),
+      .mode_high_res(VDPMODEISHIGHRES),
       .VRAMWRACK(VDPCMDVRAMWRACK),
       .VRAMRDACK(VDPCMDVRAMRDACK),
       .VRAMREADINGR(VDPCMDVRAMREADINGR),
