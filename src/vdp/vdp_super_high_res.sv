@@ -1,6 +1,6 @@
 
-`define WIDTH 64
-`define HEIGHT 64
+`define WIDTH (PIXEL_WIDTH()/4)
+`define HEIGHT (PIXEL_HEIGHT(pal_mode)/4)
 
 module vdp_super_high_res (
     input bit reset,
@@ -117,7 +117,7 @@ module vdp_super_high_res (
                       high_res_data <= line_buffer[line_buffer_index];
                     end
 
-                    line_buffer_index <= 6'(line_buffer_index + 1);
+                    line_buffer_index <= 8'(line_buffer_index + 1);
 
                   end
 
