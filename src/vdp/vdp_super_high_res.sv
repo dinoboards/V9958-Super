@@ -5,7 +5,10 @@
 module vdp_super_high_res (
     input bit reset,
     input bit clk,
-    input bit super_high_res,
+    input bit vdp_super,
+    input bit super_color,
+    input bit super_mid,
+    input bit super_res,
     input bit [10:0] cx,
     input bit [9:0] cy,
     input bit pal_mode,
@@ -20,6 +23,7 @@ module vdp_super_high_res (
 
   import custom_timings::*;
 
+  bit super_high_res;
   bit [23:0] high_res_data;
   bit [23:0] next_rgb;
   bit super_high_res_visible_x;
@@ -32,6 +36,7 @@ module vdp_super_high_res (
 
   bit [1:0] dot_state;
 
+  assign super_high_res = vdp_super & super_color;
 
   assign high_res_red = high_res_data[23:16];
   assign high_res_green = high_res_data[15:8];

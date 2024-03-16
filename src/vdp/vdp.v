@@ -85,7 +85,10 @@ module VDP (
     input wire [10:0] CX,
     input wire [9:0] CY,
 
-    output bit super_high_res,  //true when running super high res HDMI/DVI native resolutions
+    output bit vdp_super,
+    output bit super_color,
+    output bit super_mid,
+    output bit super_res,
     output bit [7:0] REG_R31
 );
 
@@ -901,7 +904,10 @@ module VDP (
       .VDPMODEGRAPHIC6(VDPMODEGRAPHIC6),
       .VDPMODEGRAPHIC7(VDPMODEGRAPHIC7),
       .VDPMODEISHIGHRES(VDPMODEISHIGHRES),
-      .super_high_res(super_high_res),
+      .vdp_super(vdp_super),
+      .super_color(super_color),
+      .super_mid(super_mid),
+      .super_res(super_res),
       .SPMODE2(SPMODE2),
       .REG_R31(REG_R31)
   );

@@ -116,11 +116,10 @@ module v9958_top (
   bit memory_refresh;
   bit [31:0] vrm_32;
   bit [16:0] high_res_vram_addr;
-  bit super_high_res;
-
-  //   bit [31:0] _vrm_32;
-
-  //   assign vrm_32 = super_high_res ? '{_vrm_32[31:24], _vrm_32[23:16], _vrm_32[15:8], _vrm_32[7:0]} : '{default: 0};  //optimising issue workaround???
+  bit vdp_super;
+  bit super_color;
+  bit super_mid;
+  bit super_res;
 
   assign v9958_read = (WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy);
   assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
@@ -135,7 +134,7 @@ module v9958_top (
       .read(v9958_read),
       .write(v9958_write),
       .refresh(memory_refresh),
-      .addr((super_high_res && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : {7'b0, VdpAdr[16:1]}),
+      .addr((vdp_super && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : {7'b0, VdpAdr[16:1]}),
       .din({VrmDbo, VrmDbo}),
       .wdm({~VdpAdr[0], VdpAdr[0]}),
       .dout(VrmDbi),
@@ -189,7 +188,10 @@ module v9958_top (
   vdp_super_high_res vdp_super_high_res (
       .reset(reset_w),
       .clk(clk_w),
-      .super_high_res(super_high_res),
+      .vdp_super(vdp_super),
+      .super_color(super_color),
+      .super_mid(super_mid),
+      .super_res(super_res),
       .cx(cx),
       .cy(cy),
       .pal_mode(pal_mode),
@@ -201,31 +203,34 @@ module v9958_top (
   );
 
   VDP u_v9958 (
-      .CLK21M        (clk_w),
-      .RESET         (reset_w | ~ram_enabled),
-      .REQ           (CpuReq),
-      .ACK           (),
-      .WRT           (CpuWrt),
-      .mode          (mode),
-      .DBI           (CpuDbi),
-      .DBO           (CpuDbo),
-      .INT_N         (int_n),
-      .PRAMWE_N      (WeVdp_n),
-      .PRAMADR       (VdpAdr),
-      .PRAMDBI       (VrmDbi),
-      .PRAMDBO       (VrmDbo),
-      .VDPSPEEDMODE  (1'b1),                    // for V9958 MSX2+/tR VDP
-      .PVIDEOR       (VideoR),
-      .PVIDEOG       (VideoG),
-      .PVIDEOB       (VideoB),
-      .PVIDEODHCLK   (VideoDHClk),
-      .PVIDEODLCLK   (VideoDLClk),
-      .PAL_MODE      (pal_mode),
-      .SPMAXSPR      (1'b0),
-      .CX            (cx),
-      .CY            (cy),
-      .super_high_res(super_high_res),
-      .REG_R31       (REG_R31)
+      .CLK21M      (clk_w),
+      .RESET       (reset_w | ~ram_enabled),
+      .REQ         (CpuReq),
+      .ACK         (),
+      .WRT         (CpuWrt),
+      .mode        (mode),
+      .DBI         (CpuDbi),
+      .DBO         (CpuDbo),
+      .INT_N       (int_n),
+      .PRAMWE_N    (WeVdp_n),
+      .PRAMADR     (VdpAdr),
+      .PRAMDBI     (VrmDbi),
+      .PRAMDBO     (VrmDbo),
+      .VDPSPEEDMODE(1'b1),                    // for V9958 MSX2+/tR VDP
+      .PVIDEOR     (VideoR),
+      .PVIDEOG     (VideoG),
+      .PVIDEOB     (VideoB),
+      .PVIDEODHCLK (VideoDHClk),
+      .PVIDEODLCLK (VideoDLClk),
+      .PAL_MODE    (pal_mode),
+      .SPMAXSPR    (1'b0),
+      .CX          (cx),
+      .CY          (cy),
+      .REG_R31     (REG_R31),
+      .vdp_super   (vdp_super),
+      .super_color (super_color),
+      .super_mid   (super_mid),
+      .super_res   (super_res)
   );
 
   //--------------------------------------------------------------
@@ -243,9 +248,9 @@ module v9958_top (
 
   assign scanlin = 1'b0;
 
-  assign dvi_r = super_high_res ? high_res_red : (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
-  assign dvi_g = super_high_res ? high_res_green : (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
-  assign dvi_b = super_high_res ? high_res_blue : (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
+  assign dvi_r = vdp_super ? high_res_red : (scanlin && cy[0]) ? {1'b0, VideoR, 1'b0} : {VideoR, 2'b0};
+  assign dvi_g = vdp_super ? high_res_green : (scanlin && cy[0]) ? {1'b0, VideoG, 1'b0} : {VideoG, 2'b0};
+  assign dvi_b = vdp_super ? high_res_blue : (scanlin && cy[0]) ? {1'b0, VideoB, 1'b0} : {VideoB, 2'b0};
 
   assign hdmi_reset = reset_w | ~ram_enabled;
 
