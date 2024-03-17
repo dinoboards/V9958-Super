@@ -1,6 +1,6 @@
 
-`define WIDTH (PIXEL_WIDTH()/4)
-`define HEIGHT (PIXEL_HEIGHT(pal_mode)/4)
+// `define WIDTH (PIXEL_WIDTH()/4)
+// `define HEIGHT (PIXEL_HEIGHT(pal_mode)/4)
 
 module vdp_super_high_res (
     input bit reset,
@@ -24,23 +24,36 @@ module vdp_super_high_res (
   import custom_timings::*;
 
   bit super_high_res;
-  bit [23:0] high_res_data;
-  bit [23:0] next_rgb;
+  bit [31:0] high_res_data;
+  bit [31:0] next_rgb;
   bit super_high_res_visible_x;
   bit super_high_res_visible_y;
   bit last_line;
   bit active_line;  // true if line is drawn from sdram, false if drawn from line buffer
 
-  bit [23:0] line_buffer[`WIDTH];
+  bit [31:0] line_buffer[`MAX_PIXEL_WIDTH];
   bit [7:0] line_buffer_index;
 
   bit [1:0] dot_state;
 
-  assign super_high_res = vdp_super & super_color;
+  assign super_high_res = (vdp_super & super_color) | (vdp_super & super_mid);
 
-  assign high_res_red = high_res_data[23:16];
-  assign high_res_green = high_res_data[15:8];
-  assign high_res_blue = high_res_data[7:0];
+  // pixel format for super_mid: GGGG GGRR RRRB BBBB
+  // green <= data[15:10]; red <= data[9:5]; blue <= data[4:0]
+
+  bit [15:0] high_mid_pixel;
+  bit [ 5:0] high_mid_pixel_green;
+  bit [ 4:0] high_mid_pixel_red;
+  bit [ 4:0] high_mid_pixel_blue;
+
+  assign high_mid_pixel = dot_state == 2'b10 || dot_state == 2'b01 ? high_res_data[15:0] : high_res_data[31:16];
+  assign high_mid_pixel_green = high_mid_pixel[15:10];
+  assign high_mid_pixel_red = high_mid_pixel[9:5];
+  assign high_mid_pixel_blue = high_mid_pixel[4:0];
+
+  assign high_res_red = super_color ? high_res_data[23:16] : {high_mid_pixel_red, 3'b0};
+  assign high_res_green = super_color ? high_res_data[15:8] : {high_mid_pixel_green, 2'b0};
+  assign high_res_blue = super_color ? high_res_data[7:0] : {high_mid_pixel_blue, 3'b0};
 
   assign super_high_res_visible = super_high_res_visible_x & super_high_res_visible_y;
 
@@ -52,7 +65,7 @@ module vdp_super_high_res (
     end else begin
       if (cx == FRAME_WIDTH(pal_mode) - 1) begin
         super_high_res_visible_x <= 1;
-      end else if (cx == (`WIDTH * 4) - 1) super_high_res_visible_x <= 0;
+      end else if (cx == PIXEL_WIDTH() - 1) super_high_res_visible_x <= 0;
     end
   end
 
@@ -62,7 +75,7 @@ module vdp_super_high_res (
     end else begin
       if (cx == 0 && cy == 0) super_high_res_visible_y <= 1;
       else if (last_line) super_high_res_visible_y <= 1;
-      else if (cy == (`HEIGHT * 4) - 1 && cx == (`WIDTH * 4)) super_high_res_visible_y <= 0;
+      else if (cy == (PIXEL_HEIGHT(pal_mode)) - 1 && cx == (PIXEL_WIDTH())) super_high_res_visible_y <= 0;
     end
   end
 
@@ -75,13 +88,14 @@ module vdp_super_high_res (
     end
   end
 
+  assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0);
+
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~super_high_res) begin
       high_res_vram_addr <= 0;
       next_rgb <= '{default: 0};
       high_res_data <= '{default: 0};
       line_buffer_index <= 0;
-      active_line <= 0;
 
     end else begin
       if (cx == 722 && last_line) begin
@@ -98,7 +112,7 @@ module vdp_super_high_res (
         end else begin
           if (cx == 725 && last_line) begin
             //(DR)
-            next_rgb <= vrm_32[23:0];
+            next_rgb <= vrm_32;
 
           end else begin
             if (cx == 726 && last_line) begin
@@ -113,9 +127,7 @@ module vdp_super_high_res (
                 case (dot_state)
                   0: begin
                     // (DL)
-
-                    active_line <= cy[1:0] == 2'b00;
-                    if (cy[1:0] == 2'b00) begin
+                    if (active_line) begin
                       line_buffer[line_buffer_index] <= next_rgb;
                       high_res_data <= next_rgb;
                     end else begin
@@ -128,7 +140,7 @@ module vdp_super_high_res (
 
                   1: begin
                     // (DR)
-                    if (active_line) next_rgb <= vrm_32[23:0];
+                    if (active_line) next_rgb <= vrm_32;
                   end
 
                   2: begin
