@@ -56,35 +56,34 @@
 //----------------------------------------------------------------------------
 
 module VDP_COMMAND (
-    input wire reset,
-    input wire clk,
-    input wire mode_graphic_4,
-    input wire mode_graphic_5,
-    input wire mode_graphic_6,
-    input wire mode_graphic_7,
-    input wire mode_high_res,
-    input wire VRAMWRACK,
-    input wire VRAMRDACK,
-    input wire VRAMREADINGR,
-    input wire VRAMREADINGA,
-    input wire [7:0] VRAMRDDATA,
-    input wire REGWRREQ,
-    input wire TRCLRREQ,
-    input wire [3:0] REGNUM,
-    input wire [7:0] REGDATA,
-    output wire PREGWRACK,
-    output wire PTRCLRACK,
-    output wire PVRAMWRREQ,
-    output wire PVRAMRDREQ,
-    output wire [16:0] PVRAMACCESSADDR,
-    output wire [7:0] PVRAMWRDATA,
-    output wire [7:0] PCLR,
-    output wire PCE,
-    output wire PBD,
-    output wire PTR,
-    output wire [10:0] PSXTMP,
-    output wire [7:4] CUR_VDP_COMMAND,
-    input wire REG_R25_CMD
+    input bit reset,
+    input bit clk,
+    input bit mode_graphic_4,
+    input bit mode_graphic_5,
+    input bit mode_graphic_6,
+    input bit mode_graphic_7,
+    input bit mode_high_res,
+    input bit vram_wr_ack,
+    input bit vram_rd_ack,
+    input bit [7:0] vram_rd_data,
+    input bit reg_wr_req,
+    input bit tr_clr_req,
+    input bit [3:0] reg_num,
+    input bit [7:0] reg_data,
+    input bit reg_R25_cmd,
+
+    output bit p_reg_wr_ack,
+    output bit p_tr_clr_ack,
+    output bit p_vram_wr_req,
+    output bit p_vram_rd_req,
+    output bit [16:0] p_vram_access_addr,
+    output bit [7:0] p_vram_wr_data,
+    output bit [7:0] p_clr,
+    output bit p_ce,
+    output bit p_bd,
+    output bit p_tr,
+    output bit [10:0] p_sx_tmp,
+    output bit [7:4] current_command
 );
 
   // R44, S#7
@@ -108,52 +107,52 @@ module VDP_COMMAND (
   bit  [ 7:0] CMR;  // R46
 
   // VDP COMMAND SIGNALS - INTERNAL REGISTERS
-  bit  [ 9:0] DXTMP;
-  bit  [ 9:0] NXTMP;
-  bit         REGWRACK;
-  bit         TRCLRACK;
-  bit         CMRWR;
+  bit  [ 9:0] dx_tmp;
+  bit  [ 9:0] nx_tmp;
+  bit         reg_wr_ack;
+  bit         tr_clr_ack;
+  bit         cmr_wr;
 
   // VDP COMMAND SIGNALS - COMMUNICATION BETWEEN COMMAND PROCESSOR
   // AND MEMORY INTERFACE (WHICH IS IN THE COLOR GENERATOR)
-  bit         VRAMWRREQ;
-  bit         VRAMRDREQ;
-  bit  [16:0] VRAMACCESSADDR;
-  bit  [ 7:0] VRAMWRDATA;
+  bit         vram_wr_req;
+  bit         vram_rd_req;
+  bit  [16:0] vram_access_addr;
+  bit  [ 7:0] vram_wr_data;
   bit  [ 7:0] CLR;  // R44, S#7
 
   // VDP COMMAND SIGNALS - CAN BE READ BY CPU
   bit         CE;  // S#2 (BIT 0)
   bit         BD;  // S#2 (BIT 4)
   bit         TR;  // S#2 (BIT 7)
-  bit  [10:0] SXTMP;  // S#8, S#9
-  wire        W_VDPCMD_EN;  // VDP COMMAND STATE REGISTER
+  bit  [10:0] sx_tmp;  // S#8, S#9
+  bit        cmd_enable;  // VDP COMMAND state REGISTER
 
   //??
-  bit  [ 1:0] RDXLOW;
-  bit  [ 9:0] VDPVRAMACCESSY;
-  bit  [ 8:0] VDPVRAMACCESSX;
+  bit  [ 1:0] rd_x_low;
+  bit  [ 9:0] vram_access_y;
+  bit  [ 8:0] vram_access_x;
 
   typedef enum logic [3:0] {
-    STIDLE,
-    STCHKLOOP,
-    STRDCPU,
-    STWAITCPU,
-    STRDVRAM,
-    STWAITRDVRAM,
-    STPOINTWAITRDVRAM,
-    STSRCHWAITRDVRAM,
-    STPRERDVRAM,
-    STWAITPRERDVRAM,
-    STWRVRAM,
-    STWAITWRVRAM,
-    STLINENEWPOS,
-    STLINECHKLOOP,
-    STSRCHCHKLOOP,
-    STEXECEND
+    IDLE,
+    CHK_LOOP,
+    RD_CPU,
+    WAIT_CPU,
+    RD_VRAM,
+    WAIT_RD_VRAM,
+    POINT_WAIT_RD_VRAM,
+    SRCH_WAIT_RD_VRAM,
+    PRE_RD_VRAM,
+    WAIT_PRE_RD_VRAM,
+    WR_VRAM,
+    WAIT_WR_VRAM,
+    LINE_NEW_POS,
+    LINE_CHK_LOOP,
+    SRCH_CHK_LOOP,
+    EXEC_END
   } type_state;
 
-  type_state STATE;
+  type_state state;
 
   parameter HMMC = 4'b1111;
   parameter YMMM = 4'b1110;
@@ -174,23 +173,23 @@ module VDP_COMMAND (
   parameter EORB210 = 3'b011;
   parameter NOTB210 = 3'b100;
 
-  assign PREGWRACK = REGWRACK;
-  assign PTRCLRACK = TRCLRACK;
-  assign PVRAMWRREQ = (W_VDPCMD_EN == 1'b1) ? VRAMWRREQ : VRAMWRACK;
-  assign PVRAMRDREQ = VRAMRDREQ;
-  assign PVRAMACCESSADDR = VRAMACCESSADDR;
-  assign PVRAMWRDATA = VRAMWRDATA;
-  assign PCLR = CLR;
-  assign PCE = CE;
-  assign PBD = BD;
-  assign PTR = TR;
-  assign PSXTMP = SXTMP;
-  assign CUR_VDP_COMMAND = CMR[7:4];
+  assign p_reg_wr_ack = reg_wr_ack;
+  assign p_tr_clr_ack = tr_clr_ack;
+  assign p_vram_wr_req = cmd_enable ? vram_wr_req : vram_wr_ack;
+  assign p_vram_rd_req = vram_rd_req;
+  assign p_vram_access_addr = vram_access_addr;
+  assign p_vram_wr_data = vram_wr_data;
+  assign p_clr = CLR;
+  assign p_ce = CE;
+  assign p_bd = BD;
+  assign p_tr = TR;
+  assign p_sx_tmp = sx_tmp;
+  assign current_command = CMR[7:4];
 
   // R25 CMD BIT
   // 0 = NORMAL
   // 1 = VDP COMMAND ON TEXT/GRAPHIC1/GRAPHIC2/GRAPHIC3/MOSAIC MODE
-  assign W_VDPCMD_EN = ((mode_graphic_4 | mode_graphic_5 | mode_graphic_6) == 1'b0) ? mode_graphic_7 | REG_R25_CMD : mode_graphic_4 | mode_graphic_5 | mode_graphic_6;
+  assign cmd_enable = ((mode_graphic_4 | mode_graphic_5 | mode_graphic_6) == 1'b0) ? mode_graphic_7 | reg_R25_cmd : mode_graphic_4 | mode_graphic_5 | mode_graphic_6;
 
   bit graphic_4_or_6;
   assign graphic_4_or_6 = mode_graphic_4 || mode_graphic_6;
@@ -209,17 +208,17 @@ module VDP_COMMAND (
   always_comb begin
     // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
     if (graphic_4_or_6) begin
-      RDPOINT = RDXLOW[0] ? {4'b0000, VRAMRDDATA[3:0]} : {4'b0000, VRAMRDDATA[7:4]};
+      RDPOINT = rd_x_low[0] ? {4'b0000, vram_rd_data[3:0]} : {4'b0000, vram_rd_data[7:4]};
 
     end else if (mode_graphic_5) begin
-      case (RDXLOW)
-        2'b00: RDPOINT = {6'b000000, VRAMRDDATA[7:6]};
-        2'b01: RDPOINT = {6'b000000, VRAMRDDATA[5:4]};
-        2'b10: RDPOINT = {6'b000000, VRAMRDDATA[3:2]};
-        2'b11: RDPOINT = {6'b000000, VRAMRDDATA[1:0]};
+      case (rd_x_low)
+        2'b00: RDPOINT = {6'b000000, vram_rd_data[7:6]};
+        2'b01: RDPOINT = {6'b000000, vram_rd_data[5:4]};
+        2'b10: RDPOINT = {6'b000000, vram_rd_data[3:2]};
+        2'b11: RDPOINT = {6'b000000, vram_rd_data[1:0]};
       endcase
     end else begin
-      RDPOINT = VRAMRDDATA;
+      RDPOINT = vram_rd_data;
     end
   end
 
@@ -246,13 +245,13 @@ module VDP_COMMAND (
   always_comb begin
     // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
     // ON THE POINT TO BE WRITTEN.
-    if (((CMR[3] == 1'b0) || ((VRAMWRDATA & COLMASK) != 8'b00000000))) begin
+    if (((CMR[3] == 1'b0) || ((vram_wr_data & COLMASK) != 8'b00000000))) begin
       case (CMR[2:0])
-        IMPB210: LOGOPDESTCOL = VRAMWRDATA & COLMASK;
-        ANDB210: LOGOPDESTCOL = (VRAMWRDATA & COLMASK) & RDPOINT;
-        ORB210:  LOGOPDESTCOL = (VRAMWRDATA & COLMASK) | RDPOINT;
-        EORB210: LOGOPDESTCOL = (VRAMWRDATA & COLMASK) ^ RDPOINT;
-        NOTB210: LOGOPDESTCOL = ~(VRAMWRDATA & COLMASK);
+        IMPB210: LOGOPDESTCOL = vram_wr_data & COLMASK;
+        ANDB210: LOGOPDESTCOL = (vram_wr_data & COLMASK) & RDPOINT;
+        ORB210:  LOGOPDESTCOL = (vram_wr_data & COLMASK) | RDPOINT;
+        EORB210: LOGOPDESTCOL = (vram_wr_data & COLMASK) ^ RDPOINT;
+        NOTB210: LOGOPDESTCOL = ~(vram_wr_data & COLMASK);
         default: LOGOPDESTCOL = RDPOINT;
       endcase
 
@@ -261,27 +260,27 @@ module VDP_COMMAND (
     end
   end
 
-  bit NXLOOPEND;
+  bit nx_loop_end;
   always_comb begin
     // DETERMINE IF X-LOOP IS FINISHED
     case (CMR[7:4])
       HMMV, HMMC, LMMV, LMMC: begin
-        NXLOOPEND = (NXTMP == 0) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK);
+        nx_loop_end = (nx_tmp == 0) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
       end
       YMMM: begin
-        NXLOOPEND = (DXTMP[9:8] & MAXXMASK) == MAXXMASK;
+        nx_loop_end = (dx_tmp[9:8] & MAXXMASK) == MAXXMASK;
       end
       HMMM, LMMM: begin
-        NXLOOPEND = ((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK));
+        nx_loop_end = ((nx_tmp == 0) || ((sx_tmp[9:8] & MAXXMASK) == MAXXMASK) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK));
       end
       LMCM: begin
-        NXLOOPEND = ((NXTMP == 0) || ((SXTMP[9:8] & MAXXMASK) == MAXXMASK));
+        nx_loop_end = ((nx_tmp == 0) || ((sx_tmp[9:8] & MAXXMASK) == MAXXMASK));
       end
       SRCH: begin
-        NXLOOPEND = ((SXTMP[9:8] & MAXXMASK) == MAXXMASK);
+        nx_loop_end = ((sx_tmp[9:8] & MAXXMASK) == MAXXMASK);
       end
       default: begin
-        NXLOOPEND = 1'b1;
+        nx_loop_end = 1'b1;
       end
     endcase
   end
@@ -312,31 +311,31 @@ module VDP_COMMAND (
 
   always_comb begin
     if (mode_graphic_4) begin
-      VRAMACCESSADDR = {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[7:1]};
+      vram_access_addr = {vram_access_y[9:0], vram_access_x[7:1]};
 
     end else if (mode_graphic_5) begin
-      VRAMACCESSADDR = {VDPVRAMACCESSY[9:0], VDPVRAMACCESSX[8:2]};
+      vram_access_addr = {vram_access_y[9:0], vram_access_x[8:2]};
 
     end else if ((mode_graphic_6 == 1'b1)) begin
-      VRAMACCESSADDR = {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[8:1]};
+      vram_access_addr = {vram_access_y[8:0], vram_access_x[8:1]};
 
     end else begin
-      VRAMACCESSADDR = {VDPVRAMACCESSY[8:0], VDPVRAMACCESSX[7:0]};
+      vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};
     end
   end
 
   always @(posedge reset, posedge clk) begin
-    bit INITIALIZING;
-    bit DYEND;
-    bit SYEND;
-    bit NYLOOPEND;
-    bit [9:0] NX_MINUS_ONE;
-    bit SRCHEQRSLT;
+    bit initializing;
+    bit dy_end;
+    bit sy_end;
+    bit ny_loop_end;
+    bit [9:0] nx_minus_one;
+    bit srch_eq_result;
 
     if (reset) begin
-      STATE          <= STIDLE;
-      INITIALIZING   <= 0;
-      RDXLOW         <= 0;
+      state          <= IDLE;
+      initializing   <= 0;
+      rd_x_low         <= 0;
       SX             <= 0;  // R32
       SY             <= 0;  // R34
       DX             <= 0;  // R36
@@ -349,374 +348,374 @@ module VDP_COMMAND (
       DIX            <= 0;  // R45 BIT 2
       DIY            <= 0;  // R45 BIT 3
       CMR            <= 0;  // R46
-      SXTMP          <= 0;
-      DXTMP          <= 0;
-      CMRWR          <= 0;
-      REGWRACK       <= 0;
-      VRAMWRREQ      <= 0;
-      VRAMRDREQ      <= 0;
-      VRAMWRDATA     <= 0;
+      sx_tmp          <= 0;
+      dx_tmp          <= 0;
+      cmr_wr          <= 0;
+      reg_wr_ack       <= 0;
+      vram_wr_req      <= 0;
+      vram_rd_req      <= 0;
+      vram_wr_data     <= 0;
       TR             <= 1'b1;  // TRANSFER READY
       CE             <= 0;  // COMMAND EXECUTING
       BD             <= 0;  // BORDER COLOR FOUND
-      TRCLRACK       <= 0;
-      VDPVRAMACCESSY <= 0;
-      VDPVRAMACCESSX <= 0;
+      tr_clr_ack       <= 0;
+      vram_access_y <= 0;
+      vram_access_x <= 0;
 
     end else begin
       // PROCESS REGISTER UPDATE REQUEST, CLEAR 'TRANSFER READY' REQUEST
       // OR PROCESS ANY ONGOING COMMAND.
-      if ((REGWRREQ != REGWRACK)) begin
-        REGWRACK <= ~REGWRACK;
-        case (REGNUM)
-          4'b0000: SX[7:0] <= REGDATA;  // #32
-          4'b0001: SX[8] <= REGDATA[0];  // #33
-          4'b0010: SY[7:0] <= REGDATA;  // #34
-          4'b0011: SY[9:8] <= REGDATA[1:0];  // #35
-          4'b0100: DX[7:0] <= REGDATA;  // #36
-          4'b0101: DX[8] <= REGDATA[0];  // #37
-          4'b0110: DY[7:0] <= REGDATA;  // #38
-          4'b0111: DY[9:8] <= REGDATA[1:0];  // #39
-          4'b1000: NX[7:0] <= REGDATA;  // #40
-          4'b1001: NX[9:8] <= REGDATA[1:0];  // #41
-          4'b1010: NY[7:0] <= REGDATA;  // #42
-          4'b1011: NY[9:8] <= REGDATA[1:0];  // #43
+      if ((reg_wr_req != reg_wr_ack)) begin
+        reg_wr_ack <= ~reg_wr_ack;
+        case (reg_num)
+          4'b0000: SX[7:0] <= reg_data;  // #32
+          4'b0001: SX[8] <= reg_data[0];  // #33
+          4'b0010: SY[7:0] <= reg_data;  // #34
+          4'b0011: SY[9:8] <= reg_data[1:0];  // #35
+          4'b0100: DX[7:0] <= reg_data;  // #36
+          4'b0101: DX[8] <= reg_data[0];  // #37
+          4'b0110: DY[7:0] <= reg_data;  // #38
+          4'b0111: DY[9:8] <= reg_data[1:0];  // #39
+          4'b1000: NX[7:0] <= reg_data;  // #40
+          4'b1001: NX[9:8] <= reg_data[1:0];  // #41
+          4'b1010: NY[7:0] <= reg_data;  // #42
+          4'b1011: NY[9:8] <= reg_data[1:0];  // #43
           4'b1100: begin  // #44
             // DATA IS TRANSFERRED FROM CPU TO VDP COLOR REGISTER
-            CLR <= (CE == 1'b1) ? REGDATA & COLMASK : REGDATA;
+            CLR <= (CE == 1'b1) ? reg_data & COLMASK : reg_data;
             TR  <= 1'b0;
           end
           4'b1101: begin  // #45
-            MM  <= REGDATA[0];
-            EQ  <= REGDATA[1];
-            DIX <= REGDATA[2];
-            DIY <= REGDATA[3];
+            MM  <= reg_data[0];
+            EQ  <= reg_data[1];
+            DIX <= reg_data[2];
+            DIY <= reg_data[3];
           end
           4'b1110: begin  // #46
             // INITIALIZE THE NEW COMMAND
             // NOTE THAT THIS WILL ABORT ANY ONGOING COMMAND!
-            CMR   <= REGDATA;
-            CMRWR <= W_VDPCMD_EN;
-            STATE <= STIDLE;
+            CMR   <= reg_data;
+            cmr_wr <= cmd_enable;
+            state <= IDLE;
           end
         endcase
 
-      end else if ((TRCLRREQ != TRCLRACK)) begin
+      end else if ((tr_clr_req != tr_clr_ack)) begin
         // reset THE DATA TRANSFER REGISTER (CPU HAS JUST READ THE COLOR REGISTER)
-        TRCLRACK <= ~TRCLRACK;
+        tr_clr_ack <= ~tr_clr_ack;
         TR <= 1'b0;
 
       end else begin
-        // PROCESS THE VDP COMMAND STATE
-        case (STATE)
-          STIDLE: begin
-            if ((CMRWR == 1'b0)) begin
+        // PROCESS THE VDP COMMAND state
+        case (state)
+          IDLE: begin
+            if ((cmr_wr == 1'b0)) begin
               CE <= 1'b0;
               CE <= 1'b0;
             end else begin
               // EXEC NEW VDP COMMAND
-              CMRWR <= 1'b0;
+              cmr_wr <= 1'b0;
               CE <= 1'b1;
               BD <= 1'b0;
               if (CMR[7:4] == LINE) begin
-                // LINE COMMAND REQUIRES SPECIAL SXTMP AND NXTMP SET-UP
-                NX_MINUS_ONE = 10'(NX - 1);
-                SXTMP <= {2'b00, NX_MINUS_ONE[9:1]};
-                NXTMP <= 0;
+                // LINE COMMAND REQUIRES SPECIAL sx_tmp AND nx_tmp SET-UP
+                nx_minus_one = 10'(NX - 1);
+                sx_tmp <= {2'b00, nx_minus_one[9:1]};
+                nx_tmp <= 0;
               end else begin
                 if (CMR[7:4] == YMMM) begin
-                  // FOR YMMM, SXTMP = DXTMP = DX
-                  SXTMP <= {2'b00, DX};
+                  // FOR YMMM, sx_tmp = dx_tmp = DX
+                  sx_tmp <= {2'b00, DX};
                 end else begin
-                  // FOR ALL OTHERS, SXTMP IS BUSINES AS USUAL
-                  SXTMP <= {2'b00, SX};
+                  // FOR ALL OTHERS, sx_tmp IS BUSINES AS USUAL
+                  sx_tmp <= {2'b00, SX};
                 end
-                // NXTMP IS BUSINESS AS USUAL FOR ALL BUT THE LINE COMMAND
-                NXTMP <= NXCOUNT;
+                // nx_tmp IS BUSINESS AS USUAL FOR ALL BUT THE LINE COMMAND
+                nx_tmp <= NXCOUNT;
               end
-              DXTMP <= {1'b0, DX};
-              INITIALIZING <= 1'b1;
-              STATE <= STCHKLOOP;
+              dx_tmp <= {1'b0, DX};
+              initializing <= 1'b1;
+              state <= CHK_LOOP;
             end
           end
 
-          STRDCPU: begin
+          RD_CPU: begin
             // APPLICABLE TO HMMC, LMMC
             if ((TR == 1'b0)) begin
               // CPU HAS TRANSFERRED DATA TO (OR FROM) THE COLOR REGISTER
               TR <= 1'b1;
               // VDP IS READY TO RECEIVE THE NEXT TRANSFER.
-              VRAMWRDATA <= CLR;
-              STATE <= (CMR[6] == 1'b0) ? STPRERDVRAM : STWRVRAM;  // LMMC OR HMMC
+              vram_wr_data <= CLR;
+              state <= (CMR[6] == 1'b0) ? PRE_RD_VRAM : WR_VRAM;  // LMMC OR HMMC
             end
           end
 
-          STWAITCPU: begin
+          WAIT_CPU: begin
             // APPLICABLE TO LMCM
             if ((TR == 1'b0)) begin
               // CPU HAS TRANSFERRED DATA FROM (OR TO) THE COLOR REGISTER
               // VDP MAY READ THE NEXT VALUE INTO THE COLOR REGISTER
-              STATE <= STRDVRAM;
+              state <= RD_VRAM;
             end
           end
 
-          STRDVRAM: begin
+          RD_VRAM: begin
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM, SRCH, POINT
-            VDPVRAMACCESSY <= SY;
-            VDPVRAMACCESSX <= SXTMP[8:0];
-            RDXLOW <= SXTMP[1:0];
-            VRAMRDREQ <= ~VRAMRDACK;
+            vram_access_y <= SY;
+            vram_access_x <= sx_tmp[8:0];
+            rd_x_low <= sx_tmp[1:0];
+            vram_rd_req <= ~vram_rd_ack;
             case (CMR[7:4])
               POINT: begin
-                STATE <= STPOINTWAITRDVRAM;
+                state <= POINT_WAIT_RD_VRAM;
               end
               SRCH: begin
-                STATE <= STSRCHWAITRDVRAM;
+                state <= SRCH_WAIT_RD_VRAM;
               end
               default: begin
-                STATE <= STWAITRDVRAM;
+                state <= WAIT_RD_VRAM;
               end
             endcase
           end
 
-          STPOINTWAITRDVRAM: begin
+          POINT_WAIT_RD_VRAM: begin
             // APPLICABLE TO POINT
-            if ((VRAMRDREQ == VRAMRDACK)) begin
+            if ((vram_rd_req == vram_rd_ack)) begin
               CLR   <= RDPOINT;
-              STATE <= STEXECEND;
+              state <= EXEC_END;
             end
           end
 
-          STSRCHWAITRDVRAM: begin
+          SRCH_WAIT_RD_VRAM: begin
             // APPLICABLE TO SRCH
-            if ((VRAMRDREQ == VRAMRDACK)) begin
+            if ((vram_rd_req == vram_rd_ack)) begin
               if ((RDPOINT == CLR)) begin
-                SRCHEQRSLT = 1'b0;
+                srch_eq_result = 1'b0;
               end else begin
-                SRCHEQRSLT = 1'b1;
+                srch_eq_result = 1'b1;
               end
-              if ((EQ == SRCHEQRSLT)) begin
+              if ((EQ == srch_eq_result)) begin
                 BD <= 1'b1;
-                STATE <= STEXECEND;
+                state <= EXEC_END;
               end else begin
-                SXTMP <= SXTMP + XCOUNTDELTA;
-                STATE <= STSRCHCHKLOOP;
+                sx_tmp <= sx_tmp + XCOUNTDELTA;
+                state <= SRCH_CHK_LOOP;
               end
             end
           end
 
-          STWAITRDVRAM: begin
+          WAIT_RD_VRAM: begin
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM
-            if ((VRAMRDREQ == VRAMRDACK)) begin
-              SXTMP <= SXTMP + XCOUNTDELTA;
+            if ((vram_rd_req == vram_rd_ack)) begin
+              sx_tmp <= sx_tmp + XCOUNTDELTA;
               case (CMR[7:4])
                 LMMM: begin
-                  VRAMWRDATA <= RDPOINT;
-                  STATE <= STPRERDVRAM;
+                  vram_wr_data <= RDPOINT;
+                  state <= PRE_RD_VRAM;
                 end
                 LMCM: begin
                   CLR <= RDPOINT;
                   TR <= 1'b1;
-                  NXTMP <= 10'(NXTMP - 1);
-                  STATE <= STCHKLOOP;
+                  nx_tmp <= 10'(nx_tmp - 1);
+                  state <= CHK_LOOP;
                 end
                 default: begin
                   // REMAINING: YMMM, HMMM
-                  VRAMWRDATA <= VRAMRDDATA;
-                  STATE <= STWRVRAM;
+                  vram_wr_data <= vram_rd_data;
+                  state <= WR_VRAM;
                 end
               endcase
             end
           end
 
-          STPRERDVRAM: begin
+          PRE_RD_VRAM: begin
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
-            VDPVRAMACCESSY <= DY;
-            VDPVRAMACCESSX <= DXTMP[8:0];
-            RDXLOW <= DXTMP[1:0];
-            VRAMRDREQ <= ~VRAMRDACK;
-            STATE <= STWAITPRERDVRAM;
+            vram_access_y <= DY;
+            vram_access_x <= dx_tmp[8:0];
+            rd_x_low <= dx_tmp[1:0];
+            vram_rd_req <= ~vram_rd_ack;
+            state <= WAIT_PRE_RD_VRAM;
           end
 
-          STWAITPRERDVRAM: begin
+          WAIT_PRE_RD_VRAM: begin
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
-            if ((VRAMRDREQ == VRAMRDACK)) begin
+            if ((vram_rd_req == vram_rd_ack)) begin
               if (graphic_4_or_6) begin
                 // SCREEN 5, 7
-                if ((RDXLOW[0] == 1'b0)) begin
-                  VRAMWRDATA <= {LOGOPDESTCOL[3:0], VRAMRDDATA[3:0]};
+                if ((rd_x_low[0] == 1'b0)) begin
+                  vram_wr_data <= {LOGOPDESTCOL[3:0], vram_rd_data[3:0]};
                 end else begin
-                  VRAMWRDATA <= {VRAMRDDATA[7:4], LOGOPDESTCOL[3:0]};
+                  vram_wr_data <= {vram_rd_data[7:4], LOGOPDESTCOL[3:0]};
                 end
               end else if (mode_graphic_5) begin
                 // SCREEN 6
-                case (RDXLOW)
+                case (rd_x_low)
                   2'b00: begin
-                    VRAMWRDATA <= {LOGOPDESTCOL[1:0], VRAMRDDATA[5:0]};
+                    vram_wr_data <= {LOGOPDESTCOL[1:0], vram_rd_data[5:0]};
                   end
                   2'b01: begin
-                    VRAMWRDATA <= {VRAMRDDATA[7:6], LOGOPDESTCOL[1:0], VRAMRDDATA[3:0]};
+                    vram_wr_data <= {vram_rd_data[7:6], LOGOPDESTCOL[1:0], vram_rd_data[3:0]};
                   end
                   2'b10: begin
-                    VRAMWRDATA <= {VRAMRDDATA[7:4], LOGOPDESTCOL[1:0], VRAMRDDATA[1:0]};
+                    vram_wr_data <= {vram_rd_data[7:4], LOGOPDESTCOL[1:0], vram_rd_data[1:0]};
                   end
                   default: begin
                     // 2'b11:
-                    VRAMWRDATA <= {VRAMRDDATA[7:2], LOGOPDESTCOL[1:0]};
+                    vram_wr_data <= {vram_rd_data[7:2], LOGOPDESTCOL[1:0]};
                   end
                 endcase
               end else begin
                 // SCREEN 8 AND OTHER MODES
-                VRAMWRDATA <= LOGOPDESTCOL;
+                vram_wr_data <= LOGOPDESTCOL;
               end
-              STATE <= STWRVRAM;
+              state <= WR_VRAM;
             end
           end
 
-          STWRVRAM: begin
+          WR_VRAM: begin
             // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMMM, LMMV, LINE, PSET
-            VDPVRAMACCESSY <= DY;
-            VDPVRAMACCESSX <= DXTMP[8:0];
-            VRAMWRREQ <= ~VRAMWRACK;
-            STATE <= STWAITWRVRAM;
+            vram_access_y <= DY;
+            vram_access_x <= dx_tmp[8:0];
+            vram_wr_req <= ~vram_wr_ack;
+            state <= WAIT_WR_VRAM;
           end
 
-          STWAITWRVRAM: begin
+          WAIT_WR_VRAM: begin
             // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMMM, LMMV, LINE, PSET
-            if ((VRAMWRREQ == VRAMWRACK)) begin
+            if ((vram_wr_req == vram_wr_ack)) begin
               case (CMR[7:4])
                 PSET: begin
-                  STATE <= STEXECEND;
+                  state <= EXEC_END;
                 end
                 LINE: begin
-                  SXTMP <= SXTMP - NY;
+                  sx_tmp <= sx_tmp - NY;
                   if (MM == 1'b0) begin
-                    DXTMP <= DXTMP + XCOUNTDELTA[9:0];
+                    dx_tmp <= dx_tmp + XCOUNTDELTA[9:0];
                   end else begin
                     DY <= DY + YCOUNTDELTA;
                   end
-                  STATE <= STLINENEWPOS;
+                  state <= LINE_NEW_POS;
                 end
                 default: begin
-                  DXTMP <= DXTMP + XCOUNTDELTA[9:0];
-                  NXTMP <= 10'(NXTMP - 1);
-                  STATE <= STCHKLOOP;
+                  dx_tmp <= dx_tmp + XCOUNTDELTA[9:0];
+                  nx_tmp <= 10'(nx_tmp - 1);
+                  state <= CHK_LOOP;
                 end
               endcase
             end
           end
 
-          STLINENEWPOS: begin
+          LINE_NEW_POS: begin
             // APPLICABLE TO LINE
-            if ((SXTMP[10] == 1'b1)) begin
-              SXTMP <= {1'b0, SXTMP[9:0] + NX};
+            if ((sx_tmp[10] == 1'b1)) begin
+              sx_tmp <= {1'b0, sx_tmp[9:0] + NX};
               if ((MM == 1'b0)) begin
                 DY <= DY + YCOUNTDELTA;
               end else begin
-                DXTMP <= DXTMP + XCOUNTDELTA[9:0];
+                dx_tmp <= dx_tmp + XCOUNTDELTA[9:0];
               end
             end
-            STATE <= STLINECHKLOOP;
+            state <= LINE_CHK_LOOP;
           end
 
-          STLINECHKLOOP: begin
+          LINE_CHK_LOOP: begin
             // APPLICABLE TO LINE
-            if (((NXTMP == NX) || ((DXTMP[9:8] & MAXXMASK) == MAXXMASK))) begin
-              STATE <= STEXECEND;
+            if (((nx_tmp == NX) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK))) begin
+              state <= EXEC_END;
             end else begin
-              VRAMWRDATA <= CLR;
+              vram_wr_data <= CLR;
               // COLOR MUST BE RE-MASKED, JUST IN CASE THAT SCREENMODE WAS CHANGED
               CLR <= CLR & COLMASK;
-              STATE <= STPRERDVRAM;
+              state <= PRE_RD_VRAM;
             end
-            NXTMP <= 10'(NXTMP + 1);
+            nx_tmp <= 10'(nx_tmp + 1);
           end
 
-          STSRCHCHKLOOP: begin
+          SRCH_CHK_LOOP: begin
             // APPLICABLE TO SRCH
-            if ((NXLOOPEND == 1'b1)) begin
-              STATE <= STEXECEND;
+            if ((nx_loop_end == 1'b1)) begin
+              state <= EXEC_END;
             end else begin
               // COLOR MUST BE RE-MASKED, JUST IN CASE THAT SCREENMODE WAS CHANGED
               CLR   <= CLR & COLMASK;
-              STATE <= STRDVRAM;
+              state <= RD_VRAM;
             end
           end
 
-          STCHKLOOP: begin
-            // WHEN INITIALIZING = '1':
+          CHK_LOOP: begin
+            // WHEN initializing = '1':
             //   APPLICABLE TO ALL COMMANDS
-            // WHEN INITIALIZING = '0':
+            // WHEN initializing = '0':
             //   APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMCM, LMMM, LMMV
-            //   DETERMINE NYLOOPEND
-            DYEND = 1'b0;
-            SYEND = 1'b0;
+            //   DETERMINE ny_loop_end
+            dy_end = 1'b0;
+            sy_end = 1'b0;
             if ((DIY == 1'b1)) begin
               if (((DY == 0) && (CMR[7:4] != LMCM))) begin
-                DYEND = 1'b1;
+                dy_end = 1'b1;
               end
               if (((SY == 0) && (CMR[5] != CMR[4]))) begin
                 // BIT5 /= BIT4 IS TRUE FOR COMMANDS YMMM, HMMM, LMCM, LMMM
-                SYEND = 1'b1;
+                sy_end = 1'b1;
               end
             end
-            if (((NY == 1) || (DYEND == 1'b1) || (SYEND == 1'b1))) begin
-              NYLOOPEND = 1'b1;
+            if (((NY == 1) || (dy_end == 1'b1) || (sy_end == 1'b1))) begin
+              ny_loop_end = 1'b1;
             end else begin
-              NYLOOPEND = 1'b0;
+              ny_loop_end = 1'b0;
             end
-            if (((INITIALIZING == 1'b0) && (NXLOOPEND == 1'b1) && (NYLOOPEND == 1'b1))) begin
-              STATE <= STEXECEND;
+            if (((initializing == 1'b0) && (nx_loop_end == 1'b1) && (ny_loop_end == 1'b1))) begin
+              state <= EXEC_END;
             end else begin
-              // COMMAND NOT YET FINISHED OR COMMAND INITIALIZING. DETERMINE NEXT/FIRST STEP
+              // COMMAND NOT YET FINISHED OR COMMAND initializing. DETERMINE NEXT/FIRST STEP
               // COLOR MUST BE (RE-)MASKED, JUST IN CASE THAT SCREENMODE WAS CHANGED
               CLR <= CLR & COLMASK;
               case (CMR[7:4])
                 HMMC: begin
-                  STATE <= STRDCPU;
+                  state <= RD_CPU;
                 end
                 YMMM: begin
-                  STATE <= STRDVRAM;
+                  state <= RD_VRAM;
                 end
                 HMMM: begin
-                  STATE <= STRDVRAM;
+                  state <= RD_VRAM;
                 end
                 HMMV: begin
-                  VRAMWRDATA <= CLR;
-                  STATE <= STWRVRAM;
+                  vram_wr_data <= CLR;
+                  state <= WR_VRAM;
                 end
                 LMMC: begin
-                  STATE <= STRDCPU;
+                  state <= RD_CPU;
                 end
                 LMCM: begin
-                  STATE <= STWAITCPU;
+                  state <= WAIT_CPU;
                 end
                 LMMM: begin
-                  STATE <= STRDVRAM;
+                  state <= RD_VRAM;
                 end
                 LMMV, LINE, PSET: begin
-                  VRAMWRDATA <= CLR;
-                  STATE <= STPRERDVRAM;
+                  vram_wr_data <= CLR;
+                  state <= PRE_RD_VRAM;
                 end
                 SRCH: begin
-                  STATE <= STRDVRAM;
+                  state <= RD_VRAM;
                 end
                 POINT: begin
-                  STATE <= STRDVRAM;
+                  state <= RD_VRAM;
                 end
                 default: begin
-                  STATE <= STEXECEND;
+                  state <= EXEC_END;
                 end
               endcase
             end
-            if (((INITIALIZING == 1'b0) && (NXLOOPEND == 1'b1))) begin
-              NXTMP <= NXCOUNT;
+            if (((initializing == 1'b0) && (nx_loop_end == 1'b1))) begin
+              nx_tmp <= NXCOUNT;
               if (CMR[7:4] == YMMM) begin
-                SXTMP <= {2'b00, DX};
+                sx_tmp <= {2'b00, DX};
               end else begin
-                SXTMP <= {2'b00, SX};
+                sx_tmp <= {2'b00, SX};
               end
-              DXTMP <= {1'b0, DX};
+              dx_tmp <= {1'b0, DX};
               NY <= 10'(NY - 1);
               if ((CMR[5] != CMR[4])) begin
                 // BIT5 /= BIT4 IS TRUE FOR COMMANDS YMMM, HMMM, LMCM, LMMM
@@ -726,12 +725,12 @@ module VDP_COMMAND (
                 DY <= DY + YCOUNTDELTA;
               end
             end else begin
-              SXTMP[10] <= 1'b0;
+              sx_tmp[10] <= 1'b0;
             end
-            INITIALIZING <= 1'b0;
+            initializing <= 1'b0;
           end
           default: begin
-            STATE <= STIDLE;
+            state <= IDLE;
             CE <= 0;
             CMR <= 0;
           end
