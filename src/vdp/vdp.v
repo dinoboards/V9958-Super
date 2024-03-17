@@ -73,7 +73,10 @@ module VDP (
     output reg PRAMWE_N,
     output wire [16:0] PRAMADR,
     input wire [15:0] PRAMDBI,
+    input bit [31:0] vrm_32,
     output reg [7:0] PRAMDBO,
+    output logic [31:0] out_vram_32,
+    output bit vrm_32_mode,
     input wire VDPSPEEDMODE,
     output wire [5:0] PVIDEOR,
     output wire [5:0] PVIDEOG,
@@ -255,12 +258,14 @@ module VDP (
   reg         VDPCMDVRAMREADINGR;
   reg         VDPCMDVRAMREADINGA;
   reg  [ 7:0] VDPCMDVRAMRDDATA;
+  reg [23:0] vdp_cmd_vram_rd_data_24;
   wire        VDPCMDREGWRREQ;
   wire        VDPCMDTRCLRREQ;
   wire        VDPCMDVRAMWRREQ;
   wire        VDPCMDVRAMRDREQ;
   wire [16:0] VDPCMDVRAMACCESSADDR;
   wire [ 7:0] VDPCMDVRAMWRDATA;
+  bit [23:0] vdp_cmd_vram_wr_data_24;
 
   reg         VDP_COMMAND_DRIVE;
   wire        VDP_COMMAND_ACTIVE;
@@ -282,6 +287,7 @@ module VDP (
 
   reg  [16:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
+  bit [23:0] pram_data_24;
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
 
@@ -303,6 +309,7 @@ module VDP (
   assign PRAMADR = IRAMADR;
   assign XRAMSEL = IRAMADR[0];
   assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI[7:0] : PRAMDBI[15:8];
+  assign pram_data_24 = vrm_32[23:0];
   assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI[7:0] : PRAMDBI[15:8];
 
   //--------------------------------------------------------------
@@ -482,13 +489,15 @@ module VDP (
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      VDPCMDVRAMRDDATA <= {8{1'b0}};
+      VDPCMDVRAMRDDATA <= 8'b0;
+      vdp_cmd_vram_rd_data_24 <= 24'b0;
       VDPCMDVRAMRDACK <= 1'b0;
       VDPCMDVRAMREADINGA <= 1'b0;
     end else begin
       if ((DOTSTATE == 2'b01)) begin
         if ((VDPCMDVRAMREADINGR != VDPCMDVRAMREADINGA)) begin
           VDPCMDVRAMRDDATA <= PRAMDAT;
+          vdp_cmd_vram_rd_data_24 <= pram_data_24;
           VDPCMDVRAMRDACK <= ~VDPCMDVRAMRDACK;
           VDPCMDVRAMREADINGA <= ~VDPCMDVRAMREADINGA;
         end
@@ -601,31 +610,36 @@ module VDP (
         end else begin
           VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDRV + 1);
         end
-        PRAMDBO <= {8{1'bZ}};
+        PRAMDBO <= 8'bZ;
+        out_vram_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
         VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO <= VDPCMDVRAMWRDATA;
+        out_vram_32 <= {8'b0, vdp_cmd_vram_wr_data_24};
         PRAMWE_N <= 1'b0;
         VDPCMDVRAMWRACK <= ~VDPCMDVRAMWRACK;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
-        PRAMDBO <= {8{1'bZ}};
+        PRAMDBO <= 8'bZ;
+        out_vram_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
         VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_SPRT)) begin
         // VRAM READ BY SPRITE MODULE
         IRAMADR  <= PRAMADRSPRITE;
         PRAMWE_N <= 1'b1;
-        PRAMDBO  <= {8{1'bZ}};
+        PRAMDBO  <= 8'bZ;
+        out_vram_32 <= 32'bZ;
       end else begin
         // VRAM_ACCESS_DRAW
         // VRAM READ FOR SCREEN IMAGE BUILDING
         case (DOTSTATE)
           2'b10: begin
-            PRAMDBO  <= {8{1'bZ}};
+            PRAMDBO  <= 8'bZ;
+            out_vram_32 <= 32'bZ;
             PRAMWE_N <= 1'b1;
             if ((TEXT_MODE == 1'b1)) begin
               IRAMADR <= PRAMADRT12;
@@ -636,7 +650,8 @@ module VDP (
             end
           end
           2'b01: begin
-            PRAMDBO  <= {8{1'bZ}};
+            PRAMDBO  <= 8'bZ;
+            out_vram_32 <= 32'bZ;
             PRAMWE_N <= 1'b1;
             if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
               IRAMADR <= PRAMADRG4567;
@@ -926,6 +941,7 @@ module VDP (
       .vram_wr_ack(VDPCMDVRAMWRACK),
       .vram_rd_ack(VDPCMDVRAMRDACK),
       .vram_rd_data(VDPCMDVRAMRDDATA),
+      .vram_rd_data_24(vdp_cmd_vram_rd_data_24),
       .reg_wr_req(VDPCMDREGWRREQ),
       .tr_clr_req(VDPCMDTRCLRREQ),
       .reg_num(VDPCMDREGNUM),
@@ -936,6 +952,8 @@ module VDP (
       .p_vram_rd_req(VDPCMDVRAMRDREQ),
       .p_vram_access_addr(VDPCMDVRAMACCESSADDR),
       .p_vram_wr_data(VDPCMDVRAMWRDATA),
+      .vrm_32_mode(vrm_32_mode),
+      .p_vram_wr_data_24(vdp_cmd_vram_wr_data_24),
       .p_clr(VDPCMDCLR),
       .p_ce(VDPCMDCE),
       .p_bd(VDPCMDBD),

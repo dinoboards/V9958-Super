@@ -24,6 +24,13 @@
 // This can be generated with PLL's clkoutp output.
 //
 
+/*
+* If wdm is 01, then only the lower 8 bits are written;
+* if wdm is 10, then only the upper 8 bits are written;
+* if wdm is 11, then both bytes are written;
+* if wdm is 00, then all 32 bits of din_32 are written.
+*/
+
 module sdram #(
     // Clock frequency, max 66.7Mhz with current set of T_xx/CAS parameters.
     parameter FREQ       = 54_000_000,
@@ -43,55 +50,56 @@ module sdram #(
     parameter [3:0] T_RC  = 4'd4   // 60ns, ref/active to ref/active
 ) (
     // SDRAM side interface
-    inout      [DATA_WIDTH-1:0] IO_sdram_dq,
-    output reg [ ROW_WIDTH-1:0] O_sdram_addr,
-    output reg [BANK_WIDTH-1:0] O_sdram_ba,
-    output                      O_sdram_cs_n,   // not strictly necessary, always 0
-    output reg                  O_sdram_wen_n,
-    output reg                  O_sdram_ras_n,
-    output reg                  O_sdram_cas_n,
-    output                      O_sdram_clk,
-    output                      O_sdram_cke,    // not strictly necessary, always 1
-    output reg [           3:0] O_sdram_dqm,
+    inout  logic [DATA_WIDTH-1:0] IO_sdram_dq,
+    output bit   [ ROW_WIDTH-1:0] O_sdram_addr,
+    output bit   [BANK_WIDTH-1:0] O_sdram_ba,
+    output bit                    O_sdram_cs_n,   // not strictly necessary, always 0
+    output bit                    O_sdram_wen_n,
+    output bit                    O_sdram_ras_n,
+    output bit                    O_sdram_cas_n,
+    output bit                    O_sdram_clk,
+    output bit                    O_sdram_cke,    // not strictly necessary, always 1
+    output bit   [           3:0] O_sdram_dqm,
 
     // Logic side interface
-    input                   clk,
-    input                   clk_sdram,   // phase shifted from clk (normally 180-degrees)
-    input                   resetn,
-    input                   rd,          // command: read
-    input                   wr,          // command: write
-    input                   refresh,     // command: auto refresh. 4096 refresh cycles in 64ms. Once per 15us.
-    input  [          22:0] addr,        // byte address
-    input  [          15:0] din,         // data input
-    input  [           1:0] wdm,         // write data mask
-    output [          15:0] dout,        // data output
-    output [DATA_WIDTH-1:0] dout32,      // 32-bit data output
-    output                  data_ready,  // available 6 cycles after wr is set
-    output                  busy,        // 0: ready for next command
-    output                  enabled
+    input  bit                  clk,
+    input  bit                  clk_sdram,   // phase shifted from clk (normally 180-degrees)
+    input  bit                  resetn,
+    input  bit                  rd,          // command: read
+    input  bit                  wr,          // command: write
+    input  bit                  refresh,     // command: auto refresh. 4096 refresh cycles in 64ms. Once per 15us.
+    input  bit [          22:0] addr,        // byte address
+    input  bit [          15:0] din,         // data input
+    input  bit [          31:0] din32,       // data input when wdm is 00
+    input  bit [           1:0] wdm,         // write data mask
+    output bit [          15:0] dout,        // data output
+    output bit [DATA_WIDTH-1:0] dout32,      // 32-bit data output
+    output bit                  data_ready,  // available 6 cycles after wr is set
+    output bit                  busy,        // 0: ready for next command
+    output bit                  enabled
 );
 
   // Tri-state DQ input/output
-  reg                  dq_oen;  // 0 means output
-  reg [DATA_WIDTH-1:0] dq_out;
+  bit                  dq_oen;  // 0 means output
+  bit [DATA_WIDTH-1:0] dq_out;
   assign IO_sdram_dq = dq_oen ? 32'bzzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz : dq_out;
   wire [DATA_WIDTH-1:0] dq_in = IO_sdram_dq;  // DQ input
 
-  reg off;  // byte offset
+  bit off;  // byte offset
   assign dout = off == 0 ? dq_in[15:0] : dq_in[31:16];
   assign dout32 = dq_in;
   assign O_sdram_clk = clk_sdram;
   assign O_sdram_cke = 1'b1;
   assign O_sdram_cs_n = 1'b0;
 
-  reg [ ROW_WIDTH-1:0] FF_SDRAM_A;
-  reg [BANK_WIDTH-1:0] FF_SDRAM_BA;
-  reg                  FF_SDRAM_nWE;
-  reg                  FF_SDRAM_nRAS;
-  reg                  FF_SDRAM_nCAS;
-  reg [           3:0] FF_SDRAM_DQM;
-  reg                  ff_busy;
-  reg                  ff_data_ready;
+  bit [ ROW_WIDTH-1:0] FF_SDRAM_A;
+  bit [BANK_WIDTH-1:0] FF_SDRAM_BA;
+  bit                  FF_SDRAM_nWE;
+  bit                  FF_SDRAM_nRAS;
+  bit                  FF_SDRAM_nCAS;
+  bit [           3:0] FF_SDRAM_DQM;
+  bit                  ff_busy;
+  bit                  ff_data_ready;
 
   assign O_sdram_addr = FF_SDRAM_A;
   assign O_sdram_ba = FF_SDRAM_BA;
@@ -102,7 +110,7 @@ module sdram #(
   assign busy = ff_busy;
   assign data_ready = ff_data_ready;
 
-  reg [2:0] state;
+  bit [2:0] state;
   localparam INIT = 3'd0;
   localparam CONFIG = 3'd1;
   localparam IDLE = 3'd2;
@@ -111,7 +119,7 @@ module sdram #(
   localparam REFRESH = 3'd5;
 
   // RAS# CAS# WE#
-  localparam CMD_SetModeReg = 3'b000;
+  localparam CMD_SetModebit = 3'b000;
   localparam CMD_AutoRefresh = 3'b001;
   localparam CMD_PreCharge = 3'b010;
   localparam CMD_BankActivate = 3'b011;
@@ -121,10 +129,10 @@ module sdram #(
 
   localparam [2:0] BURST_LEN = 3'b0;  // burst length 1
   localparam BURST_MODE = 1'b0;  // sequential
-  localparam [10:0] MODE_REG = {4'b0, CAS[2:0], BURST_MODE, BURST_LEN};
+  localparam [10:0] MODE_bit = {4'b0, CAS[2:0], BURST_MODE, BURST_LEN};
 
-  reg       cfg_now;  // pulse for configuration
-  reg [3:0] cycle;  // each operation (config/read/write) are max 7 cycles
+  bit       cfg_now;  // pulse for configuration
+  bit [3:0] cycle;  // each operation (config/read/write) are max 7 cycles
 
   //
   // SDRAM state machine
@@ -179,8 +187,8 @@ module sdram #(
           CONFIG, T_RP + T_RC + T_RC
         } : begin
           // set register
-          {FF_SDRAM_nRAS, FF_SDRAM_nCAS, FF_SDRAM_nWE} <= CMD_SetModeReg;
-          FF_SDRAM_A[10:0] <= MODE_REG;
+          {FF_SDRAM_nRAS, FF_SDRAM_nCAS, FF_SDRAM_nWE} <= CMD_SetModebit;
+          FF_SDRAM_A[10:0] <= MODE_bit;
         end
         {
           CONFIG, T_RP + T_RC + T_RC + T_MRD
@@ -253,9 +261,9 @@ module sdram #(
           {FF_SDRAM_nRAS, FF_SDRAM_nCAS, FF_SDRAM_nWE} <= CMD_Write;
           FF_SDRAM_A[10]                               <= 1'b1;  // set auto precharge
           FF_SDRAM_A[9:0]                              <= {1'b0, addr[COL_WIDTH-1+1:1]};  // column address
-          FF_SDRAM_DQM                                 <= addr[0] == 1'd0 ? {2'b11, wdm} : {wdm, 2'b11};  // only write the correct byte
+          FF_SDRAM_DQM                                 <= wdm == 2'b00 ? {4'b0000} : addr[0] == 1'd0 ? {2'b11, wdm} : {wdm, 2'b11};  // only write the correct byte
           off                                          <= addr[0];
-          dq_out                                       <= {din, din};
+          dq_out                                       <= wdm == 2'b00 ? din32 : {din, din};
           dq_oen                                       <= 1'b0;  // DQ output on
         end
         {
@@ -290,8 +298,8 @@ module sdram #(
   //
   // Generate cfg_now pulse after initialization delay (normally 200us)
   //
-  reg [14:0] rst_cnt;
-  reg rst_done, rst_done_p1, cfg_busy;
+  bit [14:0] rst_cnt;
+  bit rst_done, rst_done_p1, cfg_busy;
   assign enabled = rst_done;
 
   always @(posedge clk or negedge resetn) begin

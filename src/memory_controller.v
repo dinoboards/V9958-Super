@@ -22,46 +22,48 @@ map to the gowin special pins to access the onchip SDRAM
 module memory_controller #(
     parameter int FREQ = 54_000_000
 ) (
-    input             clk,        // Main logic clock (max speed is 166.7Mh - see SRAM.v)
-    input             clk_sdram,  // A clock signal that is 180 degrees out of phase with the main clock.
-    input             resetn,     // Active low reset signal.
-    input             read,       // Signal to initiate a read operation from the SDRAM
-    input             write,      // Signal to initiate a write operation to the SDRAM
-    input             refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
-    input      [22:0] addr,       // The address to read from or write to in the SDRAM
-    input      [15:0] din,        // The data to be written to the SDRAM (only the byte specified by wdm is written)
-    input      [ 1:0] wdm,        // Write data mask
-    output     [15:0] dout,       // The data read from the SDRAM. Available 4 cycles after the read signal is set.
-    output reg        busy,       // Signal indicating that an operation is in progress.
-    output            enabled,    // Signal indicating that the memory controller is enabled.
-    output     [31:0] dout32,
+    input  bit          clk,        // Main logic clock (max speed is 166.7Mh - see SRAM.v)
+    input  bit          clk_sdram,  // A clock signal that is 180 degrees out of phase with the main clock.
+    input  bit          resetn,     // Active low reset signal.
+    input  bit          read,       // Signal to initiate a read operation from the SDRAM
+    input  bit          write,      // Signal to initiate a write operation to the SDRAM
+    input  bit          refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
+    input  bit   [22:0] addr,       // The address to read from or write to in the SDRAM
+    input  bit   [15:0] din,        // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
+    input  logic [31:0] din32,      // The data to be written to the SDRAM when wdm is 00
+    input  bit   [ 1:0] wdm,        // Write data mask
+    output bit   [15:0] dout,       // The data read from the SDRAM. Available 4 cycles after the read signal is set.
+    output bit          busy,       // Signal indicating that an operation is in progress.
+    output bit          enabled,    // Signal indicating that the memory controller is enabled.
+    output bit   [31:0] dout32,
 
     // debug interface
-    output reg fail,  // Signal indicating a timing mistake or SDRAM malfunction
+    output bit fail,  // Signal indicating a timing mistake or SDRAM malfunction
 
     // GoWin's Physical SDRAM interface
-    inout  [31:0] IO_sdram_dq,    // 32 bit bidirectional data bus
-    output [10:0] O_sdram_addr,   // 11 bit multiplexed address bus
-    output [ 1:0] O_sdram_ba,     // 4 banks
-    output        O_sdram_cs_n,   // chip select
-    output        O_sdram_wen_n,  // write enable
-    output        O_sdram_ras_n,  // row address strobe
-    output        O_sdram_cas_n,  // columns address strobe
-    output        O_sdram_clk,    // sdram's clock
-    output        O_sdram_cke,    // sdram's clock enable
-    output [ 3:0] O_sdram_dqm     // data mask control
+    inout  logic [31:0] IO_sdram_dq,    // 32 bit bidirectional data bus
+    output bit   [10:0] O_sdram_addr,   // 11 bit multiplexed address bus
+    output bit   [ 1:0] O_sdram_ba,     // 4 banks
+    output bit          O_sdram_cs_n,   // chip select
+    output bit          O_sdram_wen_n,  // write enable
+    output bit          O_sdram_ras_n,  // row address strobe
+    output bit          O_sdram_cas_n,  // columns address strobe
+    output bit          O_sdram_clk,    // sdram's clock
+    output bit          O_sdram_cke,    // sdram's clock enable
+    output bit   [ 3:0] O_sdram_dqm     // data mask control
 );
 
-  reg [22:0] MemAddr;
-  reg MemRD, MemWR, MemRefresh, MemInitializing;
-  reg [15:0] MemDin;
-  wire [15:0] MemDout;
+  bit [22:0] MemAddr;
+  bit MemRD, MemWR, MemRefresh, MemInitializing;
+  bit [15:0] MemDin;
+  bit [31:0] MemDin32;
+  bit [15:0] MemDout;
   bit [31:0] MemDout32;
-  reg [2:0] cycles;
-  reg r_read;
-  reg [15:0] data;
+  bit [2:0] cycles;
+  bit r_read;
+  bit [15:0] data;
   bit [31:0] data32;
-  wire MemBusy, MemDataReady;
+  bit MemBusy, MemDataReady;
 
   assign dout   = (cycles == 3'd4 && r_read) ? MemDout : data;
   assign dout32 = (cycles == 3'd4 && r_read) ? MemDout32 : data32;
@@ -78,6 +80,7 @@ module memory_controller #(
       .wr(busy ? MemWR : write),
       .refresh(busy ? MemRefresh : refresh),
       .din(busy ? MemDin : din),
+      .din32(busy ? MemDin32 : din32),
       .wdm(wdm),
       .dout(MemDout),
       .dout32(MemDout32),
@@ -118,6 +121,7 @@ module memory_controller #(
           MemRefresh <= refresh;
           busy <= 1'b1;
           MemDin <= din;
+          MemDin32 <= din32;
           cycles <= 3'd1;
           r_read <= read;
 

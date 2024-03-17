@@ -44,7 +44,7 @@ module v9958_top (
     output        O_sdram_cas_n,  // columns address select
     output        O_sdram_ras_n,  // row address select
     output        O_sdram_wen_n,  // write enable
-    inout  [31:0] IO_sdram_dq,    // 32 bit bidirectional data bus
+    inout  logic [31:0] IO_sdram_dq,    // 32 bit bidirectional data bus
     output [10:0] O_sdram_addr,   // 11 bit multiplexed address bus
     output [ 1:0] O_sdram_ba,     // two banks
     output [ 3:0] O_sdram_dqm     // 32/4
@@ -99,6 +99,8 @@ module v9958_top (
   bit          WeVdp_n;
   bit   [16:0] VdpAdr;
   bit   [ 7:0] VrmDbo;
+  logic   [31:0] out_vrm_32;
+  bit          vrm_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
   bit   [15:0] VrmDbi;
 
   bit   [ 5:0] VideoR;  // RGB Red
@@ -136,7 +138,8 @@ module v9958_top (
       .refresh(memory_refresh),
       .addr((vdp_super && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : {7'b0, VdpAdr[16:1]}),
       .din({VrmDbo, VrmDbo}),
-      .wdm({~VdpAdr[0], VdpAdr[0]}),
+      .din32(out_vrm_32),
+      .wdm(vrm_32_mode ? 2'b00 : {~VdpAdr[0], VdpAdr[0]}),
       .dout(VrmDbi),
       .dout32(vrm_32),
       .busy(ram_busy),
@@ -215,7 +218,10 @@ module v9958_top (
       .PRAMWE_N    (WeVdp_n),
       .PRAMADR     (VdpAdr),
       .PRAMDBI     (VrmDbi),
+      .vrm_32      (vrm_32),
       .PRAMDBO     (VrmDbo),
+      .out_vram_32 (out_vrm_32),
+      .vrm_32_mode (vrm_32_mode),
       .VDPSPEEDMODE(1'b1),                    // for V9958 MSX2+/tR VDP
       .PVIDEOR     (VideoR),
       .PVIDEOG     (VideoG),

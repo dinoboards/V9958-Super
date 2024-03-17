@@ -66,6 +66,7 @@ module VDP_COMMAND (
     input bit vram_wr_ack,
     input bit vram_rd_ack,
     input bit [7:0] vram_rd_data,
+    input bit [23:0] vram_rd_data_24,
     input bit reg_wr_req,
     input bit tr_clr_req,
     input bit [3:0] reg_num,
@@ -78,6 +79,8 @@ module VDP_COMMAND (
     output bit p_vram_rd_req,
     output bit [16:0] p_vram_access_addr,
     output bit [7:0] p_vram_wr_data,
+    output bit vrm_32_mode,
+    output bit [23:0] p_vram_wr_data_24,
     output bit [7:0] p_clr,
     output bit p_ce,
     output bit p_bd,
@@ -119,6 +122,7 @@ module VDP_COMMAND (
   bit         vram_rd_req;
   bit  [16:0] vram_access_addr;
   bit  [ 7:0] vram_wr_data;
+  bit [23:0] vram_wr_data_24;
   bit  [ 7:0] CLR;  // R44, S#7
 
   // VDP COMMAND SIGNALS - CAN BE READ BY CPU
@@ -179,6 +183,7 @@ module VDP_COMMAND (
   assign p_vram_rd_req = vram_rd_req;
   assign p_vram_access_addr = vram_access_addr;
   assign p_vram_wr_data = vram_wr_data;
+  assign p_vram_wr_data_24 = vram_wr_data_24;
   assign p_clr = CLR;
   assign p_ce = CE;
   assign p_bd = BD;
@@ -355,6 +360,8 @@ module VDP_COMMAND (
       vram_wr_req      <= 0;
       vram_rd_req      <= 0;
       vram_wr_data     <= 0;
+      vrm_32_mode <= 0; //default to 8 bit writes
+      vram_wr_data_24 <= 0;
       TR             <= 1'b1;  // TRANSFER READY
       CE             <= 0;  // COMMAND EXECUTING
       BD             <= 0;  // BORDER COLOR FOUND
