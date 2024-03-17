@@ -129,7 +129,6 @@ module VDP_REGISTER (
     output wire [7:0] REG_R18_ADJ,
     output reg [7:0] REG_R19_HSYNC_INT_LINE,
     output reg [7:0] REG_R23_VSTART_LINE,
-    output reg REG_R25_CMD,
     output reg REG_R25_YAE,
     output reg REG_R25_YJK,
     output reg REG_R25_MSK,
@@ -215,9 +214,9 @@ module VDP_REGISTER (
   assign ACK = FF_ACK;
   assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;
   assign vdp_super = FF_REG_R31[0];  //if 1, activate on of the super graphic modes
-  assign super_color = FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
-  assign super_mid = FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
-  assign super_res = FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+  assign super_color = vdp_super && FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
+  assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
+  assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
 
   assign VDPMODEGRAPHIC1 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000);
   assign VDPMODETEXT1 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001);
@@ -471,7 +470,6 @@ module VDP_REGISTER (
       REG_R18_HORZ <= 4'd0;
       REG_R19_HSYNC_INT_LINE <= 8'd0;
       REG_R23_VSTART_LINE <= 8'd0;
-      REG_R25_CMD <= 1'd0;
       REG_R25_YAE <= 1'd0;
       REG_R25_YJK <= 1'd0;
       REG_R25_MSK <= 1'd0;
@@ -675,7 +673,7 @@ module VDP_REGISTER (
               REG_R23_VSTART_LINE <= VDPP1DATA;
             end
             5'b11001: begin  // #25
-              REG_R25_CMD <= VDPP1DATA[6];
+              // REG_R25_CMD <= VDPP1DATA[6];
               REG_R25_YAE <= VDPP1DATA[4];
               REG_R25_YJK <= VDPP1DATA[3];
               REG_R25_MSK <= VDPP1DATA[1];

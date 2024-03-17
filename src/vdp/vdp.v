@@ -179,7 +179,6 @@ module VDP (
   wire [ 7:0] REG_R18_ADJ;
   wire [ 7:0] REG_R19_HSYNC_INT_LINE;
   wire [ 7:0] REG_R23_VSTART_LINE;
-  wire        REG_R25_CMD;
   wire        REG_R25_YAE;
   wire        REG_R25_YJK;
   wire        REG_R25_MSK;
@@ -899,7 +898,6 @@ module VDP (
       .REG_R18_ADJ(REG_R18_ADJ),
       .REG_R19_HSYNC_INT_LINE(REG_R19_HSYNC_INT_LINE),
       .REG_R23_VSTART_LINE(REG_R23_VSTART_LINE),
-      .REG_R25_CMD(REG_R25_CMD),
       .REG_R25_YAE(REG_R25_YAE),
       .REG_R25_YJK(REG_R25_YJK),
       .REG_R25_MSK(REG_R25_MSK),
@@ -938,6 +936,7 @@ module VDP (
       .mode_graphic_6(VDPMODEGRAPHIC6),
       .mode_graphic_7(VDPMODEGRAPHIC7),
       .mode_high_res(VDPMODEISHIGHRES),
+      .mode_graphic_super_colour(super_color),
       .vram_wr_ack(VDPCMDVRAMWRACK),
       .vram_rd_ack(VDPCMDVRAMRDACK),
       .vram_rd_data(VDPCMDVRAMRDDATA),
@@ -959,8 +958,7 @@ module VDP (
       .p_bd(VDPCMDBD),
       .p_tr(VDPCMDTR),
       .p_sx_tmp(VDPCMDSXTMP),
-      .current_command(CUR_VDP_COMMAND),
-      .reg_R25_cmd(REG_R25_CMD)
+      .current_command(CUR_VDP_COMMAND)
   );
 
   VDP_WAIT_CONTROL U_VDP_WAIT_CONTROL (

@@ -136,7 +136,7 @@ module v9958_top (
       .read(v9958_read),
       .write(v9958_write),
       .refresh(memory_refresh),
-      .addr((vdp_super && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : {7'b0, VdpAdr[16:1]}),
+      .addr((vdp_super && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : (vrm_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]})),
       .din({VrmDbo, VrmDbo}),
       .din32(out_vrm_32),
       .wdm(vrm_32_mode ? 2'b00 : {~VdpAdr[0], VdpAdr[0]}),
