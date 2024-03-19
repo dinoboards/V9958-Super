@@ -1,7 +1,4 @@
 
-// `define WIDTH (PIXEL_WIDTH()/4)
-// `define HEIGHT (PIXEL_HEIGHT(pal_mode)/4)
-
 module vdp_super_high_res (
     input bit reset,
     input bit clk,
@@ -34,8 +31,6 @@ module vdp_super_high_res (
   bit [31:0] line_buffer[`MAX_PIXEL_WIDTH];
   bit [7:0] line_buffer_index;
 
-  bit [1:0] dot_state;
-
   assign super_high_res = (vdp_super & super_color) | (vdp_super & super_mid);
 
   // pixel format for super_mid: GGGG GGRR RRRB BBBB
@@ -46,7 +41,7 @@ module vdp_super_high_res (
   bit [ 4:0] high_mid_pixel_red;
   bit [ 4:0] high_mid_pixel_blue;
 
-  assign high_mid_pixel = dot_state == 2'b10 || dot_state == 2'b01 ? high_res_data[15:0] : high_res_data[31:16];
+  assign high_mid_pixel = cx[1:0] == 2'b10 || cx[1:0] == 2'b01 ? high_res_data[15:0] : high_res_data[31:16];
   assign high_mid_pixel_green = high_mid_pixel[15:10];
   assign high_mid_pixel_red = high_mid_pixel[9:5];
   assign high_mid_pixel_blue = high_mid_pixel[4:0];
@@ -76,15 +71,6 @@ module vdp_super_high_res (
       if (cx == 0 && cy == 0) super_high_res_visible_y <= 1;
       else if (last_line) super_high_res_visible_y <= 1;
       else if (cy == (PIXEL_HEIGHT(pal_mode)) - 1 && cx == (PIXEL_WIDTH())) super_high_res_visible_y <= 0;
-    end
-  end
-
-  always_ff @(posedge reset or posedge clk) begin
-    if (reset || cx == FRAME_WIDTH(pal_mode) - 1) begin
-      dot_state <= 0;
-
-    end else begin
-      dot_state <= 2'(dot_state + 1);
     end
   end
 
@@ -124,7 +110,7 @@ module vdp_super_high_res (
                 high_res_data <= '{default: 0};
 
               end else begin
-                case (dot_state)
+                case (cx[1:0])
                   0: begin
                     // (DL)
                     if (active_line) begin
