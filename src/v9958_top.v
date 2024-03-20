@@ -3,11 +3,6 @@
 `include "vdp_constants.vh"
 
 module v9958_top (
-    output led5_n,
-    output led4_n,
-    output led3_n,
-    output led2_n,
-
     //high => send a HDMI single without any audio encoded
     //low => send HDMI single with audio encoded
     input exclude_audio,
@@ -38,16 +33,16 @@ module v9958_top (
     output [2:0] tmds_data_n,
 
     // SDRAM
-    output        O_sdram_clk,
-    output        O_sdram_cke,
-    output        O_sdram_cs_n,   // chip select
-    output        O_sdram_cas_n,  // columns address select
-    output        O_sdram_ras_n,  // row address select
-    output        O_sdram_wen_n,  // write enable
+    output              O_sdram_clk,
+    output              O_sdram_cke,
+    output              O_sdram_cs_n,   // chip select
+    output              O_sdram_cas_n,  // columns address select
+    output              O_sdram_ras_n,  // row address select
+    output              O_sdram_wen_n,  // write enable
     inout  logic [31:0] IO_sdram_dq,    // 32 bit bidirectional data bus
-    output [10:0] O_sdram_addr,   // 11 bit multiplexed address bus
-    output [ 1:0] O_sdram_ba,     // two banks
-    output [ 3:0] O_sdram_dqm     // 32/4
+    output       [10:0] O_sdram_addr,   // 11 bit multiplexed address bus
+    output       [ 1:0] O_sdram_ba,     // two banks
+    output       [ 3:0] O_sdram_dqm     // 32/4
 );
 
   import custom_timings::*;
@@ -99,7 +94,7 @@ module v9958_top (
   bit          WeVdp_n;
   bit   [16:0] VdpAdr;
   bit   [ 7:0] VrmDbo;
-  logic   [31:0] out_vrm_32;
+  logic [31:0] out_vrm_32;
   bit          vrm_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
   bit   [15:0] VrmDbi;
 
@@ -182,11 +177,6 @@ module v9958_top (
   bit [7:0] high_res_red;
   bit [7:0] high_res_green;
   bit [7:0] high_res_blue;
-
-  assign led2_n = 0;  // 17
-  assign led3_n = 0;  //18
-  assign led4_n = high_res_vram_addr[1];  // 19
-  assign led5_n = cx == 724 && cy == (FRAME_HEIGHT(pal_mode) - 1);  // 20
 
   vdp_super_high_res vdp_super_high_res (
       .reset(reset_w),

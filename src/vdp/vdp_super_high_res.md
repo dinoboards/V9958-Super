@@ -24,14 +24,14 @@ The V9958 implementation of DOT_STATE follows:
 Loading from ram, must align with the 'DOTSTATE' of the V9958 implementation.  This is a 4 ticks cycle, to prepare and return stored data.  It also aligns with the DRAM refresh cycle
 
 ```
-00: DL -> Data loading (Memory controller is retFSeving request memory data)
-01: DR -> Data ready (vrm_32 has the data for latching)
-02: AL -> Address Load (update address for next read)
-03: FS -> DRAM Refresh
+00: DL -> Data loading (Memory controller is retrieving request memory data)
+01: DR -> Data ready (vrm_32 has the data for latching for current addr).
+02: AL -> Address Load (update address for next read)**
+03: FS -> DRAM Refresh happening
 ```
 Not that the DOTSTATE within the SSG is not ordered from 0 to 3.  Step 3 happens on the clock proceeding step 2.  After Step 2, it returns to step 00.  But dot_state here is a normal order.
 
-TODO: perhaps look at revising DOTSTATE's order to be 0, 1, 2, 3
+\** Not sure but when rendering in the super high res, for 60Hz, address must be latched during DR, other vrm_32 will be behind - for the first row only
 
 ### Sequence of memory load and pixel rendering
 
