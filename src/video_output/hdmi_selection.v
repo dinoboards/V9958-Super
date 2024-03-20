@@ -21,9 +21,7 @@ module hdmi_selection #(
 
     output logic [ 2:0] tmds,
     output logic [10:0] cx,
-    output logic [ 9:0] cy,
-    output logic [10:0] nx,
-    output logic [ 9:0] ny
+    output logic [ 9:0] cy
 );
 
   logic [10:0] cx_ntsc;
@@ -49,8 +47,6 @@ module hdmi_selection #(
       .audio_sample_word(audio_sample_word),
       .cx(cx_ntsc),
       .cy(cy_ntsc),
-      .nx(nx_ntsc),
-      .ny(ny_ntsc),
       .tmds_channels(tmds_channels_ntsc)
   );
 
@@ -66,15 +62,11 @@ module hdmi_selection #(
       .audio_sample_word(audio_sample_word),
       .cx(cx_pal),
       .cy(cy_pal),
-      .nx(nx_pal),
-      .ny(ny_pal),
       .tmds_channels(tmds_channels_pal)
   );
 
   assign cx = pal_mode ? cx_pal : cx_ntsc;
   assign cy = pal_mode ? cy_pal : cy_ntsc;
-  assign nx = pal_mode ? nx_pal : nx_ntsc;
-  assign ny = pal_mode ? ny_pal : ny_ntsc;
 
   // Select the tmds_channels based on video mode (pal/ntsc)
   // encode it with the serializer

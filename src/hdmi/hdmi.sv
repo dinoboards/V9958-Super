@@ -80,9 +80,6 @@ module hdmi #(
     output logic [10:0] cx,
     output logic [ 9:0] cy,
 
-    output logic [10:0] nx,  //expected value of cx on next clock (eg: nx = cx-1)
-    output logic [ 9:0] ny,  //expected value of cy on next clock (eg: ny = cy-1)
-
     // The screen is at the upper left corner of the frame.
     // 0,0 = 0,0 in video
     // the frame includes extra space for sending auxiliary data
@@ -146,14 +143,9 @@ module hdmi #(
     if (reset) begin
       cx <= 11'(0);
       cy <= 10'(0);
-      nx <= frame_width - 1'b1;
-      ny <= frame_height - 1'b1;
     end else begin
       cx <= cx == frame_width - 1'b1 ? 11'(0) : 11'(cx + 1'b1);
       cy <= cx == frame_width - 1'b1 ? cy == frame_height - 1'b1 ? 10'(0) : 10'(cy + 1'b1) : cy;
-
-      nx <= nx == frame_width - 1'b1 ? 11'(0) : 11'(nx + 1'b1);
-      ny <= nx == frame_width - 1'b1 ? ny == frame_height - 1'b1 ? 10'(0) : 10'(ny + 1'b1) : ny;
     end
   end
 

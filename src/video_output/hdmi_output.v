@@ -43,9 +43,7 @@ module hdmi_output #(
     // They are used (by you) to pick the color each pixel should have
     // i.e. always_ff @(posedge pixel_clk) rgb <= {8'd0, 8'(cx), 8'(cy)};
     output logic [10:0] cx,
-    output logic [ 9:0] cy,
-    output logic [10:0] nx,
-    output logic [ 9:0] ny
+    output logic [ 9:0] cy
 );
 
   hdmi #(
@@ -64,8 +62,6 @@ module hdmi_output #(
       .audio_sample_word(audio_sample_word),
       .cx(cx),
       .cy(cy),
-      .nx(nx),
-      .ny(ny),
       .tmds_channels(tmds_channels),
       .frame_width(),
       .frame_height(),

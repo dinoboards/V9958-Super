@@ -60,9 +60,8 @@ module vdp_super_high_res (
     if (reset | ~super_high_res) begin
       super_high_res_visible_x <= 0;
     end else begin
-      if (cx == FRAME_WIDTH(pal_mode) - 1) begin
-        super_high_res_visible_x <= 1;
-      end else if (cx == `DISPLAYED_PIXEL_WIDTH - 1) super_high_res_visible_x <= 0;
+      if (cx == FRAME_WIDTH(pal_mode) - 1) super_high_res_visible_x <= 1;
+      else if (cx == `DISPLAYED_PIXEL_WIDTH - 1) super_high_res_visible_x <= 0;
     end
   end
 
