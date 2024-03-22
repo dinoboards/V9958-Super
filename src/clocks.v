@@ -15,8 +15,8 @@ module clocks (
     // lock status of the 135Mhz clock
     output clk_135_lock_w,
 
-    // generated 900khz clock for the ADC clock out pin
-    output sckclk_w,
+    // generated 900khz clock for the ADC clock out pin (measured at approx 850khz)
+    output clk_900k_w,
     // generated 44.1khz clock for the HDMI audio stream
     output clk_audio_w,
 
@@ -27,7 +27,7 @@ module clocks (
 );
 
   bit clk_135;
-  bit clk_sck;
+  bit clk_900k;
   bit clk_audio;
   bit clk_sdram;
   bit clk_sdramp;
@@ -54,28 +54,27 @@ module clocks (
   // 44.1khz HDMI Audio clock
   CLOCK_DIV #(
       .CLK_SRC(27),
-      .CLK_DIV(0.044100),
+      .CLK_DESIRED(0.044100),
       .PRECISION_BITS(16)
   ) audioclkd (
       .clk_src(clk_w),
-      .clk_div(clk_audio)
+      .clk_desired(clk_audio)
   );
 
-  // 900khz ADC Clock
+  // Measured at approx 850khz ADC Clock
   CLOCK_DIV #(
       .CLK_SRC(135),
-      .CLK_DIV(0.9),
+      .CLK_DESIRED(0.9),
       .PRECISION_BITS(16)
   ) adcclkd (
       .clk_src(clk_135_w),
-      .clk_div(clk_sck)
+      .clk_desired(clk_900k)
   );
 
   BUFG clk_sck_bufg_inst (
-      .I(clk_sck),
-      .O(sckclk_w)
+      .I(clk_900k),
+      .O(clk_900k_w)
   );
-
 
   BUFG clk_audio_bufg_inst (
       .I(clk_audio),
@@ -100,6 +99,5 @@ module clocks (
       .I(clk_sdramp),
       .O(clk_sdramp_w)
   );
-
 
 endmodule

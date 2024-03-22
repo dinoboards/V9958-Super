@@ -53,7 +53,7 @@ module v9958_top (
   bit clk_w;
   bit clk_135_w;
   bit clk_135_lock_w;
-  bit sckclk_w;
+  bit clk_900k_w;
   bit clk_audio_w;
   bit clk_sdram_w;
   bit clk_sdramp_w;
@@ -65,7 +65,7 @@ module v9958_top (
       .clk_w(clk_w),
       .clk_135_w(clk_135_w),
       .clk_135_lock_w(clk_135_lock_w),
-      .sckclk_w(sckclk_w),
+      .clk_900k_w(clk_900k_w),
       .clk_audio_w(clk_audio_w),
       .clk_sdram_w(clk_sdram_w),
       .clk_sdramp_w(clk_sdramp_w),
@@ -118,10 +118,12 @@ module v9958_top (
   bit super_mid;
   bit super_res;
 
+  logic [15:0] audio_sample_word[1:0];
+
+  // Memory Interface
   assign v9958_read = (WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy);
   assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
   assign memory_refresh = ~VideoDLClk & ~VideoDHClk & ~ram_busy;
-
   memory_controller #(
       .FREQ(108_000_000)
   ) vram (
@@ -233,12 +235,10 @@ module v9958_top (
   // HDMI output
   //--------------------------------------------------------------
 
-  wire [7:0] dvi_r;
-  wire [7:0] dvi_g;
-  wire [7:0] dvi_b;
-  wire hdmi_reset;
-  wire [15:0] sample_w;
-  reg [15:0] audio_sample_word[1:0], audio_sample_word0[1:0];
+  bit   [7:0] dvi_r;
+  bit   [7:0] dvi_g;
+  bit   [7:0] dvi_b;
+  bit         hdmi_reset;
   logic [2:0] tmds;
   bit         scanlin;
 
@@ -250,14 +250,6 @@ module v9958_top (
 
   assign hdmi_reset = reset_w | ~ram_enabled;
 
-  always @(posedge clk_w) begin
-    audio_sample_word0[0] <= sample_w;
-    audio_sample_word[0]  <= audio_sample_word0[0];
-    audio_sample_word0[1] <= sample_w;
-    audio_sample_word[1]  <= audio_sample_word0[1];
-  end
-  wire [15:0] audio_sample_word_w[1:0];
-  assign audio_sample_word_w = audio_sample_word;
 
   hdmi_selection #() hdmi (
       .include_audio(~exclude_audio),
@@ -267,7 +259,7 @@ module v9958_top (
       .rgb({dvi_r, dvi_g, dvi_b}),
       .hdmi_reset(hdmi_reset),
       .reset(reset_w),
-      .audio_sample_word(audio_sample_word_w),
+      .audio_sample_word(audio_sample_word),
       .pal_mode(pal_mode),
       .cx(cx),
       .cy(cy),
@@ -283,48 +275,17 @@ module v9958_top (
 
   //--------------------------------------------------------------
 
-
-  // ADC
-  wire sck_enable;
-  wire [11:0] audio_sample;
-  SPI_MCP3202 #(
-      .SGL(1),  // sets ADC to single ended mode
-      .ODD(0)   // sets sample input to channel 0
-  ) SPI_MCP3202 (
-      .clk       (clk_135_w),     // 125  MHz???
-      .EN        (reset_n_w),     // Enable the SPI core (ACTIVE HIGH)
-      .MISO      (adc_miso),      // data out of ADC (Dout pin)
-      .MOSI      (adc_mosi),      // Data into ADC (Din pin)
-      .SCK_ENABLE(sck_enable),
-      .o_DATA    (audio_sample),  // 12 bit word (for other modules)
-      .CS        (adc_cs),        // Chip Select
-      .DATA_VALID(sample_valid)   // is high when there is a full 12 bit word.
+  AUDIO #() audio (
+      .clk(clk_w),
+      .clk_135(clk_135_w),
+      .clk_900k(clk_900k_w),
+      .reset_n(reset_n_w),
+      .audio_sample_word(audio_sample_word),
+      .adc_miso(adc_miso),
+      .adc_clk(adc_clk),
+      .adc_cs(adc_cs),
+      .adc_mosi(adc_mosi)
   );
-
-  assign adc_clk = sckclk_w & sck_enable;
-
-  reg [15:0] adc_sample;
-  always @(posedge clk_135_w) begin
-    if (sample_valid) adc_sample <= {audio_sample[11:0], 4'b0};
-  end
-
-  wire [31:0] adc_sample_w;
-  assign adc_sample_w = {adc_sample, 16'b0};
-
-  reg [31:0] sample;
-  LPF1 #(
-      .MSBI(32)
-  ) LPF (
-      .CLK21M(clk_135_w),
-      .RESET (reset_w),
-      .CLKENA(1'b1),
-      .IDATA (adc_sample_w),
-      .ODATA (sample)
-  );
-
-  assign sample_w = sample[31:16];
 
 endmodule
-
-
 

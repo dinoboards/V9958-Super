@@ -77,14 +77,12 @@ module SPI_MCP3202 #(  // set up bits for MOSI (DIN on datasheet)
         r_MOSI <= 0;
         r_DV <= 0;
 
-        if (sample_counter == 68 && EN)     // ensures that DISABLE waits 64 counts or 512ns (tcsh must >= 500ns in datasheet)
-								begin
+        // ensures that DISABLE waits 64 counts or 512ns (tcsh must >= 500ns in datasheet)
+        if (sample_counter == 68 && EN) begin
           r_STATE <= TRANSMITTING;
           r_CS    <= 0;  // CS pulled low, activates sampling
           r_MOSI  <= START;
-        end
-
-							else r_STATE <= DISABLE;
+        end else r_STATE <= DISABLE;
       end
 
       TRANSMITTING: begin

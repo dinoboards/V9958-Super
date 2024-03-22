@@ -1,9 +1,6 @@
 add_file src\\clockdiv.v
 add_file src\\clocks.v
-add_file src\\interpo_mul.v
-add_file src\\interpo.v
-add_file src\\lpf1.v
-add_file src\\lpf2.v
+add_file src\\audio.sv
 add_file src\\memory_controller.v
 add_file src\\palette_g.v
 add_file src\\palette_rb.v

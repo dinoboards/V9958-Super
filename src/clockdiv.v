@@ -23,16 +23,16 @@
 
 module CLOCK_DIV #(
     parameter real CLK_SRC = 125,
-    parameter real CLK_DIV = 3.579545,
+    parameter real CLK_DESIRED = 3.579545,
     parameter int PRECISION_BITS = 16
 ) (
     input  clk_src,
-    output clk_div
+    output clk_desired
 );
 
-  localparam int CLK_HALF = $rtoi($floor(CLK_SRC / CLK_DIV / 2.0));
-  localparam int CLK_END = $rtoi($floor(CLK_SRC / CLK_DIV));
-  localparam real CLK_SKEW = (CLK_SRC / CLK_DIV) - $floor(CLK_SRC / CLK_DIV);
+  localparam int CLK_HALF = $rtoi($floor(CLK_SRC / CLK_DESIRED / 2.0));
+  localparam int CLK_END = $rtoi($floor(CLK_SRC / CLK_DESIRED));
+  localparam real CLK_SKEW = (CLK_SRC / CLK_DESIRED) - $floor(CLK_SRC / CLK_DESIRED);
   localparam int SKW_TICKS = $rtoi($floor(CLK_SKEW / 2.0 / (1.0 / ($pow(2.0, $itor(PRECISION_BITS)) - 1))));
 
   localparam C_DEV_PRECISION_BITS_MSB = $clog2(CLK_END - 1);
@@ -59,7 +59,6 @@ module CLOCK_DIV #(
 
   end
 
-  assign clk_div = clkd;
-
+  assign clk_desired = clkd;
 
 endmodule
