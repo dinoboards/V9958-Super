@@ -293,6 +293,10 @@ module VDP (
   wire        ENAHSYNC;
   wire        FF_BWINDOW_Y_DL;
 
+  // SUPER 24 bit RGB COLOUR
+  bit [23:0] super_rgb_colour_reg;
+  bit super_rgb_colour_reg_applied;
+
   parameter VRAM_ACCESS_IDLE = 0;
   parameter VRAM_ACCESS_DRAW = 1;
   parameter VRAM_ACCESS_CPUW = 2;
@@ -922,7 +926,10 @@ module VDP (
       .super_mid(super_mid),
       .super_res(super_res),
       .SPMODE2(SPMODE2),
-      .REG_R31(REG_R31)
+      .REG_R31(REG_R31),
+
+      .super_rgb_colour_reg(super_rgb_colour_reg),
+      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
   );
 
   //---------------------------------------------------------------------------
@@ -958,7 +965,10 @@ module VDP (
       .p_bd(VDPCMDBD),
       .p_tr(VDPCMDTR),
       .p_sx_tmp(VDPCMDSXTMP),
-      .current_command(CUR_VDP_COMMAND)
+      .current_command(CUR_VDP_COMMAND),
+
+      .super_rgb_colour_reg(super_rgb_colour_reg),
+      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
   );
 
   VDP_WAIT_CONTROL U_VDP_WAIT_CONTROL (

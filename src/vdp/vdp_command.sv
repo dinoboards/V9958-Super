@@ -73,6 +73,9 @@ module VDP_COMMAND (
     input bit [3:0] reg_num,
     input bit [7:0] reg_data,
 
+    input bit [23:0] super_rgb_colour_reg,
+    input bit super_rgb_colour_reg_applied,
+
     output bit p_reg_wr_ack,
     output bit p_tr_clr_ack,
     output bit p_vram_wr_req,
@@ -729,7 +732,7 @@ module VDP_COMMAND (
                 LMMV, LINE, PSET: begin
                   vram_wr_data <= CLR;
                   //translate GRAPHICS 7 RGB representation to 24 bit rep
-                  vram_wr_data_24 <= {8'b0, CLR[7:5], 5'b0, CLR[4:2], 5'b0, CLR[1:0], 6'b0};
+                  vram_wr_data_24 <= super_rgb_colour_reg_applied ? super_rgb_colour_reg : {8'b0, CLR[7:5], 5'b0, CLR[4:2], 5'b0, CLR[1:0], 6'b0};
                   state <= PRE_RD_VRAM;
                 end
                 SRCH: begin

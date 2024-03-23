@@ -154,7 +154,10 @@ module VDP_REGISTER (
     output bit vdp_super,
     output bit super_color,
     output bit super_mid,
-    output bit super_res
+    output bit super_res,
+
+    output bit [23:0] super_rgb_colour_reg,    // 24bit colour register
+    output bit super_rgb_colour_reg_applied
 );
 
   // S#2
@@ -211,12 +214,17 @@ module VDP_REGISTER (
   bit [7:0] FF_REG_R31;
   assign REG_R31 = FF_REG_R31;
 
+  bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
+  bit super_rgb_loading;  // set if RGBs are being loaded into R#30
+
   assign ACK = FF_ACK;
   assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;
   assign vdp_super = FF_REG_R31[0];  //if 1, activate on of the super graphic modes
   assign super_color = vdp_super && FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
   assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
   assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+  assign super_rgb_colour_reg_applied = REG_R31[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
+  assign super_rgb_loading = FF_REG_R31[7];  // active when RGBs are being loaded into R#30
 
   assign VDPMODEGRAPHIC1 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000);
   assign VDPMODETEXT1 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001);
@@ -365,14 +373,27 @@ module VDP_REGISTER (
               4'b1001: begin  // READ S#9: SXTMP MSB
                 DBI <= {7'b1111111, VDPCMDSXTMP[8]};
               end
+              4'b1111: begin //READ S#15
+                DBI <= super_rgb_colour_reg[23:16];
+              end
               default: begin
                 DBI <= 8'd0;
               end
             endcase
           end
-          default: begin
-            // PORT#2, #3: NOT SUPPORTED IN READ MODE
-            DBI <= {8{1'b1}};
+          2'b10: begin  // PORT#2: 9A NOT SUPPORTED IN READ MODE
+            DBI <= {4'b0, VDPREGPTR[4:0]};
+          end
+          2'b11: begin  // PORT#3: 9B NOT SUPPORTED IN READ MODE
+            case (VDPREGPTR[4:0])
+              5'b11110: begin  // #30
+                DBI <= super_rgb_colour_reg[23:16];
+              end
+              default: begin
+                DBI <= super_rgb_colour_reg[23:16];
+              end
+            endcase
+            // DBI <= {8{1'b1}};
           end
         endcase
       end
@@ -686,10 +707,41 @@ module VDP_REGISTER (
               REG_R27_H_SCROLL <= VDPP1DATA[2:0];
             end
 
+            /*
+  set bit 7 of R#31
+  write 3 bytes to R#30
+  bit 7 get auto cleared after three bytes received
+  if bit 7 clear, system reset and does not load RGB
+*/
+            5'b11110: begin  // #30
+              if (super_rgb_loading) begin
+                case (super_rgb_loading_state)
+                  0: begin
+                    super_rgb_colour_reg[23:16] <= VDPP1DATA;
+                    super_rgb_loading_state <= 1;
+                  end
+                  1: begin
+                    super_rgb_colour_reg[15:8] <= VDPP1DATA;
+                    super_rgb_loading_state <= 2;
+                  end
+                  2: begin
+                    super_rgb_colour_reg[7:0] = VDPP1DATA;
+                    FF_REG_R31[6] <= 1;  // set bit to indicate 24 bit RGB loaded
+                    super_rgb_loading_state <= 0;
+                  end
+                endcase
+              end
+
+            end
+
             5'b11111: begin  //#31 - special!
               FF_REG_R31 <= VDPP1DATA;
+              if (VDPP1DATA[7] == 1) begin //VDPP1DATA[7] is super_rgb_loading
+                super_rgb_loading_state <= 'b00;
+              end
             end
           endcase
+
         end else if ((VDPREGPTR[4] == 1'b0)) begin
           // REGISTERS FOR VDP COMMAND
           VDPCMDREGNUM   <= VDPREGPTR[3:0];
