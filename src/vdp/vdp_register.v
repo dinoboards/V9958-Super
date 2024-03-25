@@ -156,7 +156,7 @@ module VDP_REGISTER (
     output bit super_mid,
     output bit super_res,
 
-    output bit [23:0] super_rgb_colour_reg,  // 24bit colour register
+    output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
     output bit super_rgb_colour_reg_applied
 );
 
@@ -513,6 +513,7 @@ module VDP_REGISTER (
 
       //extension
       FF_REG_R31 <= 0;
+      super_rgb_colour_reg <= 0;
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
         case (mode[1:0])
