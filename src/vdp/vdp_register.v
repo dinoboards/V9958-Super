@@ -156,7 +156,7 @@ module VDP_REGISTER (
     output bit super_mid,
     output bit super_res,
 
-    output bit [23:0] super_rgb_colour_reg,    // 24bit colour register
+    output bit [23:0] super_rgb_colour_reg,  // 24bit colour register
     output bit super_rgb_colour_reg_applied
 );
 
@@ -219,26 +219,29 @@ module VDP_REGISTER (
 
   assign ACK = FF_ACK;
   assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;
-  assign vdp_super = FF_REG_R31[0];  //if 1, activate on of the super graphic modes
   assign super_color = vdp_super && FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
   assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
   assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
   assign super_rgb_colour_reg_applied = REG_R31[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
   assign super_rgb_loading = FF_REG_R31[7];  // active when RGBs are being loaded into R#30
 
-  assign VDPMODEGRAPHIC1 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000);
-  assign VDPMODETEXT1 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001);
-  assign VDPMODEMULTI = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00010);
-  assign VDPMODEGRAPHIC2 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00100);
-  assign VDPMODETEXT1Q = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00101);
-  assign VDPMODEMULTIQ = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00110);
-  assign VDPMODEGRAPHIC3 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01000);
-  assign VDPMODETEXT2 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01001);
-  assign VDPMODEGRAPHIC4 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01100);
-  assign VDPMODEGRAPHIC5 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10000);
-  assign VDPMODEGRAPHIC6 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10100);
-  assign VDPMODEGRAPHIC7 = !vdp_super && (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
-  assign VDPMODEISHIGHRES = !vdp_super && (REG_R0_DISP_MODE[3:2] == 2'b10 && REG_R1_DISP_MODE == 2'b00);
+  assign mode_graphic_7_base = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
+  assign mode_graphic_super_base = FF_REG_R31[0];  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
+  assign vdp_super = mode_graphic_super_base && mode_graphic_7_base;
+
+  assign VDPMODEGRAPHIC1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000);
+  assign VDPMODETEXT1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001);
+  assign VDPMODEMULTI = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00010);
+  assign VDPMODEGRAPHIC2 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00100);
+  assign VDPMODETEXT1Q = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00101);
+  assign VDPMODEMULTIQ = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00110);
+  assign VDPMODEGRAPHIC3 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01000);
+  assign VDPMODETEXT2 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01001);
+  assign VDPMODEGRAPHIC4 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01100);
+  assign VDPMODEGRAPHIC5 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10000);
+  assign VDPMODEGRAPHIC6 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10100);
+  assign VDPMODEGRAPHIC7 = !mode_graphic_super_base && mode_graphic_7_base;
+  assign VDPMODEISHIGHRES = (REG_R0_DISP_MODE[3:2] == 2'b10 && REG_R1_DISP_MODE == 2'b00);
   assign SPMODE2 = (REG_R1_DISP_MODE == 2'b00 && (REG_R0_DISP_MODE[3] | REG_R0_DISP_MODE[2]) == 1'b1);
 
   //--------------------------------------------------------------------------------------
@@ -373,7 +376,7 @@ module VDP_REGISTER (
               4'b1001: begin  // READ S#9: SXTMP MSB
                 DBI <= {7'b1111111, VDPCMDSXTMP[8]};
               end
-              4'b1111: begin //READ S#15
+              4'b1111: begin  //READ S#15
                 DBI <= super_rgb_colour_reg[23:16];
               end
               default: begin
@@ -736,7 +739,7 @@ module VDP_REGISTER (
 
             5'b11111: begin  //#31 - special!
               FF_REG_R31 <= VDPP1DATA;
-              if (VDPP1DATA[7] == 1) begin //VDPP1DATA[7] is super_rgb_loading
+              if (VDPP1DATA[7] == 1) begin  //VDPP1DATA[7] is super_rgb_loading
                 super_rgb_loading_state <= 'b00;
               end
             end
