@@ -380,7 +380,7 @@ module VDP_REGISTER (
                 DBI <= super_rgb_colour_reg[23:16];
               end
               default: begin
-                DBI <= 8'd0;
+                DBI <= 8'd255;
               end
             endcase
           end
@@ -388,15 +388,17 @@ module VDP_REGISTER (
             DBI <= {4'b0, VDPREGPTR[4:0]};
           end
           2'b11: begin  // PORT#3: 9B NOT SUPPORTED IN READ MODE
-            case (VDPREGPTR[4:0])
-              5'b11110: begin  // #30
+            case (VDPR17REGNUM)
+              6'b011110: begin  // #30
                 DBI <= super_rgb_colour_reg[23:16];
+              end
+              6'b011111: begin  // #31
+                DBI <= FF_REG_R31;
               end
               default: begin
-                DBI <= super_rgb_colour_reg[23:16];
+                DBI <= 255;
               end
             endcase
-            // DBI <= {8{1'b1}};
           end
         endcase
       end
