@@ -94,9 +94,11 @@ module v9958_top (
   bit          WeVdp_n;
   bit   [16:0] VdpAdr;
   bit   [ 7:0] VrmDbo;
-  logic [31:0] out_vrm_32;
-  bit          vrm_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
+  bit   [31:0] VrmDbo_32;
+  bit          vram_wr_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
+  bit          vram_rd_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
   bit   [15:0] VrmDbi;
+  bit   [31:0] VrmDbi_32;
 
   bit   [ 5:0] VideoR;  // RGB Red
   bit   [ 5:0] VideoG;  // RGB Green
@@ -111,7 +113,6 @@ module v9958_top (
   bit v9958_read;
   bit v9958_write;
   bit memory_refresh;
-  bit [31:0] vrm_32;
   bit [16:0] high_res_vram_addr;
   bit vdp_super;
   bit super_color;
@@ -133,12 +134,13 @@ module v9958_top (
       .read(v9958_read),
       .write(v9958_write),
       .refresh(memory_refresh),
-      .addr((vdp_super && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : (vrm_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]})),
+      .addr((vdp_super && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : (vram_wr_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]})),
+    //   .addr(vram_rd_32_mode | vram_wr_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]}),
       .din({VrmDbo, VrmDbo}),
-      .din32(out_vrm_32),
-      .wdm(vrm_32_mode ? 2'b00 : {~VdpAdr[0], VdpAdr[0]}),
+      .din32(VrmDbo_32),
+      .wdm(vram_wr_32_mode ? 2'b00 : {~VdpAdr[0], VdpAdr[0]}),
       .dout(VrmDbi),
-      .dout32(vrm_32),
+      .dout32(VrmDbi_32),
       .busy(ram_busy),
       .fail(ram_fail),
       .enabled(ram_enabled),
@@ -190,45 +192,49 @@ module v9958_top (
       .cx(cx),
       .cy(cy),
       .pal_mode(pal_mode),
-      .vrm_32(vrm_32),
+      .vrm_32(VrmDbi_32),
       .high_res_vram_addr(high_res_vram_addr),
       .high_res_red(high_res_red),
       .high_res_green(high_res_green),
-      .high_res_blue(high_res_blue)
+      .high_res_blue(high_res_blue),
+      .super_res_drawing(super_res_drawing)
   );
 
   VDP u_v9958 (
-      .CLK21M      (clk_w),
-      .RESET       (reset_w | ~ram_enabled),
-      .REQ         (CpuReq),
-      .ACK         (),
-      .WRT         (CpuWrt),
-      .mode        (mode),
-      .DBI         (CpuDbi),
-      .DBO         (CpuDbo),
-      .INT_N       (int_n),
-      .PRAMWE_N    (WeVdp_n),
-      .PRAMADR     (VdpAdr),
-      .PRAMDBI     (VrmDbi),
-      .vrm_32      (vrm_32),
-      .PRAMDBO     (VrmDbo),
-      .out_vram_32 (out_vrm_32),
-      .vrm_32_mode (vrm_32_mode),
-      .VDPSPEEDMODE(1'b1),                    // for V9958 MSX2+/tR VDP
-      .PVIDEOR     (VideoR),
-      .PVIDEOG     (VideoG),
-      .PVIDEOB     (VideoB),
-      .PVIDEODHCLK (VideoDHClk),
-      .PVIDEODLCLK (VideoDLClk),
-      .PAL_MODE    (pal_mode),
-      .SPMAXSPR    (1'b0),
-      .CX          (cx),
-      .CY          (cy),
-      .REG_R31     (REG_R31),
-      .vdp_super   (vdp_super),
-      .super_color (super_color),
-      .super_mid   (super_mid),
-      .super_res   (super_res)
+      .CLK21M           (clk_w),
+      .RESET            (reset_w | ~ram_enabled),
+      .REQ              (CpuReq),
+      .ACK              (),
+      .WRT              (CpuWrt),
+      .mode             (mode),
+      .DBI              (CpuDbi),
+      .DBO              (CpuDbo),
+      .INT_N            (int_n),
+      .PRAMWE_N         (WeVdp_n),
+      .PRAMADR          (VdpAdr),
+      .PRAMDBI          (VrmDbi),
+      .PRAMDBI_32       (VrmDbi_32),
+      .PRAMDBO          (VrmDbo),
+      .PRAMDBO_32       (VrmDbo_32),
+      .vram_wr_32_mode  (vram_wr_32_mode),
+      .vram_rd_32_mode  (vram_rd_32_mode),
+      .VDPSPEEDMODE     (1'b1),                    // for V9958 MSX2+/tR VDP
+      .PVIDEOR          (VideoR),
+      .PVIDEOG          (VideoG),
+      .PVIDEOB          (VideoB),
+      .PVIDEODHCLK      (VideoDHClk),
+      .PVIDEODLCLK      (VideoDLClk),
+      .PAL_MODE         (pal_mode),
+      .SPMAXSPR         (1'b0),
+      .CX               (cx),
+      .CY               (cy),
+      .REG_R31          (REG_R31),
+      .vdp_super        (vdp_super),
+      .super_vram_addr  (high_res_vram_addr),
+      .super_color      (super_color),
+      .super_mid        (super_mid),
+      .super_res        (super_res),
+      .super_res_drawing(super_res_drawing)
   );
 
   //--------------------------------------------------------------

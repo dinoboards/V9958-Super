@@ -73,10 +73,10 @@ module VDP (
     output reg PRAMWE_N,
     output wire [16:0] PRAMADR,
     input wire [15:0] PRAMDBI,
-    input bit [31:0] vrm_32,
+    input bit [31:0] PRAMDBI_32,
     output reg [7:0] PRAMDBO,
-    output logic [31:0] out_vram_32,
-    output bit vrm_32_mode,
+    output logic [31:0] PRAMDBO_32,
+    output bit vram_wr_32_mode,
     input wire VDPSPEEDMODE,
     output wire [5:0] PVIDEOR,
     output wire [5:0] PVIDEOG,
@@ -88,11 +88,15 @@ module VDP (
     input wire [10:0] CX,
     input wire [9:0] CY,
 
+    input bit [16:0] super_vram_addr,
+    input bit super_res_drawing,
+
     output bit vdp_super,
     output bit super_color,
     output bit super_mid,
     output bit super_res,
-    output bit [7:0] REG_R31
+    output bit [7:0] REG_R31,
+    output bit vram_rd_32_mode
 );
 
   import custom_timings::*;
@@ -257,14 +261,14 @@ module VDP (
   reg         VDPCMDVRAMREADINGR;
   reg         VDPCMDVRAMREADINGA;
   reg  [ 7:0] VDPCMDVRAMRDDATA;
-  reg  [31:0] vdp_cmd_vram_rd_data_32;
+  reg  [31:0] VDPCMDVRAMRDDATA_32;
   wire        VDPCMDREGWRREQ;
   wire        VDPCMDTRCLRREQ;
   wire        VDPCMDVRAMWRREQ;
   wire        VDPCMDVRAMRDREQ;
   wire [16:0] VDPCMDVRAMACCESSADDR;
   wire [ 7:0] VDPCMDVRAMWRDATA;
-  bit  [31:0] vdp_cmd_vram_wr_data_32;
+  bit  [31:0] VDPCMDVRAMWRDATA_32;
 
   reg         VDP_COMMAND_DRIVE;
   wire        VDP_COMMAND_ACTIVE;
@@ -286,7 +290,7 @@ module VDP (
 
   reg  [16:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
-  bit  [31:0] pram_data_32;
+  bit  [31:0] PRAMDAT_32;
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
 
@@ -312,7 +316,7 @@ module VDP (
   assign PRAMADR = IRAMADR;
   assign XRAMSEL = IRAMADR[0];
   assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI[7:0] : PRAMDBI[15:8];
-  assign pram_data_32 = vrm_32;
+  assign PRAMDAT_32 = PRAMDBI_32;
   assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI[7:0] : PRAMDBI[15:8];
 
   //--------------------------------------------------------------
@@ -493,14 +497,14 @@ module VDP (
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       VDPCMDVRAMRDDATA <= 8'b0;
-      vdp_cmd_vram_rd_data_32 <= 32'b0;
+      VDPCMDVRAMRDDATA_32 <= 32'b0;
       VDPCMDVRAMRDACK <= 1'b0;
       VDPCMDVRAMREADINGA <= 1'b0;
     end else begin
       if ((DOTSTATE == 2'b01)) begin
         if ((VDPCMDVRAMREADINGR != VDPCMDVRAMREADINGA)) begin
           VDPCMDVRAMRDDATA <= PRAMDAT;
-          vdp_cmd_vram_rd_data_32 <= pram_data_32;
+          VDPCMDVRAMRDDATA_32 <= PRAMDAT_32;
           VDPCMDVRAMRDACK <= ~VDPCMDVRAMRDACK;
           VDPCMDVRAMREADINGA <= ~VDPCMDVRAMREADINGA;
         end
@@ -509,167 +513,67 @@ module VDP (
   end
 
   assign TEXT_MODE = VDPMODETEXT1 | VDPMODETEXT1Q | VDPMODETEXT2;
-  bit super_high_res_on_screen;
 
-  always_ff @(posedge RESET, posedge CLK21M) begin : P1
-    reg [16:0] VDPVRAMACCESSADDRV;
-    reg [31:0] VRAMACCESSSWITCH;
+  ADDRESS_BUS address_bus (
+      .CLK21M              (CLK21M),
+      .RESET               (RESET),
+      .DOTSTATE            (DOTSTATE),
+      .PREWINDOW           (PREWINDOW),
+      .REG_R1_DISP_ON      (REG_R1_DISP_ON),
+      .EIGHTDOTSTATE       (EIGHTDOTSTATE),
+      .TXVRAMREADEN        (TXVRAMREADEN),
+      .PREWINDOW_X         (PREWINDOW_X),
+      .PREWINDOW_Y_SP      (PREWINDOW_Y_SP),
+      .SPVRAMACCESSING     (SPVRAMACCESSING),
+      .TEXT_MODE           (TEXT_MODE),             // TEXT MODE 1, 2 or 1Q
+      .VDPMODETEXT1        (VDPMODETEXT1),          // TEXT MODE 1      (SCREEN0 WIDTH 40)
+      .VDPMODETEXT1Q       (VDPMODETEXT1Q),         // TEXT MODE 1      (??)
+      .VDPMODEMULTI        (VDPMODEMULTI),          // MULTICOLOR MODE  (SCREEN3)
+      .VDPMODEMULTIQ       (VDPMODEMULTIQ),         // MULTICOLOR MODE  (??)
+      .VDPMODEGRAPHIC1     (VDPMODEGRAPHIC1),       // GRAPHIC MODE 1   (SCREEN1)
+      .VDPMODEGRAPHIC2     (VDPMODEGRAPHIC2),       // GRAPHIC MODE 2   (SCREEN2)
+      .VDPMODEGRAPHIC3     (VDPMODEGRAPHIC3),       // GRAPHIC MODE 2   (SCREEN4)
+      .VDPMODEGRAPHIC4     (VDPMODEGRAPHIC4),       // GRAPHIC MODE 4   (SCREEN5)
+      .VDPMODEGRAPHIC5     (VDPMODEGRAPHIC5),       // GRAPHIC MODE 5   (SCREEN6)
+      .VDPMODEGRAPHIC6     (VDPMODEGRAPHIC6),       // GRAPHIC MODE 6   (SCREEN7)
+      .VDPMODEGRAPHIC7     (VDPMODEGRAPHIC7),       // GRAPHIC MODE 7   (SCREEN8,10,11,12)
+      .VDPMODEISHIGHRES    (VDPMODEISHIGHRES),      // TRUE WHEN MODE GRAPHIC5, 6
+      .VDPVRAMACCESSDATA   (VDPVRAMACCESSDATA),
+      .VDPVRAMADDRSETREQ   (VDPVRAMADDRSETREQ),
+      .VDPVRAMACCESSADDRTMP(VDPVRAMACCESSADDRTMP),
+      .VDPVRAMWRREQ        (VDPVRAMWRREQ),
+      .VDPVRAMRDREQ        (VDPVRAMRDREQ),
+      .VDP_COMMAND_ACTIVE  (VDP_COMMAND_ACTIVE),
+      .VDPCMDVRAMWRREQ     (VDPCMDVRAMWRREQ),
+      .VDPCMDVRAMRDREQ     (VDPCMDVRAMRDREQ),
+      .VDPVRAMREADINGA     (VDPVRAMREADINGA),
+      .VDPCMDVRAMRDACK     (VDPCMDVRAMRDACK),
+      .VDPCMDVRAMACCESSADDR(VDPCMDVRAMACCESSADDR),
+      .VDPCMDVRAMWRDATA    (VDPCMDVRAMWRDATA),
+      .PRAMADRT12          (PRAMADRT12),
+      .VDPCMDVRAMWRDATA_32 (VDPCMDVRAMWRDATA_32),
+      .PRAMADRSPRITE       (PRAMADRSPRITE),
+      .PRAMADRG123M        (PRAMADRG123M),
+      .PRAMADRG4567        (PRAMADRG4567),
+      .VDPCMDVRAMREADINGA  (VDPCMDVRAMREADINGA),
+      .super_vram_addr     (super_vram_addr),
+      .vdp_super           (vdp_super),
+      .super_res_drawing   (super_res_drawing),
 
-    if ((RESET == 1'b1)) begin
-      IRAMADR <= {17{1'b1}};
-      PRAMDBO <= {8{1'bZ}};
-      PRAMWE_N <= 1'b1;
-      VDPVRAMREADINGR <= 1'b0;
-      VDPVRAMRDACK <= 1'b0;
-      VDPVRAMWRACK <= 1'b0;
-      VDPVRAMADDRSETACK <= 1'b0;
-      VDPVRAMACCESSADDR <= {17{1'b0}};
-      VDPCMDVRAMWRACK <= 1'b0;
-      VDPCMDVRAMREADINGR <= 1'b0;
-      VDP_COMMAND_DRIVE <= 1'b0;
-      super_high_res_on_screen <= 0;
-    end else begin
-      // MAIN STATE
-      //----------------------------------------
-      //
-      // VRAM ACCESS ARBITER.
-      //
-      // VRAMアクセスタイミングを、EIGHTDOTSTATE によって制御している
-      // (The VRAM access timing is controlled by EIGHTDOTSTATE)
-      if ((DOTSTATE == 2'b10)) begin
-        if(((PREWINDOW == 1'b1) && (REG_R1_DISP_ON == 1'b1) && ((EIGHTDOTSTATE == 3'b000) || (EIGHTDOTSTATE == 3'b001) || (EIGHTDOTSTATE == 3'b010) || (EIGHTDOTSTATE == 3'b011) || (EIGHTDOTSTATE == 3'b100)))) begin
-          //  EIGHTDOTSTATE が 0～4 で、表示中の場合
-          //  (EIGHTDOTSTATE is 0 to 4, and it is displayed)
-          VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
-        end else if (((PREWINDOW == 1'b1) && (REG_R1_DISP_ON == 1'b1) && (TXVRAMREADEN == 1'b1))) begin
-          //  EIGHTDOTSTATE が 5～7 で、表示中で、テキストモードの場合
-          //  (EIGHTDOTSTATE is 5 to 7, and it is displayed, and it is in text mode)
-          VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
-        end else if (((PREWINDOW_X == 1'b1) && (PREWINDOW_Y_SP == 1'b1) && (SPVRAMACCESSING == 1'b1) && (EIGHTDOTSTATE == 3'b101) && (TEXT_MODE == 1'b0))) begin
-          // FOR SPRITE Y-TESTING
-          VRAMACCESSSWITCH = VRAM_ACCESS_SPRT;
-        end
-        else if(((PREWINDOW_X == 1'b0) && (PREWINDOW_Y_SP == 1'b1) && (SPVRAMACCESSING == 1'b1) && (TEXT_MODE == 1'b0) && ((EIGHTDOTSTATE == 3'b000) || (EIGHTDOTSTATE == 3'b001) || (EIGHTDOTSTATE == 3'b010) || (EIGHTDOTSTATE == 3'b011) || (EIGHTDOTSTATE == 3'b100) || (EIGHTDOTSTATE == 3'b101)))) begin
-          // FOR SPRITE PREPAREING
-          VRAMACCESSSWITCH = VRAM_ACCESS_SPRT;
-        end else if ((VDPVRAMWRREQ != VDPVRAMWRACK)) begin
-          // VRAM WRITE REQUEST BY CPU
-          VRAMACCESSSWITCH = VRAM_ACCESS_CPUW;
-        end else if ((VDPVRAMRDREQ != VDPVRAMRDACK)) begin
-          // VRAM READ REQUEST BY CPU
-          VRAMACCESSSWITCH = VRAM_ACCESS_CPUR;
-        end else begin
-          // VDP COMMAND
-          if ((VDP_COMMAND_ACTIVE == 1'b1)) begin
-            if ((VDPCMDVRAMWRREQ != VDPCMDVRAMWRACK)) begin
-              VRAMACCESSSWITCH = VRAM_ACCESS_VDPW;
-            end else if ((VDPCMDVRAMRDREQ != VDPCMDVRAMRDACK)) begin
-              VRAMACCESSSWITCH = VRAM_ACCESS_VDPR;
-            end else begin
-              VRAMACCESSSWITCH = VRAM_ACCESS_VDPS;
-            end
-          end else begin
-            VRAMACCESSSWITCH = VRAM_ACCESS_VDPS;
-          end
-        end
-      end else begin
-        VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
-      end
+      .VDPCMDVRAMWRACK   (VDPCMDVRAMWRACK),
+      .VDPCMDVRAMREADINGR(VDPCMDVRAMREADINGR),
+      .VDP_COMMAND_DRIVE (VDP_COMMAND_DRIVE),
+      .IRAMADR           (IRAMADR),
+      .PRAMDBO           (PRAMDBO),
+      .PRAMWE_N          (PRAMWE_N),
+      .VDPVRAMREADINGR   (VDPVRAMREADINGR),
+      .VDPVRAMRDACK      (VDPVRAMRDACK),
+      .VDPVRAMWRACK      (VDPVRAMWRACK),
+      .VDPVRAMADDRSETACK (VDPVRAMADDRSETACK),
+      .PRAMDBO_32        (PRAMDBO_32),
+      .vram_rd_32_mode   (vram_rd_32_mode)
+  );
 
-      if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW || VRAMACCESSSWITCH == VRAM_ACCESS_VDPR || VRAMACCESSSWITCH == VRAM_ACCESS_VDPS)) begin
-        VDP_COMMAND_DRIVE <= 1'b1;
-      end else begin
-        VDP_COMMAND_DRIVE <= 1'b0;
-      end
-
-      //
-      // VRAM ACCESS ADDRESS SWITCH
-      //
-      if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUW)) begin
-        IRAMADR <= VDPVRAMACCESSADDR;
-
-        if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
-          VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDR[13:0] + 1);
-        end else begin
-          VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDR + 1);
-        end
-        PRAMDBO <= VDPVRAMACCESSDATA;
-        PRAMWE_N <= 1'b0;
-        VDPVRAMWRACK <= ~VDPVRAMWRACK;
-      end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUR)) begin
-        // VRAM READ BY CPU
-        if ((VDPVRAMADDRSETREQ != VDPVRAMADDRSETACK)) begin
-          VDPVRAMACCESSADDRV = VDPVRAMACCESSADDRTMP;
-          // CLEAR VRAM ADDRESS SET REQUEST SIGNAL
-          VDPVRAMADDRSETACK <= ~VDPVRAMADDRSETACK;
-        end else begin
-          VDPVRAMACCESSADDRV = VDPVRAMACCESSADDR;
-        end
-
-        IRAMADR <= VDPVRAMACCESSADDRV;
-
-        if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
-          VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDRV[13:0] + 1);
-        end else begin
-          VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDRV + 1);
-        end
-        PRAMDBO <= 8'bZ;
-        out_vram_32 <= 32'bZ;
-        PRAMWE_N <= 1'b1;
-        VDPVRAMRDACK <= ~VDPVRAMRDACK;
-        VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
-      end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW)) begin
-        IRAMADR <= VDPCMDVRAMACCESSADDR;
-        PRAMDBO <= VDPCMDVRAMWRDATA;
-        out_vram_32 <= vdp_cmd_vram_wr_data_32;
-        PRAMWE_N <= 1'b0;
-        VDPCMDVRAMWRACK <= ~VDPCMDVRAMWRACK;
-      end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin
-        IRAMADR <= VDPCMDVRAMACCESSADDR;
-        PRAMDBO <= 8'bZ;
-        out_vram_32 <= 32'bZ;
-        PRAMWE_N <= 1'b1;
-        VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
-      end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_SPRT)) begin
-        // VRAM READ BY SPRITE MODULE
-        IRAMADR <= PRAMADRSPRITE;
-        PRAMWE_N <= 1'b1;
-        PRAMDBO <= 8'bZ;
-        out_vram_32 <= 32'bZ;
-      end else begin
-        // VRAM_ACCESS_DRAW
-        // VRAM READ FOR SCREEN IMAGE BUILDING
-        case (DOTSTATE)
-          2'b10: begin
-            PRAMDBO <= 8'bZ;
-            out_vram_32 <= 32'bZ;
-            PRAMWE_N <= 1'b1;
-            if ((TEXT_MODE == 1'b1)) begin
-              IRAMADR <= PRAMADRT12;
-            end else if (((VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1) || (VDPMODEGRAPHIC3 == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1))) begin
-              IRAMADR <= PRAMADRG123M;
-            end else if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC5 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
-              IRAMADR <= PRAMADRG4567;
-            end
-          end
-          2'b01: begin
-            PRAMDBO <= 8'bZ;
-            out_vram_32 <= 32'bZ;
-            PRAMWE_N <= 1'b1;
-            if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
-              IRAMADR <= PRAMADRG4567;
-            end
-          end
-          default: begin
-          end
-        endcase
-        if (((DOTSTATE == 2'b11) && (VDPVRAMADDRSETREQ != VDPVRAMADDRSETACK))) begin
-          VDPVRAMACCESSADDR <= VDPVRAMACCESSADDRTMP;
-          VDPVRAMADDRSETACK <= ~VDPVRAMADDRSETACK;
-        end
-      end
-    end
-  end
 
   //---------------------------------------------------------------------
   // COLOR DECODING
@@ -827,6 +731,9 @@ module VDP (
       .SPMAXSPR(SPMAXSPR)
   );
 
+  bit [31:0] test_wr_data_32;
+  bit [31:0] test_rd_point_32;
+
   //---------------------------------------------------------------------------
   // VDP REGISTER ACCESS
   //---------------------------------------------------------------------------
@@ -929,7 +836,10 @@ module VDP (
       .REG_R31(REG_R31),
 
       .super_rgb_colour_reg(super_rgb_colour_reg),
-      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
+      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
+
+      .test_wr_data_32 (test_wr_data_32),
+      .test_rd_point_32(test_rd_point_32)
   );
 
   //---------------------------------------------------------------------------
@@ -947,7 +857,7 @@ module VDP (
       .vram_wr_ack(VDPCMDVRAMWRACK),
       .vram_rd_ack(VDPCMDVRAMRDACK),
       .vram_rd_data(VDPCMDVRAMRDDATA),
-      .vram_rd_data_32(vdp_cmd_vram_rd_data_32),
+      .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
       .reg_wr_req(VDPCMDREGWRREQ),
       .tr_clr_req(VDPCMDTRCLRREQ),
       .reg_num(VDPCMDREGNUM),
@@ -958,8 +868,8 @@ module VDP (
       .p_vram_rd_req(VDPCMDVRAMRDREQ),
       .p_vram_access_addr(VDPCMDVRAMACCESSADDR),
       .p_vram_wr_data(VDPCMDVRAMWRDATA),
-      .vrm_32_mode(vrm_32_mode),
-      .p_vram_wr_data_32(vdp_cmd_vram_wr_data_32),
+      .p_vram_wr_data_32(VDPCMDVRAMWRDATA_32),
+      .vram_wr_32_mode(vram_wr_32_mode),
       .p_clr(VDPCMDCLR),
       .p_ce(VDPCMDCE),
       .p_bd(VDPCMDBD),
@@ -968,7 +878,10 @@ module VDP (
       .current_command(CUR_VDP_COMMAND),
 
       .super_rgb_colour_reg(super_rgb_colour_reg),
-      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
+      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
+
+      .test_wr_data_32 (test_wr_data_32),
+      .test_rd_point_32(test_rd_point_32)
   );
 
   VDP_WAIT_CONTROL U_VDP_WAIT_CONTROL (

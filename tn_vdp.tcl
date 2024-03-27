@@ -26,6 +26,7 @@ add_file src\\hdmi\\serializer.sv
 add_file src\\hdmi\\source_product_description_info_frame.sv
 add_file src\\hdmi\\tmds_channel.sv
 
+add_file src\\vdp\\address_bus.sv
 add_file src\\vdp\\vdp_colordec.v
 add_file src\\vdp\\vdp_command.sv
 add_file src\\vdp\\vdp_double_buffer.v

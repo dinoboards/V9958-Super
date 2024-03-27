@@ -157,7 +157,10 @@ module VDP_REGISTER (
     output bit super_res,
 
     output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
-    output bit super_rgb_colour_reg_applied
+    output bit super_rgb_colour_reg_applied,
+
+    input bit [31:0] test_wr_data_32,
+    input bit [31:0] test_rd_point_32
 );
 
   // S#2
@@ -376,8 +379,17 @@ module VDP_REGISTER (
               4'b1001: begin  // READ S#9: SXTMP MSB
                 DBI <= {7'b1111111, VDPCMDSXTMP[8]};
               end
-              4'b1111: begin  //READ S#15
+
+              4'b1101: begin  //READ S#13
+                DBI <= test_rd_point_32[23:16];
+              end
+
+              4'b1110: begin  //READ S#14
                 DBI <= super_rgb_colour_reg[23:16];
+              end
+
+              4'b1111: begin  //READ S#15
+                DBI <= test_wr_data_32[23:16];
               end
               default: begin
                 DBI <= 8'd255;

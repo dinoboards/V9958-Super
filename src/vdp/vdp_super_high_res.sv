@@ -15,9 +15,10 @@ module vdp_super_high_res (
     input bit [31:0] vrm_32,
 
     output bit [16:0] high_res_vram_addr,
-    output bit [ 7:0] high_res_red,
-    output bit [ 7:0] high_res_green,
-    output bit [ 7:0] high_res_blue
+    output bit [7:0] high_res_red,
+    output bit [7:0] high_res_green,
+    output bit [7:0] high_res_blue,
+    output bit super_res_drawing
 );
 
   import custom_timings::*;
@@ -52,7 +53,9 @@ module vdp_super_high_res (
   assign high_res_green = super_color ? high_res_data[15:8] : {high_mid_pixel_green, 2'b0};
   assign high_res_blue = super_color ? high_res_data[7:0] : {high_mid_pixel_blue, 3'b0};
 
-  assign super_high_res_visible = super_high_res_visible_x & super_high_res_visible_y;
+  assign super_res_visible = super_high_res_visible_x & super_high_res_visible_y;
+  assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0);
+  assign super_res_drawing = super_res_visible && active_line;
 
   assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
 
@@ -73,8 +76,6 @@ module vdp_super_high_res (
       else if (cy == (`DISPLAYED_PIXEL_HEIGHT - 1) && cx == (`DISPLAYED_PIXEL_WIDTH)) super_high_res_visible_y <= 0;
     end
   end
-
-  assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0);
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~super_high_res) begin
@@ -106,7 +107,7 @@ module vdp_super_high_res (
         end
 
         default begin
-          if (~super_high_res_visible) begin
+          if (~super_res_visible) begin
             high_res_data <= {8'd0, 8'd0, 8'd255, 8'd0};
 
           end else begin
