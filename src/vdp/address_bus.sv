@@ -29,7 +29,8 @@ module ADDRESS_BUS #(
     input bit        VDPVRAMWRREQ,
     input bit        VDPVRAMRDREQ,
     input bit        VDP_COMMAND_ACTIVE,
-    input bit        VDPCMDVRAMWRREQ,
+    input bit        vdp_cmd_vram_wr_req,
+    input bit [ 1:0] vdp_cmd_vram_wr_size,
     input bit        VDPCMDVRAMRDREQ,
     input bit        VDPVRAMREADINGA,
     input bit        VDPCMDVRAMRDACK,
@@ -45,12 +46,13 @@ module ADDRESS_BUS #(
     input            vdp_super,
     input bit        super_res_drawing,
 
-    output bit          VDPCMDVRAMWRACK,
+    output bit          vdp_cmd_vram_wr_ack,
     output bit          VDPCMDVRAMREADINGR,
     output bit          VDP_COMMAND_DRIVE,
     output bit   [16:0] IRAMADR,
     output bit   [ 7:0] PRAMDBO,
     output bit          PRAMWE_N,
+    output bit   [ 1:0] PRAMWE_SIZE,
     output bit          VDPVRAMREADINGR,
     output bit          VDPVRAMRDACK,
     output bit          VDPVRAMWRACK,
@@ -78,12 +80,13 @@ module ADDRESS_BUS #(
       IRAMADR <= {17{1'b1}};
       PRAMDBO <= {8{1'bZ}};
       PRAMWE_N <= 1'b1;
+      PRAMWE_SIZE <= `MEMORY_WIDTH_8;
       VDPVRAMREADINGR <= 1'b0;
       VDPVRAMRDACK <= 1'b0;
       VDPVRAMWRACK <= 1'b0;
       VDPVRAMADDRSETACK <= 1'b0;
       VDPVRAMACCESSADDR <= {17{1'b0}};
-      VDPCMDVRAMWRACK <= 1'b0;
+      vdp_cmd_vram_wr_ack <= 1'b0;
       VDPCMDVRAMREADINGR <= 1'b0;
       VDP_COMMAND_DRIVE <= 1'b0;
       vram_rd_32_mode <= 0;
@@ -126,7 +129,7 @@ module ADDRESS_BUS #(
         end else begin
           // VDP COMMAND
           if ((VDP_COMMAND_ACTIVE == 1'b1)) begin
-            if ((VDPCMDVRAMWRREQ != VDPCMDVRAMWRACK)) begin
+            if ((vdp_cmd_vram_wr_req != vdp_cmd_vram_wr_ack)) begin
               VRAMACCESSSWITCH = VRAM_ACCESS_VDPW;
             end else if ((VDPCMDVRAMRDREQ != VDPCMDVRAMRDACK)) begin
               VRAMACCESSSWITCH = VRAM_ACCESS_VDPR;
@@ -163,6 +166,7 @@ module ADDRESS_BUS #(
         end
         PRAMDBO <= VDPVRAMACCESSDATA;
         PRAMWE_N <= 1'b0;
+        PRAMWE_SIZE <= `MEMORY_WIDTH_8;
         VDPVRAMWRACK <= ~VDPVRAMWRACK;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUR)) begin
@@ -186,6 +190,7 @@ module ADDRESS_BUS #(
         PRAMDBO <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
+        PRAMWE_SIZE <= `MEMORY_WIDTH_8;
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
         VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
 
@@ -195,7 +200,9 @@ module ADDRESS_BUS #(
         PRAMDBO <= VDPCMDVRAMWRDATA;
         PRAMDBO_32 <= VDPCMDVRAMWRDATA_32;
         PRAMWE_N <= 1'b0;
-        VDPCMDVRAMWRACK <= ~VDPCMDVRAMWRACK;
+        PRAMWE_SIZE <= vdp_cmd_vram_wr_size;
+
+        vdp_cmd_vram_wr_ack <= ~vdp_cmd_vram_wr_ack;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
@@ -203,6 +210,7 @@ module ADDRESS_BUS #(
         PRAMDBO <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
+        PRAMWE_SIZE <= `MEMORY_WIDTH_8;
         VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_SPRT)) begin

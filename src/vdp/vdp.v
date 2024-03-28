@@ -71,12 +71,12 @@ module VDP (
     input  wire  [ 7:0] DBO,
     output wire         INT_N,
     output reg          PRAMWE_N,
+    output bit   [ 1:0] PRAMWE_SIZE,
     output wire  [16:0] PRAMADR,
     input  wire  [15:0] PRAMDBI,
     input  bit   [31:0] PRAMDBI_32,
     output reg   [ 7:0] PRAMDBO,
     output logic [31:0] PRAMDBO_32,
-    output bit          vram_wr_32_mode,
     input  wire         VDPSPEEDMODE,
     output wire         PVIDEODHCLK,
     output wire         PVIDEODLCLK,
@@ -85,8 +85,6 @@ module VDP (
     input  wire  [10:0] CX,
     input  wire  [ 9:0] CY,
     input  bit          scanlin,
-
-
 
     output bit [7:0] red,
     output bit [7:0] green,
@@ -263,7 +261,7 @@ module VDP (
   wire [ 7:0] VDPCMDREGDATA;
   wire        VDPCMDREGWRACK;
   wire        VDPCMDTRCLRACK;
-  reg         VDPCMDVRAMWRACK;
+  reg         vdp_cmd_vram_wr_ack;
   reg         VDPCMDVRAMRDACK;
   reg         VDPCMDVRAMREADINGR;
   reg         VDPCMDVRAMREADINGA;
@@ -271,7 +269,8 @@ module VDP (
   reg  [31:0] VDPCMDVRAMRDDATA_32;
   wire        VDPCMDREGWRREQ;
   wire        VDPCMDTRCLRREQ;
-  wire        VDPCMDVRAMWRREQ;
+  wire        vdp_cmd_vram_wr_req;
+  bit  [ 1:0] vdp_cmd_vram_wr_size;
   wire        VDPCMDVRAMRDREQ;
   wire [16:0] VDPCMDVRAMACCESSADDR;
   wire [ 7:0] VDPCMDVRAMWRDATA;
@@ -559,7 +558,8 @@ module VDP (
       .VDPVRAMWRREQ        (VDPVRAMWRREQ),
       .VDPVRAMRDREQ        (VDPVRAMRDREQ),
       .VDP_COMMAND_ACTIVE  (VDP_COMMAND_ACTIVE),
-      .VDPCMDVRAMWRREQ     (VDPCMDVRAMWRREQ),
+      .vdp_cmd_vram_wr_req (vdp_cmd_vram_wr_req),
+      .vdp_cmd_vram_wr_size(vdp_cmd_vram_wr_size),
       .VDPCMDVRAMRDREQ     (VDPCMDVRAMRDREQ),
       .VDPVRAMREADINGA     (VDPVRAMREADINGA),
       .VDPCMDVRAMRDACK     (VDPCMDVRAMRDACK),
@@ -575,18 +575,19 @@ module VDP (
       .vdp_super           (vdp_super),
       .super_res_drawing   (super_res_drawing),
 
-      .VDPCMDVRAMWRACK   (VDPCMDVRAMWRACK),
-      .VDPCMDVRAMREADINGR(VDPCMDVRAMREADINGR),
-      .VDP_COMMAND_DRIVE (VDP_COMMAND_DRIVE),
-      .IRAMADR           (IRAMADR),
-      .PRAMDBO           (PRAMDBO),
-      .PRAMWE_N          (PRAMWE_N),
-      .VDPVRAMREADINGR   (VDPVRAMREADINGR),
-      .VDPVRAMRDACK      (VDPVRAMRDACK),
-      .VDPVRAMWRACK      (VDPVRAMWRACK),
-      .VDPVRAMADDRSETACK (VDPVRAMADDRSETACK),
-      .PRAMDBO_32        (PRAMDBO_32),
-      .vram_rd_32_mode   (vram_rd_32_mode)
+      .vdp_cmd_vram_wr_ack(vdp_cmd_vram_wr_ack),
+      .VDPCMDVRAMREADINGR (VDPCMDVRAMREADINGR),
+      .VDP_COMMAND_DRIVE  (VDP_COMMAND_DRIVE),
+      .IRAMADR            (IRAMADR),
+      .PRAMDBO            (PRAMDBO),
+      .PRAMWE_N           (PRAMWE_N),
+      .PRAMWE_SIZE        (PRAMWE_SIZE),
+      .VDPVRAMREADINGR    (VDPVRAMREADINGR),
+      .VDPVRAMRDACK       (VDPVRAMRDACK),
+      .VDPVRAMWRACK       (VDPVRAMWRACK),
+      .VDPVRAMADDRSETACK  (VDPVRAMADDRSETACK),
+      .PRAMDBO_32         (PRAMDBO_32),
+      .vram_rd_32_mode    (vram_rd_32_mode)
   );
 
 
@@ -863,7 +864,7 @@ module VDP (
       .mode_graphic_7(VDPMODEGRAPHIC7),
       .mode_high_res(VDPMODEISHIGHRES),
       .mode_graphic_super_colour(super_color),
-      .vram_wr_ack(VDPCMDVRAMWRACK),
+      .vram_wr_ack(vdp_cmd_vram_wr_ack),
       .vram_rd_ack(VDPCMDVRAMRDACK),
       .vram_rd_data(VDPCMDVRAMRDDATA),
       .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
@@ -873,12 +874,12 @@ module VDP (
       .reg_data(VDPCMDREGDATA),
       .p_reg_wr_ack(VDPCMDREGWRACK),
       .p_tr_clr_ack(VDPCMDTRCLRACK),
-      .p_vram_wr_req(VDPCMDVRAMWRREQ),
+      .vram_wr_req(vdp_cmd_vram_wr_req),
+      .vram_wr_size(vdp_cmd_vram_wr_size),
       .p_vram_rd_req(VDPCMDVRAMRDREQ),
       .p_vram_access_addr(VDPCMDVRAMACCESSADDR),
       .p_vram_wr_data(VDPCMDVRAMWRDATA),
       .p_vram_wr_data_32(VDPCMDVRAMWRDATA_32),
-      .vram_wr_32_mode(vram_wr_32_mode),
       .p_clr(VDPCMDCLR),
       .p_ce(VDPCMDCE),
       .p_bd(VDPCMDBD),

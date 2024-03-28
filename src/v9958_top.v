@@ -92,10 +92,10 @@ module v9958_top (
   bit          VideoDLClk;
   bit          VideoDHClk;
   bit          WeVdp_n;
+  bit   [ 1:0] WeVdp_size;
   bit   [16:0] VdpAdr;
   bit   [ 7:0] VrmDbo;
   bit   [31:0] VrmDbo_32;
-  bit          vram_wr_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
   bit          vram_rd_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
   bit   [15:0] VrmDbi;
   bit   [31:0] VrmDbi_32;
@@ -118,6 +118,10 @@ module v9958_top (
   assign v9958_read = (WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy);
   assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
   assign memory_refresh = ~VideoDLClk & ~VideoDHClk & ~ram_busy;
+
+  bit vram_wr_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
+  assign vram_wr_32_mode = WeVdp_size == `MEMORY_WIDTH_32;
+
   memory_controller #(
       .FREQ(108_000_000)
   ) vram (
@@ -184,12 +188,12 @@ module v9958_top (
       .DBO            (CpuDbo),
       .INT_N          (int_n),
       .PRAMWE_N       (WeVdp_n),
+      .PRAMWE_SIZE    (WeVdp_size),
       .PRAMADR        (VdpAdr),
       .PRAMDBI        (VrmDbi),
       .PRAMDBI_32     (VrmDbi_32),
       .PRAMDBO        (VrmDbo),
       .PRAMDBO_32     (VrmDbo_32),
-      .vram_wr_32_mode(vram_wr_32_mode),
       .vram_rd_32_mode(vram_rd_32_mode),
       .VDPSPEEDMODE   (1'b1),                    // for V9958 MSX2+/tR VDP
       .PVIDEODHCLK    (VideoDHClk),

@@ -78,11 +78,11 @@ module VDP_COMMAND (
 
     output bit p_reg_wr_ack,
     output bit p_tr_clr_ack,
-    output bit p_vram_wr_req,
+    output bit vram_wr_req,
+    output bit [1:0] vram_wr_size,
     output bit p_vram_rd_req,
     output bit [16:0] p_vram_access_addr,
     output bit [7:0] p_vram_wr_data,
-    output bit vram_wr_32_mode,
     output bit [31:0] p_vram_wr_data_32,
     output bit [7:0] p_clr,
     output bit p_ce,
@@ -121,7 +121,7 @@ module VDP_COMMAND (
 
   // VDP COMMAND SIGNALS - COMMUNICATION BETWEEN COMMAND PROCESSOR
   // AND MEMORY INTERFACE (WHICH IS IN THE COLOR GENERATOR)
-  bit        vram_wr_req;
+  bit        internal_vram_wr_req;
   bit        vram_rd_req;
   bit [16:0] vram_access_addr;
   bit [ 7:0] vram_wr_data;
@@ -183,7 +183,7 @@ module VDP_COMMAND (
 
   assign p_reg_wr_ack = reg_wr_ack;
   assign p_tr_clr_ack = tr_clr_ack;
-  assign p_vram_wr_req = cmd_enable ? vram_wr_req : vram_wr_ack;
+  assign vram_wr_req = cmd_enable ? internal_vram_wr_req : vram_wr_ack;
   assign p_vram_rd_req = vram_rd_req;
   assign p_vram_access_addr = vram_access_addr;
   assign p_vram_wr_data = vram_wr_data;
@@ -196,6 +196,8 @@ module VDP_COMMAND (
   assign current_command = CMR[7:4];
 
   assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_colour;
+
+  assign vram_wr_size = mode_graphic_super_colour ? `MEMORY_WIDTH_32 : `MEMORY_WIDTH_8;
 
   bit graphic_4_or_6;
   assign graphic_4_or_6 = mode_graphic_4 || mode_graphic_6;
@@ -378,36 +380,35 @@ module VDP_COMMAND (
     bit srch_eq_result;
 
     if (reset) begin
-      state            <= IDLE;
-      initializing     <= 0;
-      rd_x_low         <= 0;
-      SX               <= 0;  // R32
-      SY               <= 0;  // R34
-      DX               <= 0;  // R36
-      DY               <= 0;  // R38
-      NX               <= 0;  // R40
-      NY               <= 0;  // R42
-      CLR              <= 0;  // R44
-      MM               <= 0;  // R45 BIT 0
-      EQ               <= 0;  // R45 BIT 1
-      DIX              <= 0;  // R45 BIT 2
-      DIY              <= 0;  // R45 BIT 3
-      CMR              <= 0;  // R46
-      sx_tmp           <= 0;
-      dx_tmp           <= 0;
-      cmr_wr           <= 0;
-      reg_wr_ack       <= 0;
-      vram_wr_req      <= 0;
-      vram_rd_req      <= 0;
-      vram_wr_data     <= 0;
-      vram_wr_32_mode  <= 0;  //default to 8 bit writes
-      vram_wr_data_32  <= 0;
-      TR               <= 1'b1;  // TRANSFER READY
-      CE               <= 0;  // COMMAND EXECUTING
-      BD               <= 0;  // BORDER COLOR FOUND
-      tr_clr_ack       <= 0;
-      vram_access_y    <= 0;
-      vram_access_x    <= 0;
+      state                <= IDLE;
+      initializing         <= 0;
+      rd_x_low             <= 0;
+      SX                   <= 0;  // R32
+      SY                   <= 0;  // R34
+      DX                   <= 0;  // R36
+      DY                   <= 0;  // R38
+      NX                   <= 0;  // R40
+      NY                   <= 0;  // R42
+      CLR                  <= 0;  // R44
+      MM                   <= 0;  // R45 BIT 0
+      EQ                   <= 0;  // R45 BIT 1
+      DIX                  <= 0;  // R45 BIT 2
+      DIY                  <= 0;  // R45 BIT 3
+      CMR                  <= 0;  // R46
+      sx_tmp               <= 0;
+      dx_tmp               <= 0;
+      cmr_wr               <= 0;
+      reg_wr_ack           <= 0;
+      internal_vram_wr_req <= 0;
+      vram_rd_req          <= 0;
+      vram_wr_data         <= 0;
+      vram_wr_data_32      <= 0;
+      TR                   <= 1'b1;  // TRANSFER READY
+      CE                   <= 0;  // COMMAND EXECUTING
+      BD                   <= 0;  // BORDER COLOR FOUND
+      tr_clr_ack           <= 0;
+      vram_access_y        <= 0;
+      vram_access_x        <= 0;
 
     end else begin
       // PROCESS REGISTER UPDATE REQUEST, CLEAR 'TRANSFER READY' REQUEST
@@ -589,7 +590,6 @@ module VDP_COMMAND (
             if (vram_rd_req == vram_rd_ack) begin
               if (graphic_4_or_6) begin
                 vram_wr_data = rd_x_low[0] ? {vram_rd_data[7:4], logical_operation_dest_colour[3:0]} : {logical_operation_dest_colour[3:0], vram_rd_data[3:0]};
-                vram_wr_32_mode <= 0;
 
               end else if (mode_graphic_5) begin
                 case (rd_x_low)
@@ -598,15 +598,12 @@ module VDP_COMMAND (
                   2'b10: vram_wr_data <= {vram_rd_data[7:4], logical_operation_dest_colour[1:0], vram_rd_data[1:0]};
                   2'b11: vram_wr_data <= {vram_rd_data[7:2], logical_operation_dest_colour[1:0]};
                 endcase
-                vram_wr_32_mode <= 0;
 
               end else if (mode_graphic_super_colour) begin
-                vram_wr_data_32  <= logical_operation_dest_colour_32;
-                vram_wr_32_mode  <= 1;
+                vram_wr_data_32 <= logical_operation_dest_colour_32;
 
               end else begin
                 vram_wr_data <= logical_operation_dest_colour;
-                vram_wr_32_mode <= 0;
               end
 
               state <= WR_VRAM;
@@ -617,14 +614,13 @@ module VDP_COMMAND (
             // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMMM, LMMV, LINE, PSET
             vram_access_y <= DY;
             vram_access_x <= dx_tmp[8:0];
-            vram_wr_req <= ~vram_wr_ack;
+            internal_vram_wr_req <= ~vram_wr_ack;
             state <= WAIT_WR_VRAM;
           end
 
           WAIT_WR_VRAM: begin
             // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMMM, LMMV, LINE, PSET
-            if ((vram_wr_req == vram_wr_ack)) begin
-              vram_wr_32_mode <= 0;
+            if ((internal_vram_wr_req == vram_wr_ack)) begin
               case (CMR[7:4])
                 PSET: begin
                   state <= EXEC_END;
