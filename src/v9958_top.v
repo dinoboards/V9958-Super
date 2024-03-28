@@ -121,7 +121,12 @@ module v9958_top (
   bit vram_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
   assign vram_32_mode = VdpDb_size == `MEMORY_WIDTH_32;
 
-  memory_controller #(
+  // if read and not 32, then size = 16
+  // if read and 32, then size = 32
+  // if write and 32, then size = 32
+  // if write and not 32, then size = 8
+
+  ORGANISED_MEM_CONTROLLER #(
       .FREQ(108_000_000)
   ) vram (
       .clk(clk_sdramp_w),
@@ -130,16 +135,15 @@ module v9958_top (
       .read(v9958_read),
       .write(v9958_write),
       .refresh(memory_refresh),
-      .addr(vram_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]}),
-      .din({VrmDbo, VrmDbo}),
-      .din32(VrmDbo_32),
-      .wdm(vram_32_mode ? 2'b00 : {~VdpAdr[0], VdpAdr[0]}),
-      .dout(VrmDbi),
-      .dout32(VrmDbi_32),
       .busy(ram_busy),
       .fail(ram_fail),
       .enabled(ram_enabled),
-
+      .addr(VdpAdr),
+      .din8(VrmDbo),
+      .din32(VrmDbo_32),
+      .dout16(VrmDbi),
+      .dout32(VrmDbi_32),
+      .word_size(vram_32_mode ? `MEMORY_WIDTH_32 : (v9958_read ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8)),
       .IO_sdram_dq(IO_sdram_dq),
       .O_sdram_addr(O_sdram_addr),
       .O_sdram_ba(O_sdram_ba),

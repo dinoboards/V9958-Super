@@ -1,3 +1,2 @@
 impl/*
 *.user
-!impl/tn_vdp_process_config.json

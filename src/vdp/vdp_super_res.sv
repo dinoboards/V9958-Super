@@ -103,7 +103,7 @@ module VDP_SUPER_RES (
 
         724: begin  //(DL)
           if (last_line) begin
-            super_res_vram_addr <= 17'(super_res_vram_addr + 2);
+            super_res_vram_addr <= 17'(super_res_vram_addr + 4);
           end
         end
 
@@ -135,7 +135,7 @@ module VDP_SUPER_RES (
                 line_buffer_index <= 8'(line_buffer_index + 1);
 
                 if (active_line) begin
-                  super_res_vram_addr <= 17'(super_res_vram_addr + 2);
+                  super_res_vram_addr <= 17'(super_res_vram_addr + 4);
                 end
 
               end

@@ -364,7 +364,7 @@ module VDP_COMMAND (
       //x = 0 to 511, y = 0 to 1023
       //but for moment, assume x is 0 to 179, and y 0 to 143
       //addr = 180*2*y + x*2
-      vram_access_addr = (vram_access_y * 180 * 2) + (vram_access_x * 2);
+      vram_access_addr = (vram_access_y * 180 * 4) + (vram_access_x * 4);
 
     end else begin
       vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};
