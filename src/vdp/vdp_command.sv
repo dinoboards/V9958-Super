@@ -229,6 +229,11 @@ module VDP_COMMAND (
         2'b11: RDPOINT = {6'b000000, vram_rd_data[1:0]};
       endcase
 
+    end else if (mode_graphic_super_colour) begin
+      //vram_rd_data_32 has the 24 bit RGB colour codes
+      //need to convert that to the 8 bit colour code
+      RDPOINT = {vram_rd_data_32[23:21], vram_rd_data_32[15:13], vram_rd_data_32[7:6]};
+
     end else begin
       RDPOINT = vram_rd_data;
     end
@@ -376,36 +381,36 @@ module VDP_COMMAND (
     bit srch_eq_result;
 
     if (reset) begin
-      state           <= IDLE;
-      initializing    <= 0;
-      rd_x_low        <= 0;
-      SX              <= 0;  // R32
-      SY              <= 0;  // R34
-      DX              <= 0;  // R36
-      DY              <= 0;  // R38
-      NX              <= 0;  // R40
-      NY              <= 0;  // R42
-      CLR             <= 0;  // R44
-      MM              <= 0;  // R45 BIT 0
-      EQ              <= 0;  // R45 BIT 1
-      DIX             <= 0;  // R45 BIT 2
-      DIY             <= 0;  // R45 BIT 3
-      CMR             <= 0;  // R46
-      sx_tmp          <= 0;
-      dx_tmp          <= 0;
-      cmr_wr          <= 0;
-      reg_wr_ack      <= 0;
-      vram_wr_req     <= 0;
-      vram_rd_req     <= 0;
-      vram_wr_data    <= 0;
-      vram_wr_32_mode     <= 0;  //default to 8 bit writes
-      vram_wr_data_32 <= 0;
-      TR              <= 1'b1;  // TRANSFER READY
-      CE              <= 0;  // COMMAND EXECUTING
-      BD              <= 0;  // BORDER COLOR FOUND
-      tr_clr_ack      <= 0;
-      vram_access_y   <= 0;
-      vram_access_x   <= 0;
+      state            <= IDLE;
+      initializing     <= 0;
+      rd_x_low         <= 0;
+      SX               <= 0;  // R32
+      SY               <= 0;  // R34
+      DX               <= 0;  // R36
+      DY               <= 0;  // R38
+      NX               <= 0;  // R40
+      NY               <= 0;  // R42
+      CLR              <= 0;  // R44
+      MM               <= 0;  // R45 BIT 0
+      EQ               <= 0;  // R45 BIT 1
+      DIX              <= 0;  // R45 BIT 2
+      DIY              <= 0;  // R45 BIT 3
+      CMR              <= 0;  // R46
+      sx_tmp           <= 0;
+      dx_tmp           <= 0;
+      cmr_wr           <= 0;
+      reg_wr_ack       <= 0;
+      vram_wr_req      <= 0;
+      vram_rd_req      <= 0;
+      vram_wr_data     <= 0;
+      vram_wr_32_mode  <= 0;  //default to 8 bit writes
+      vram_wr_data_32  <= 0;
+      TR               <= 1'b1;  // TRANSFER READY
+      CE               <= 0;  // COMMAND EXECUTING
+      BD               <= 0;  // BORDER COLOR FOUND
+      tr_clr_ack       <= 0;
+      vram_access_y    <= 0;
+      vram_access_x    <= 0;
 
       test_rd_point_32 <= 0;
 
@@ -602,12 +607,12 @@ module VDP_COMMAND (
 
               end else if (mode_graphic_super_colour) begin
                 test_rd_point_32 <= rd_point_32;
-                vram_wr_data_32 <= logical_operation_dest_colour_32;
-                vram_wr_32_mode <= 1;
+                vram_wr_data_32  <= logical_operation_dest_colour_32;
+                vram_wr_32_mode  <= 1;
 
               end else begin
                 vram_wr_data <= logical_operation_dest_colour;
-                vram_wr_32_mode  <= 0;
+                vram_wr_32_mode <= 0;
               end
 
               state <= WR_VRAM;
