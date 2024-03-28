@@ -96,12 +96,10 @@ module ADDRESS_BUS #(
       // (The VRAM access timing is controlled by EIGHTDOTSTATE)
       if (DOTSTATE == 2'b10) begin
 
-        if (vdp_super && super_res_drawing) begin
+        if (vdp_super && super_res_drawing && REG_R1_DISP_ON) begin
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 
-        end else
-
-        if(!vdp_super && ((PREWINDOW && REG_R1_DISP_ON) && (EIGHTDOTSTATE == 3'b000 || EIGHTDOTSTATE == 3'b001 || EIGHTDOTSTATE == 3'b010 || EIGHTDOTSTATE == 3'b011 || EIGHTDOTSTATE == 3'b100))) begin
+        end else if(!vdp_super && ((PREWINDOW && REG_R1_DISP_ON) && (EIGHTDOTSTATE == 3'b000 || EIGHTDOTSTATE == 3'b001 || EIGHTDOTSTATE == 3'b010 || EIGHTDOTSTATE == 3'b011 || EIGHTDOTSTATE == 3'b100))) begin
           //EIGHTDOTSTATE is 0 to 4, and displayed
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 

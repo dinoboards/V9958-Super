@@ -61,41 +61,39 @@
 `include "vdp_constants.vh"
 
 module VDP (
-    input wire CLK21M,
-    input wire RESET,
-    input wire REQ,
-    output wire ACK,
-    input wire WRT,
-    input wire [1:0] mode,
-    output wire [7:0] DBI,
-    input wire [7:0] DBO,
-    output wire INT_N,
-    output reg PRAMWE_N,
-    output wire [16:0] PRAMADR,
-    input wire [15:0] PRAMDBI,
-    input bit [31:0] PRAMDBI_32,
-    output reg [7:0] PRAMDBO,
+    input  wire         CLK21M,
+    input  wire         RESET,
+    input  wire         REQ,
+    output wire         ACK,
+    input  wire         WRT,
+    input  wire  [ 1:0] mode,
+    output wire  [ 7:0] DBI,
+    input  wire  [ 7:0] DBO,
+    output wire         INT_N,
+    output reg          PRAMWE_N,
+    output wire  [16:0] PRAMADR,
+    input  wire  [15:0] PRAMDBI,
+    input  bit   [31:0] PRAMDBI_32,
+    output reg   [ 7:0] PRAMDBO,
     output logic [31:0] PRAMDBO_32,
-    output bit vram_wr_32_mode,
-    input wire VDPSPEEDMODE,
-    output wire [5:0] PVIDEOR,
-    output wire [5:0] PVIDEOG,
-    output wire [5:0] PVIDEOB,
-    output wire PVIDEODHCLK,
-    output wire PVIDEODLCLK,
-    output wire PAL_MODE,
-    input wire SPMAXSPR,
-    input wire [10:0] CX,
-    input wire [9:0] CY,
+    output bit          vram_wr_32_mode,
+    input  wire         VDPSPEEDMODE,
+    output wire         PVIDEODHCLK,
+    output wire         PVIDEODLCLK,
+    output wire         PAL_MODE,
+    input  wire         SPMAXSPR,
+    input  wire  [10:0] CX,
+    input  wire  [ 9:0] CY,
+    input  bit          scanlin,
 
-    input bit [16:0] super_vram_addr,
-    input bit super_res_drawing,
+
+
+    output bit [7:0] red,
+    output bit [7:0] green,
+    output bit [7:0] blue,
+
 
     output bit vdp_super,
-    output bit super_color,
-    output bit super_mid,
-    output bit super_res,
-    output bit [7:0] REG_R31,
     output bit vram_rd_32_mode
 );
 
@@ -222,6 +220,15 @@ module VDP (
   wire [ 5:0] YJK_B;
   wire        YJK_EN;
 
+  // GRAPHIC SUPER
+  bit         super_res_drawing;
+  bit  [16:0] super_vram_addr;
+
+  // V9958 15 bit RGB
+  bit  [ 5:0] PVIDEOR;
+  bit  [ 5:0] PVIDEOG;
+  bit  [ 5:0] PVIDEOB;
+
   // SPRITE
   wire        SPMODE2;
   wire        SPVRAMACCESSING;
@@ -327,6 +334,14 @@ module VDP (
   assign IVIDEOR = IVIDEOR_VDP;
   assign IVIDEOG = IVIDEOG_VDP;
   assign IVIDEOB = IVIDEOB_VDP;
+
+  bit [7:0] high_res_red;
+  bit [7:0] high_res_green;
+  bit [7:0] high_res_blue;
+
+  assign red   = vdp_super ? high_res_red : (scanlin && CY[0]) ? {1'b0, PVIDEOR, 1'b0} : {PVIDEOR, 2'b0};
+  assign green = vdp_super ? high_res_green : (scanlin && CY[0]) ? {1'b0, PVIDEOG, 1'b0} : {PVIDEOG, 2'b0};
+  assign blue  = vdp_super ? high_res_blue : (scanlin && CY[0]) ? {1'b0, PVIDEOB, 1'b0} : {PVIDEOB, 2'b0};
 
   VDP_VGA U_VDP_VGA (
       .CLK21M(CLK21M),
@@ -833,7 +848,6 @@ module VDP (
       .super_mid(super_mid),
       .super_res(super_res),
       .SPMODE2(SPMODE2),
-      .REG_R31(REG_R31),
 
       .super_rgb_colour_reg(super_rgb_colour_reg),
       .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
@@ -896,5 +910,26 @@ module VDP (
       .DRIVE(VDP_COMMAND_DRIVE),
       .ACTIVE(VDP_COMMAND_ACTIVE)
   );
+
+
+  VDP_SUPER_RES vdp_super_res (
+      .reset(RESET),
+      .clk(CLK21M),
+      .vdp_super(vdp_super),
+      .super_color(super_color),
+      .super_mid(super_mid),
+      .super_res(super_res),
+      .cx(CX),
+      .cy(CY),
+      .pal_mode(PAL_MODE),
+      .REG_R1_DISP_ON(REG_R1_DISP_ON),
+      .vrm_32(PRAMDAT_32),
+      .super_res_vram_addr(super_vram_addr),
+      .high_res_red(high_res_red),
+      .high_res_green(high_res_green),
+      .high_res_blue(high_res_blue),
+      .super_res_drawing(super_res_drawing)
+  );
+
 
 endmodule

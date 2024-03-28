@@ -150,7 +150,6 @@ module VDP_REGISTER (
     output wire VDPMODEISHIGHRES,
     output wire SPMODE2,
 
-    output bit [7:0] REG_R31,
     output bit vdp_super,
     output bit super_color,
     output bit super_mid,
@@ -215,7 +214,6 @@ module VDP_REGISTER (
   wire W_IS_BITMAP_MODE;
 
   bit [7:0] FF_REG_R31;
-  assign REG_R31 = FF_REG_R31;
 
   bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
   bit super_rgb_loading;  // set if RGBs are being loaded into R#30
@@ -225,7 +223,7 @@ module VDP_REGISTER (
   assign super_color = vdp_super && FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
   assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
   assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-  assign super_rgb_colour_reg_applied = REG_R31[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
+  assign super_rgb_colour_reg_applied = FF_REG_R31[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
   assign super_rgb_loading = FF_REG_R31[7];  // active when RGBs are being loaded into R#30
 
   assign mode_graphic_7_base = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);

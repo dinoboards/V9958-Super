@@ -11,6 +11,7 @@ module VDP_SUPER_RES (
     input bit [10:0] cx,
     input bit [9:0] cy,
     input bit pal_mode,
+    input bit REG_R1_DISP_ON,
 
     input bit [31:0] vrm_32,
 
@@ -124,8 +125,8 @@ module VDP_SUPER_RES (
             case (cx[1:0])
               0: begin  // (DL)
                 if (active_line) begin
-                  line_buffer[line_buffer_index] <= next_rgb;
-                  high_res_data <= next_rgb;
+                  line_buffer[line_buffer_index] <= REG_R1_DISP_ON ? next_rgb : 0;
+                  high_res_data <= REG_R1_DISP_ON ? next_rgb : 0;
 
                 end else begin
                   high_res_data <= line_buffer[line_buffer_index];
