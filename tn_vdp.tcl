@@ -69,5 +69,4 @@ set_option -vhdl_std vhd2008
 set_option -print_all_synthesis_warning 1
 # set_option -show_all_warn 1
 
-run syn
 run pnr
