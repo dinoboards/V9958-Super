@@ -40,7 +40,7 @@ add_file src\\vdp\\vdp_register.v
 add_file src\\vdp\\vdp_spinforam.v
 add_file src\\vdp\\vdp_sprite.v
 add_file src\\vdp\\vdp_ssg.v
-add_file src\\vdp\\vdp_super_high_res.sv
+add_file src\\vdp\\vdp_super_res.sv
 add_file src\\vdp\\vdp_text12.v
 add_file src\\vdp\\vdp_vga.v
 add_file src\\vdp\\vdp_wait_control.v

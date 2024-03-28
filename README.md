@@ -35,7 +35,7 @@ Its designed specifically for a [Yellow MSX System](https://www.tindie.com/store
 * 16 bit RGB colour - 2 bytes per pixel - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
 * ?? bit RGB palette colour - 1 byte per pixel - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
 
-See [src/vdp/vdp_super_high_res.md](./src/vdp/vdp_super_high_res.md) for more current details
+See [src/vdp/vdp_super_res.md](./src/vdp/vdp_super_res.md) for more current details
 
 ## Building using the Command Line
 

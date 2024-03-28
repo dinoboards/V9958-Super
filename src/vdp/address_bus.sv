@@ -96,10 +96,10 @@ module ADDRESS_BUS #(
       // (The VRAM access timing is controlled by EIGHTDOTSTATE)
       if (DOTSTATE == 2'b10) begin
 
-        // if (vdp_super && super_res_drawing) begin
-        //   VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
+        if (vdp_super && super_res_drawing) begin
+          VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 
-        // end else
+        end else
 
         if(!vdp_super && ((PREWINDOW && REG_R1_DISP_ON) && (EIGHTDOTSTATE == 3'b000 || EIGHTDOTSTATE == 3'b001 || EIGHTDOTSTATE == 3'b010 || EIGHTDOTSTATE == 3'b011 || EIGHTDOTSTATE == 3'b100))) begin
           //EIGHTDOTSTATE is 0 to 4, and displayed
@@ -221,40 +221,44 @@ module ADDRESS_BUS #(
 
         //todo set IRAMADR to high res address if in high res mode
 
-        // if (vdp_super) begin
-        //   IRAMADR <= super_vram_addr;
-        //   vram_rd_32_mode <= 1;
+        if (vdp_super) begin
+          IRAMADR <= super_vram_addr;
+          vram_rd_32_mode <= 1;
+          PRAMDBO <= 8'bZ;
+          PRAMDBO_32 <= 32'bZ;
+          PRAMWE_N <= 1'b1;
 
-        // end else
+        end else begin
 
-        case (DOTSTATE)
-          2'b10: begin
-            PRAMDBO <= 8'bZ;
-            PRAMDBO_32 <= 32'bZ;
-            PRAMWE_N <= 1'b1;
-            if ((TEXT_MODE == 1'b1)) begin
-              IRAMADR <= PRAMADRT12;
-              vram_rd_32_mode <= 0;
-            end else if (((VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1) || (VDPMODEGRAPHIC3 == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1))) begin
-              IRAMADR <= PRAMADRG123M;
-              vram_rd_32_mode <= 0;
-            end else if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC5 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
-              IRAMADR <= PRAMADRG4567;
-              vram_rd_32_mode <= 0;
+          case (DOTSTATE)
+            2'b10: begin
+              PRAMDBO <= 8'bZ;
+              PRAMDBO_32 <= 32'bZ;
+              PRAMWE_N <= 1'b1;
+              if ((TEXT_MODE == 1'b1)) begin
+                IRAMADR <= PRAMADRT12;
+                vram_rd_32_mode <= 0;
+              end else if (((VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1) || (VDPMODEGRAPHIC3 == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1))) begin
+                IRAMADR <= PRAMADRG123M;
+                vram_rd_32_mode <= 0;
+              end else if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC5 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
+                IRAMADR <= PRAMADRG4567;
+                vram_rd_32_mode <= 0;
+              end
             end
-          end
-          2'b01: begin
-            PRAMDBO <= 8'bZ;
-            PRAMDBO_32 <= 32'bZ;
-            PRAMWE_N <= 1'b1;
-            if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
-              IRAMADR <= PRAMADRG4567;
-              vram_rd_32_mode <= 0;
+            2'b01: begin
+              PRAMDBO <= 8'bZ;
+              PRAMDBO_32 <= 32'bZ;
+              PRAMWE_N <= 1'b1;
+              if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
+                IRAMADR <= PRAMADRG4567;
+                vram_rd_32_mode <= 0;
+              end
             end
-          end
-          default: begin
-          end
-        endcase
+            default: begin
+            end
+          endcase
+        end
 
         if (((DOTSTATE == 2'b11) && (VDPVRAMADDRSETREQ != VDPVRAMADDRSETACK))) begin
           VDPVRAMACCESSADDR <= VDPVRAMACCESSADDRTMP;

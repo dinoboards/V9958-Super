@@ -113,7 +113,7 @@ module v9958_top (
   bit v9958_read;
   bit v9958_write;
   bit memory_refresh;
-  bit [16:0] high_res_vram_addr;
+  bit [16:0] super_res_vram_addr;
   bit vdp_super;
   bit super_color;
   bit super_mid;
@@ -134,8 +134,7 @@ module v9958_top (
       .read(v9958_read),
       .write(v9958_write),
       .refresh(memory_refresh),
-      .addr((vdp_super && WeVdp_n) ? {6'b0, high_res_vram_addr[16:0]} : (vram_wr_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]})),
-    //   .addr(vram_rd_32_mode | vram_wr_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]}),
+      .addr(vram_rd_32_mode | vram_wr_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]}),
       .din({VrmDbo, VrmDbo}),
       .din32(VrmDbo_32),
       .wdm(vram_wr_32_mode ? 2'b00 : {~VdpAdr[0], VdpAdr[0]}),
@@ -182,7 +181,7 @@ module v9958_top (
   bit [7:0] high_res_green;
   bit [7:0] high_res_blue;
 
-  vdp_super_high_res vdp_super_high_res (
+  VDP_SUPER_RES vdp_super_res (
       .reset(reset_w),
       .clk(clk_w),
       .vdp_super(vdp_super),
@@ -193,7 +192,7 @@ module v9958_top (
       .cy(cy),
       .pal_mode(pal_mode),
       .vrm_32(VrmDbi_32),
-      .high_res_vram_addr(high_res_vram_addr),
+      .super_res_vram_addr(super_res_vram_addr),
       .high_res_red(high_res_red),
       .high_res_green(high_res_green),
       .high_res_blue(high_res_blue),
@@ -230,7 +229,7 @@ module v9958_top (
       .CY               (cy),
       .REG_R31          (REG_R31),
       .vdp_super        (vdp_super),
-      .super_vram_addr  (high_res_vram_addr),
+      .super_vram_addr  (super_res_vram_addr),
       .super_color      (super_color),
       .super_mid        (super_mid),
       .super_res        (super_res),

@@ -1,7 +1,7 @@
 `define DISPLAYED_PIXEL_WIDTH 720
 `define DISPLAYED_PIXEL_HEIGHT PIXEL_HEIGHT(pal_mode)
 
-module vdp_super_high_res (
+module VDP_SUPER_RES (
     input bit reset,
     input bit clk,
     input bit vdp_super,
@@ -14,7 +14,7 @@ module vdp_super_high_res (
 
     input bit [31:0] vrm_32,
 
-    output bit [16:0] high_res_vram_addr,
+    output bit [16:0] super_res_vram_addr,
     output bit [7:0] high_res_red,
     output bit [7:0] high_res_green,
     output bit [7:0] high_res_blue,
@@ -55,9 +55,9 @@ module vdp_super_high_res (
 
   assign super_res_visible = super_high_res_visible_x & super_high_res_visible_y;
   assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0);
-  assign super_res_drawing = super_res_visible && active_line;
-
   assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
+
+  assign super_res_drawing = last_line || (super_res_visible && active_line);
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~super_high_res) begin
@@ -79,31 +79,41 @@ module vdp_super_high_res (
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~super_high_res) begin
-      high_res_vram_addr <= 0;
+      super_res_vram_addr <= 0;
       next_rgb <= '{default: 0};
       high_res_data <= '{default: 0};
       line_buffer_index <= 0;
 
     end else begin
       case (cx)
-        722: begin  //(AP)
+        720: begin  //(DL)
           if (last_line) begin
-            high_res_vram_addr <= 0;
+            super_res_vram_addr <= 0;
           end
+        end
+
+        //721: (DA) - super_res_vram_addr will be latched into VRAM access by `ADDRESS_BUS
+
+        722: begin  //(DW)
           line_buffer_index <= 0;
         end
 
-        //723 (FS) read initiated
-        //724 (DL) data loading
+        //723 (FS) VRAM refreshing
 
-        725: begin  //(DR)
+        724: begin  //(DL)
           if (last_line) begin
-            next_rgb <= vrm_32;
-            high_res_vram_addr <= 17'(high_res_vram_addr + 2);
+            super_res_vram_addr <= 17'(super_res_vram_addr + 2);
           end
         end
 
-        726: begin  //(AP)
+        725: begin  //(DA)
+          // super_res_vram_addr will be latched into VRAM access by `ADDRESS_BUS
+          if (last_line) begin
+            next_rgb <= vrm_32;
+          end
+        end
+
+        726: begin  //(DW)
         end
 
         default begin
@@ -122,12 +132,16 @@ module vdp_super_high_res (
                 end
 
                 line_buffer_index <= 8'(line_buffer_index + 1);
+
+                if (active_line) begin
+                  super_res_vram_addr <= 17'(super_res_vram_addr + 2);
+                end
+
               end
 
-              1: begin  // (DR)
+              1: begin  // (DA)
                 if (active_line) begin
                   next_rgb <= vrm_32;
-                  high_res_vram_addr <= 17'(high_res_vram_addr + 2);
                 end
               end
 
