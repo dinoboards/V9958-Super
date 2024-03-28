@@ -52,13 +52,12 @@ module ADDRESS_BUS #(
     output bit   [16:0] IRAMADR,
     output bit   [ 7:0] PRAMDBO,
     output bit          PRAMWE_N,
-    output bit   [ 1:0] PRAMWE_SIZE,
+    output bit   [ 1:0] PRAM_SIZE,
     output bit          VDPVRAMREADINGR,
     output bit          VDPVRAMRDACK,
     output bit          VDPVRAMWRACK,
     output bit          VDPVRAMADDRSETACK,
-    output logic [31:0] PRAMDBO_32,
-    output bit          vram_rd_32_mode
+    output logic [31:0] PRAMDBO_32
 );
 
   localparam VRAM_ACCESS_IDLE = 0;
@@ -80,7 +79,7 @@ module ADDRESS_BUS #(
       IRAMADR <= {17{1'b1}};
       PRAMDBO <= {8{1'bZ}};
       PRAMWE_N <= 1'b1;
-      PRAMWE_SIZE <= `MEMORY_WIDTH_8;
+      PRAM_SIZE <= `MEMORY_WIDTH_8;
       VDPVRAMREADINGR <= 1'b0;
       VDPVRAMRDACK <= 1'b0;
       VDPVRAMWRACK <= 1'b0;
@@ -89,7 +88,6 @@ module ADDRESS_BUS #(
       vdp_cmd_vram_wr_ack <= 1'b0;
       VDPCMDVRAMREADINGR <= 1'b0;
       VDP_COMMAND_DRIVE <= 1'b0;
-      vram_rd_32_mode <= 0;
     end else begin
       // MAIN STATE
       //----------------------------------------
@@ -157,7 +155,6 @@ module ADDRESS_BUS #(
       //
       if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUW)) begin
         IRAMADR <= VDPVRAMACCESSADDR;
-        vram_rd_32_mode <= 0;
 
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
           VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDR[13:0] + 1);
@@ -166,7 +163,7 @@ module ADDRESS_BUS #(
         end
         PRAMDBO <= VDPVRAMACCESSDATA;
         PRAMWE_N <= 1'b0;
-        PRAMWE_SIZE <= `MEMORY_WIDTH_8;
+        PRAM_SIZE <= `MEMORY_WIDTH_8;
         VDPVRAMWRACK <= ~VDPVRAMWRACK;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUR)) begin
@@ -180,7 +177,6 @@ module ADDRESS_BUS #(
         end
 
         IRAMADR <= VDPVRAMACCESSADDRV;
-        vram_rd_32_mode <= 0;
 
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
           VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDRV[13:0] + 1);
@@ -190,34 +186,32 @@ module ADDRESS_BUS #(
         PRAMDBO <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
-        PRAMWE_SIZE <= `MEMORY_WIDTH_8;
+        PRAM_SIZE <= `MEMORY_WIDTH_8;
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
         VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
-        vram_rd_32_mode <= 0;
         PRAMDBO <= VDPCMDVRAMWRDATA;
         PRAMDBO_32 <= VDPCMDVRAMWRDATA_32;
         PRAMWE_N <= 1'b0;
-        PRAMWE_SIZE <= vdp_cmd_vram_wr_size;
+        PRAM_SIZE <= vdp_cmd_vram_wr_size;
 
         vdp_cmd_vram_wr_ack <= ~vdp_cmd_vram_wr_ack;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
-        vram_rd_32_mode <= 0;
         PRAMDBO <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
-        PRAMWE_SIZE <= `MEMORY_WIDTH_8;
+        PRAM_SIZE <= `MEMORY_WIDTH_8;
         VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_SPRT)) begin
         // VRAM READ BY SPRITE MODULE
         IRAMADR <= PRAMADRSPRITE;
-        vram_rd_32_mode <= 0;
         PRAMWE_N <= 1'b1;
+        PRAM_SIZE <= `MEMORY_WIDTH_8;
         PRAMDBO <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
 
@@ -229,10 +223,10 @@ module ADDRESS_BUS #(
 
         if (vdp_super) begin
           IRAMADR <= super_vram_addr;
-          vram_rd_32_mode <= 1;
           PRAMDBO <= 8'bZ;
           PRAMDBO_32 <= 32'bZ;
           PRAMWE_N <= 1'b1;
+          PRAM_SIZE <= `MEMORY_WIDTH_32;
 
         end else begin
 
@@ -241,24 +235,22 @@ module ADDRESS_BUS #(
               PRAMDBO <= 8'bZ;
               PRAMDBO_32 <= 32'bZ;
               PRAMWE_N <= 1'b1;
+              PRAM_SIZE <= `MEMORY_WIDTH_8;
               if ((TEXT_MODE == 1'b1)) begin
                 IRAMADR <= PRAMADRT12;
-                vram_rd_32_mode <= 0;
               end else if (((VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1) || (VDPMODEGRAPHIC3 == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1))) begin
                 IRAMADR <= PRAMADRG123M;
-                vram_rd_32_mode <= 0;
               end else if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC5 == 1'b1) || (VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
                 IRAMADR <= PRAMADRG4567;
-                vram_rd_32_mode <= 0;
               end
             end
             2'b01: begin
               PRAMDBO <= 8'bZ;
               PRAMDBO_32 <= 32'bZ;
               PRAMWE_N <= 1'b1;
+              PRAM_SIZE <= `MEMORY_WIDTH_8;
               if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
                 IRAMADR <= PRAMADRG4567;
-                vram_rd_32_mode <= 0;
               end
             end
             default: begin

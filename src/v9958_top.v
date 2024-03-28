@@ -92,11 +92,10 @@ module v9958_top (
   bit          VideoDLClk;
   bit          VideoDHClk;
   bit          WeVdp_n;
-  bit   [ 1:0] WeVdp_size;
+  bit   [ 1:0] VdpDb_size;
   bit   [16:0] VdpAdr;
   bit   [ 7:0] VrmDbo;
   bit   [31:0] VrmDbo_32;
-  bit          vram_rd_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
   bit   [15:0] VrmDbi;
   bit   [31:0] VrmDbi_32;
 
@@ -119,8 +118,8 @@ module v9958_top (
   assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
   assign memory_refresh = ~VideoDLClk & ~VideoDHClk & ~ram_busy;
 
-  bit vram_wr_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
-  assign vram_wr_32_mode = WeVdp_size == `MEMORY_WIDTH_32;
+  bit vram_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
+  assign vram_32_mode = VdpDb_size == `MEMORY_WIDTH_32;
 
   memory_controller #(
       .FREQ(108_000_000)
@@ -131,10 +130,10 @@ module v9958_top (
       .read(v9958_read),
       .write(v9958_write),
       .refresh(memory_refresh),
-      .addr(vram_rd_32_mode | vram_wr_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]}),
+      .addr(vram_32_mode ? {6'b0, VdpAdr[16:0]} : {7'b0, VdpAdr[16:1]}),
       .din({VrmDbo, VrmDbo}),
       .din32(VrmDbo_32),
-      .wdm(vram_wr_32_mode ? 2'b00 : {~VdpAdr[0], VdpAdr[0]}),
+      .wdm(vram_32_mode ? 2'b00 : {~VdpAdr[0], VdpAdr[0]}),
       .dout(VrmDbi),
       .dout32(VrmDbi_32),
       .busy(ram_busy),
@@ -177,35 +176,34 @@ module v9958_top (
   bit [7:0] dvi_b;
 
   VDP u_v9958 (
-      .CLK21M         (clk_w),
-      .RESET          (reset_w | ~ram_enabled),
-      .REQ            (CpuReq),
-      .ACK            (),
-      .scanlin        (scanlin),
-      .WRT            (CpuWrt),
-      .mode           (mode),
-      .DBI            (CpuDbi),
-      .DBO            (CpuDbo),
-      .INT_N          (int_n),
-      .PRAMWE_N       (WeVdp_n),
-      .PRAMWE_SIZE    (WeVdp_size),
-      .PRAMADR        (VdpAdr),
-      .PRAMDBI        (VrmDbi),
-      .PRAMDBI_32     (VrmDbi_32),
-      .PRAMDBO        (VrmDbo),
-      .PRAMDBO_32     (VrmDbo_32),
-      .vram_rd_32_mode(vram_rd_32_mode),
-      .VDPSPEEDMODE   (1'b1),                    // for V9958 MSX2+/tR VDP
-      .PVIDEODHCLK    (VideoDHClk),
-      .PVIDEODLCLK    (VideoDLClk),
-      .PAL_MODE       (pal_mode),
-      .SPMAXSPR       (1'b0),
-      .CX             (cx),
-      .CY             (cy),
-      .vdp_super      (vdp_super),
-      .red            (dvi_r),
-      .green          (dvi_g),
-      .blue           (dvi_b)
+      .CLK21M      (clk_w),
+      .RESET       (reset_w | ~ram_enabled),
+      .REQ         (CpuReq),
+      .ACK         (),
+      .scanlin     (scanlin),
+      .WRT         (CpuWrt),
+      .mode        (mode),
+      .DBI         (CpuDbi),
+      .DBO         (CpuDbo),
+      .INT_N       (int_n),
+      .PRAMWE_N    (WeVdp_n),
+      .PRAM_SIZE   (VdpDb_size),
+      .PRAMADR     (VdpAdr),
+      .PRAMDBI     (VrmDbi),
+      .PRAMDBI_32  (VrmDbi_32),
+      .PRAMDBO     (VrmDbo),
+      .PRAMDBO_32  (VrmDbo_32),
+      .VDPSPEEDMODE(1'b1),                    // for V9958 MSX2+/tR VDP
+      .PVIDEODHCLK (VideoDHClk),
+      .PVIDEODLCLK (VideoDLClk),
+      .PAL_MODE    (pal_mode),
+      .SPMAXSPR    (1'b0),
+      .CX          (cx),
+      .CY          (cy),
+      .vdp_super   (vdp_super),
+      .red         (dvi_r),
+      .green       (dvi_g),
+      .blue        (dvi_b)
   );
 
   //--------------------------------------------------------------

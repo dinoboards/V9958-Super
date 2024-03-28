@@ -71,7 +71,7 @@ module VDP (
     input  wire  [ 7:0] DBO,
     output wire         INT_N,
     output reg          PRAMWE_N,
-    output bit   [ 1:0] PRAMWE_SIZE,
+    output bit   [ 1:0] PRAM_SIZE,
     output wire  [16:0] PRAMADR,
     input  wire  [15:0] PRAMDBI,
     input  bit   [31:0] PRAMDBI_32,
@@ -90,9 +90,7 @@ module VDP (
     output bit [7:0] green,
     output bit [7:0] blue,
 
-
-    output bit vdp_super,
-    output bit vram_rd_32_mode
+    output bit vdp_super
 );
 
   import custom_timings::*;
@@ -581,13 +579,12 @@ module VDP (
       .IRAMADR            (IRAMADR),
       .PRAMDBO            (PRAMDBO),
       .PRAMWE_N           (PRAMWE_N),
-      .PRAMWE_SIZE        (PRAMWE_SIZE),
+      .PRAM_SIZE          (PRAM_SIZE),
       .VDPVRAMREADINGR    (VDPVRAMREADINGR),
       .VDPVRAMRDACK       (VDPVRAMRDACK),
       .VDPVRAMWRACK       (VDPVRAMWRACK),
       .VDPVRAMADDRSETACK  (VDPVRAMADDRSETACK),
-      .PRAMDBO_32         (PRAMDBO_32),
-      .vram_rd_32_mode    (vram_rd_32_mode)
+      .PRAMDBO_32         (PRAMDBO_32)
   );
 
 
