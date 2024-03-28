@@ -156,10 +156,7 @@ module VDP_REGISTER (
     output bit super_res,
 
     output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
-    output bit super_rgb_colour_reg_applied,
-
-    input bit [31:0] test_wr_data_32,
-    input bit [31:0] test_rd_point_32
+    output bit super_rgb_colour_reg_applied
 );
 
   // S#2

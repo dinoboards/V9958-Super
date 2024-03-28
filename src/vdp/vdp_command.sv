@@ -89,10 +89,7 @@ module VDP_COMMAND (
     output bit p_bd,
     output bit p_tr,
     output bit [10:0] p_sx_tmp,
-    output bit [7:4] current_command,
-
-    output bit [31:0] test_wr_data_32,
-    output bit [31:0] test_rd_point_32
+    output bit [7:4] current_command
 );
 
   // R44, S#7
@@ -412,8 +409,6 @@ module VDP_COMMAND (
       vram_access_y    <= 0;
       vram_access_x    <= 0;
 
-      test_rd_point_32 <= 0;
-
     end else begin
       // PROCESS REGISTER UPDATE REQUEST, CLEAR 'TRANSFER READY' REQUEST
       // OR PROCESS ANY ONGOING COMMAND.
@@ -606,7 +601,6 @@ module VDP_COMMAND (
                 vram_wr_32_mode <= 0;
 
               end else if (mode_graphic_super_colour) begin
-                test_rd_point_32 <= rd_point_32;
                 vram_wr_data_32  <= logical_operation_dest_colour_32;
                 vram_wr_32_mode  <= 1;
 
@@ -745,7 +739,6 @@ module VDP_COMMAND (
                   vram_wr_data <= CLR;
                   //translate GRAPHICS 7 RGB representation to 24 bit rep
                   vram_wr_data_32 <= super_rgb_colour_reg_applied ? super_rgb_colour_reg : {8'b0, CLR[7:5], 5'b0, CLR[4:2], 5'b0, CLR[1:0], 6'b0};
-                  test_wr_data_32 <= super_rgb_colour_reg_applied ? super_rgb_colour_reg : {8'b0, CLR[7:5], 5'b0, CLR[4:2], 5'b0, CLR[1:0], 6'b0};
                   state <= PRE_RD_VRAM;
                 end
                 SRCH: begin

@@ -746,9 +746,6 @@ module VDP (
       .SPMAXSPR(SPMAXSPR)
   );
 
-  bit [31:0] test_wr_data_32;
-  bit [31:0] test_rd_point_32;
-
   //---------------------------------------------------------------------------
   // VDP REGISTER ACCESS
   //---------------------------------------------------------------------------
@@ -850,10 +847,8 @@ module VDP (
       .SPMODE2(SPMODE2),
 
       .super_rgb_colour_reg(super_rgb_colour_reg),
-      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
+      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
 
-      .test_wr_data_32 (test_wr_data_32),
-      .test_rd_point_32(test_rd_point_32)
   );
 
   //---------------------------------------------------------------------------
@@ -892,10 +887,7 @@ module VDP (
       .current_command(CUR_VDP_COMMAND),
 
       .super_rgb_colour_reg(super_rgb_colour_reg),
-      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
-
-      .test_wr_data_32 (test_wr_data_32),
-      .test_rd_point_32(test_rd_point_32)
+      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
   );
 
   VDP_WAIT_CONTROL U_VDP_WAIT_CONTROL (
