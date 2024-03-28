@@ -213,6 +213,7 @@ module VDP_REGISTER (
   wire W_EVEN_DOTSTATE;
   wire W_IS_BITMAP_MODE;
 
+  bit [7:0] FF_REG_R30;
   bit [7:0] FF_REG_R31;
 
   bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
@@ -223,8 +224,8 @@ module VDP_REGISTER (
   assign super_color = vdp_super && FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
   assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
   assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-  assign super_rgb_colour_reg_applied = FF_REG_R31[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
-  assign super_rgb_loading = FF_REG_R31[7];  // active when RGBs are being loaded into R#30
+  assign super_rgb_colour_reg_applied = FF_REG_R30[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
+  assign super_rgb_loading = FF_REG_R30[7];  // active when RGBs are being loaded into R#30
 
   assign mode_graphic_7_base = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
   assign mode_graphic_super_base = FF_REG_R31[0];  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
@@ -379,7 +380,7 @@ module VDP_REGISTER (
               end
 
               4'b1101: begin  //READ S#13
-                DBI <= test_rd_point_32[23:16];
+                DBI <= 0;
               end
 
               4'b1110: begin  //READ S#14
@@ -387,7 +388,7 @@ module VDP_REGISTER (
               end
 
               4'b1111: begin  //READ S#15
-                DBI <= test_wr_data_32[23:16];
+                DBI <= 0;
               end
               default: begin
                 DBI <= 8'd255;
@@ -724,12 +725,12 @@ module VDP_REGISTER (
             end
 
             /*
-  set bit 7 of R#31
-  write 3 bytes to R#30
-  bit 7 get auto cleared after three bytes received
-  if bit 7 clear, system reset and does not load RGB
+  set bit 7 of R#30
+  write 3 bytes to R#29
+  R#30 bit 7 get auto cleared after three bytes received
+  if bit 7 cleared, system reset and does not load RGB
 */
-            5'b11110: begin  // #30
+            5'b11101: begin  // #29
               if (super_rgb_loading) begin
                 case (super_rgb_loading_state)
                   0: begin
@@ -742,7 +743,8 @@ module VDP_REGISTER (
                   end
                   2: begin
                     super_rgb_colour_reg[7:0] = VDPP1DATA;
-                    FF_REG_R31[6] <= 1;  // set bit to indicate 24 bit RGB loaded
+                    FF_REG_R30[6] <= 1;  // set bit to indicate 24 bit RGB loaded
+                    FF_REG_R30[7] <= 0;  // reset the loading flag
                     super_rgb_loading_state <= 0;
                   end
                 endcase
@@ -750,11 +752,16 @@ module VDP_REGISTER (
 
             end
 
-            5'b11111: begin  //#31 - special!
-              FF_REG_R31 <= VDPP1DATA;
+            5'b11110: begin  //#30 - super control bits
+              FF_REG_R30 <= VDPP1DATA;
+
               if (VDPP1DATA[7] == 1) begin  //VDPP1DATA[7] is super_rgb_loading
                 super_rgb_loading_state <= 'b00;
               end
+            end
+
+            5'b11111: begin  //#31 - special! - super res modes
+              FF_REG_R31 <= VDPP1DATA;
             end
           endcase
 
