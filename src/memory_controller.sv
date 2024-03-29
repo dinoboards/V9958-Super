@@ -79,7 +79,7 @@ module MEM_CONTROLLER #(
   bit   [15:0] __din16;
   bit   [ 1:0] requested_word_size;  // The word size captured at time operation initiated
   bit   [ 1:0] operation_word_size;
-  logic [31:0] MemDin32;
+  logic [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
   bit [15:0] MemDin;
   bit [31:0] MemDout32;
@@ -111,11 +111,11 @@ module MEM_CONTROLLER #(
 
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
-      MemDin32 <= {32{1'bx}};
+      requested_din32 <= {32{1'bx}};
     end else begin
       if (!busy) begin
         if (write) begin
-          MemDin32 <= din32;
+          requested_din32 <= din32;
         end
       end
     end
@@ -150,8 +150,8 @@ module MEM_CONTROLLER #(
   end
 
 
-  assign operation_din32 = busy ? MemDin32 : din32;  //if this line moved to the top of the always_ff block, it will cause a bug!
-
+  assign operation_din32 = busy ? requested_din32 : din32;  //if this line moved to the top of the always_ff block, it will cause a bug!
+  assign operation_read = busy ? MemRD : read;
   sdram #(
       .FREQ(FREQ)
   ) u_sdram (
@@ -159,13 +159,12 @@ module MEM_CONTROLLER #(
       .clk_sdram(clk_sdram),
       .resetn(resetn),
       .addr(word_addr),
-      .rd(busy ? MemRD : read),
+      .rd(operation_read),
       .wr(busy ? MemWR : write),
       .refresh(busy ? MemRefresh : refresh),
       .din(busy ? MemDin : __din16),
       .din32(operation_din32),
       .wdm(__wdm),
-      .dout(),
       .dout32(MemDout32),
       .busy(MemBusy),
       .data_ready(MemDataReady),

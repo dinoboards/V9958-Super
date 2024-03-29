@@ -72,7 +72,6 @@ module sdram #(
     input  bit [          15:0] din,         // data input
     input  bit [          31:0] din32,       // data input when wdm is 00
     input  bit [           1:0] wdm,         // write data mask
-    output bit [          15:0] dout,        // data output
     output bit [DATA_WIDTH-1:0] dout32,      // 32-bit data output
     output bit                  data_ready,  // available 6 cycles after wr is set
     output bit                  busy,        // 0: ready for next command
@@ -85,8 +84,6 @@ module sdram #(
   assign IO_sdram_dq = dq_oen ? 32'bzzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz : dq_out;
   wire [DATA_WIDTH-1:0] dq_in = IO_sdram_dq;  // DQ input
 
-  bit off;  // byte offset
-  assign dout = off == 0 ? dq_in[15:0] : dq_in[31:16];
   assign dout32 = dq_in;
   assign O_sdram_clk = clk_sdram;
   assign O_sdram_cke = 1'b1;
@@ -233,7 +230,6 @@ module sdram #(
           FF_SDRAM_A[10]                               <= 1'b1;  // set auto precharge
           FF_SDRAM_A[9:0]                              <= {1'b0, addr[COL_WIDTH-1+1:1]};  // column address
           FF_SDRAM_DQM                                 <= 4'b0;
-          off                                          <= addr[0];
         end
         {
           READ, T_RCD + CAS
@@ -262,7 +258,6 @@ module sdram #(
           FF_SDRAM_A[10]                               <= 1'b1;  // set auto precharge
           FF_SDRAM_A[9:0]                              <= {1'b0, addr[COL_WIDTH-1+1:1]};  // column address
           FF_SDRAM_DQM                                 <= wdm == 2'b00 ? {4'b0000} : addr[0] == 1'd0 ? {2'b11, wdm} : {wdm, 2'b11};  // only write the correct byte
-          off                                          <= addr[0];
           dq_out                                       <= wdm == 2'b00 ? din32 : {din, din};
           dq_oen                                       <= 1'b0;  // DQ output on
         end
