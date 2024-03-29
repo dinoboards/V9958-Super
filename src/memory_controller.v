@@ -29,7 +29,7 @@ Need to support:
 
 `include "vdp_constants.vh"
 
-module ORGANISED_MEM_CONTROLLER #(
+module MEM_CONTROLLER #(
     parameter int FREQ = 54_000_000
 ) (
     input bit        clk,        // Main logic clock (max speed is 166.7Mh - see SRAM.v)
@@ -98,7 +98,6 @@ module ORGANISED_MEM_CONTROLLER #(
     end
   end
 
-
   always_comb begin
     dout32  = {32{1'bx}};
     __din32 = {32{1'bx}};
@@ -129,69 +128,6 @@ module ORGANISED_MEM_CONTROLLER #(
     endcase
   end
 
-  memory_controller ram (
-      .clk(clk),
-      .clk_sdram(clk_sdram),
-      .resetn(resetn),
-      .read(read),
-      .write(write),
-      .refresh(refresh),
-      .word_addr(word_addr),
-      .__din16(__din16),
-      .__din32(__din32),
-      .__wdm(__wdm),
-      .__dout32(__dout32),
-      .fail(fail),
-      .busy(busy),
-      .enabled(enabled),
-      .IO_sdram_dq(IO_sdram_dq),
-      .O_sdram_addr(O_sdram_addr),
-      .O_sdram_ba(O_sdram_ba),
-      .O_sdram_cs_n(O_sdram_cs_n),
-      .O_sdram_wen_n(O_sdram_wen_n),
-      .O_sdram_ras_n(O_sdram_ras_n),
-      .O_sdram_cas_n(O_sdram_cas_n),
-      .O_sdram_clk(O_sdram_clk),
-      .O_sdram_cke(O_sdram_cke),
-      .O_sdram_dqm(O_sdram_dqm)
-  );
-
-endmodule
-
-module memory_controller #(
-    parameter int FREQ = 54_000_000
-) (
-    input  bit          clk,        // Main logic clock (max speed is 166.7Mh - see SRAM.v)
-    input  bit          clk_sdram,  // A clock signal that is 180 degrees out of phase with the main clock.
-    input  bit          resetn,     // Active low reset signal.
-    input  bit          read,       // Signal to initiate a read operation from the SDRAM
-    input  bit          write,      // Signal to initiate a write operation to the SDRAM
-    input  bit          refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
-    input  bit   [22:0] word_addr,  // The address to read from or write to in the SDRAM
-    input  bit   [15:0] __din16,    // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
-    input  logic [31:0] __din32,    // The data to be written to the SDRAM when wdm is 00
-    input  bit   [ 1:0] __wdm,      // Write data mask
-    output bit          busy,       // Signal indicating that an operation is in progress.
-    output bit          enabled,    // Signal indicating that the memory controller is enabled.
-    output bit   [31:0] __dout32,
-
-    // debug interface
-    output bit fail,  // Signal indicating a timing mistake or SDRAM malfunction
-
-    // GoWin's Physical SDRAM interface
-    inout  logic [31:0] IO_sdram_dq,    // 32 bit bidirectional data bus
-    output bit   [10:0] O_sdram_addr,   // 11 bit multiplexed address bus
-    output bit   [ 1:0] O_sdram_ba,     // 4 banks
-    output bit          O_sdram_cs_n,   // chip select
-    output bit          O_sdram_wen_n,  // write enable
-    output bit          O_sdram_ras_n,  // row address strobe
-    output bit          O_sdram_cas_n,  // columns address strobe
-    output bit          O_sdram_clk,    // sdram's clock
-    output bit          O_sdram_cke,    // sdram's clock enable
-    output bit   [ 3:0] O_sdram_dqm     // data mask control
-);
-
-  bit [22:0] MemAddr;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
   bit [15:0] MemDin;
   bit [31:0] MemDin32;
@@ -203,14 +139,13 @@ module memory_controller #(
 
   assign __dout32 = (cycles == 3'd4 && r_read) ? MemDout32 : data32;
 
-  // SDRAM driver
   sdram #(
       .FREQ(FREQ)
   ) u_sdram (
       .clk(clk),
       .clk_sdram(clk_sdram),
       .resetn(resetn),
-      .addr(busy ? MemAddr : word_addr),
+      .addr(word_addr),
       .rd(busy ? MemRD : read),
       .wr(busy ? MemWR : write),
       .refresh(busy ? MemRefresh : refresh),
@@ -250,7 +185,6 @@ module memory_controller #(
       // Initiate read or write
       if (!busy) begin
         if (read || write || refresh) begin
-          MemAddr <= word_addr;
           MemWR <= write;
           MemRD <= read;
           MemRefresh <= refresh;

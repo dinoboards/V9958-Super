@@ -126,7 +126,7 @@ module v9958_top (
   // if write and 32, then size = 32
   // if write and not 32, then size = 8
 
-  ORGANISED_MEM_CONTROLLER #(
+  MEM_CONTROLLER #(
       .FREQ(108_000_000)
   ) vram (
       .clk(clk_sdramp_w),
