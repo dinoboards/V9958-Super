@@ -10,19 +10,19 @@ module ADDRESS_BUS #(
     input bit        PREWINDOW_X,
     input bit        PREWINDOW_Y_SP,
     input bit        SPVRAMACCESSING,
-    input bit        TEXT_MODE,             // TEXT MODE 1, 2 or 1Q
-    input bit        VDPMODETEXT1,          // TEXT MODE 1      (SCREEN0 WIDTH 40)
-    input bit        VDPMODETEXT1Q,         // TEXT MODE 1      (??)
-    input bit        VDPMODEMULTI,          // MULTICOLOR MODE  (SCREEN3)
-    input bit        VDPMODEMULTIQ,         // MULTICOLOR MODE  (??)
-    input bit        VDPMODEGRAPHIC1,       // GRAPHIC MODE 1   (SCREEN1)
-    input bit        VDPMODEGRAPHIC2,       // GRAPHIC MODE 2   (SCREEN2)
-    input bit        VDPMODEGRAPHIC3,       // GRAPHIC MODE 2   (SCREEN4)
-    input bit        VDPMODEGRAPHIC4,       // GRAPHIC MODE 4   (SCREEN5)
-    input bit        VDPMODEGRAPHIC5,       // GRAPHIC MODE 5   (SCREEN6)
-    input bit        VDPMODEGRAPHIC6,       // GRAPHIC MODE 6   (SCREEN7)
-    input bit        VDPMODEGRAPHIC7,       // GRAPHIC MODE 7   (SCREEN8,10,11,12)
-    input bit        VDPMODEISHIGHRES,      // TRUE WHEN MODE GRAPHIC5, 6
+    input bit        TEXT_MODE,               // TEXT MODE 1, 2 or 1Q
+    input bit        VDPMODETEXT1,            // TEXT MODE 1      (SCREEN0 WIDTH 40)
+    input bit        VDPMODETEXT1Q,           // TEXT MODE 1      (??)
+    input bit        VDPMODEMULTI,            // MULTICOLOR MODE  (SCREEN3)
+    input bit        VDPMODEMULTIQ,           // MULTICOLOR MODE  (??)
+    input bit        VDPMODEGRAPHIC1,         // GRAPHIC MODE 1   (SCREEN1)
+    input bit        VDPMODEGRAPHIC2,         // GRAPHIC MODE 2   (SCREEN2)
+    input bit        VDPMODEGRAPHIC3,         // GRAPHIC MODE 2   (SCREEN4)
+    input bit        VDPMODEGRAPHIC4,         // GRAPHIC MODE 4   (SCREEN5)
+    input bit        VDPMODEGRAPHIC5,         // GRAPHIC MODE 5   (SCREEN6)
+    input bit        VDPMODEGRAPHIC6,         // GRAPHIC MODE 6   (SCREEN7)
+    input bit        VDPMODEGRAPHIC7,         // GRAPHIC MODE 7   (SCREEN8,10,11,12)
+    input bit        VDPMODEISHIGHRES,        // TRUE WHEN MODE GRAPHIC5, 6
     input bit [ 7:0] VDPVRAMACCESSDATA,
     input bit        VDPVRAMADDRSETREQ,
     input bit [16:0] VDPVRAMACCESSADDRTMP,
@@ -35,7 +35,7 @@ module ADDRESS_BUS #(
     input bit        VDPVRAMREADINGA,
     input bit        VDPCMDVRAMRDACK,
     input bit [16:0] VDPCMDVRAMACCESSADDR,
-    input bit [ 7:0] VDPCMDVRAMWRDATA,
+    input bit [ 7:0] VDP_CMD_VRAM_WR_DATA_8,
     input bit [16:0] PRAMADRT12,
     input bit [31:0] VDPCMDVRAMWRDATA_32,
     input bit [16:0] PRAMADRSPRITE,
@@ -163,7 +163,7 @@ module ADDRESS_BUS #(
         end
         PRAMDBO_8 <= VDPVRAMACCESSDATA;
         PRAMWE_N <= 1'b0;
-        PRAM_SIZE <= `MEMORY_WIDTH_8;
+        PRAM_SIZE <= `MEMORY_WIDTH_8;  //write an 8 bit value
         VDPVRAMWRACK <= ~VDPVRAMWRACK;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUR)) begin
@@ -186,13 +186,13 @@ module ADDRESS_BUS #(
         PRAMDBO_8 <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
-        PRAM_SIZE <= `MEMORY_WIDTH_16;
+        PRAM_SIZE <= `MEMORY_WIDTH_16; // I think this only reads a single 8 bit value for the 16bit word
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
         VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
-        PRAMDBO_8 <= VDPCMDVRAMWRDATA;
+        PRAMDBO_8 <= VDP_CMD_VRAM_WR_DATA_8;
         PRAMDBO_32 <= VDPCMDVRAMWRDATA_32;
         PRAMWE_N <= 1'b0;
         PRAM_SIZE <= vdp_cmd_vram_wr_size;
@@ -204,7 +204,7 @@ module ADDRESS_BUS #(
         PRAMDBO_8 <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
-        PRAM_SIZE <= `MEMORY_WIDTH_16;
+        PRAM_SIZE <= `MEMORY_WIDTH_16; // I think this only reads a single 8 bit value for the 16bit word
         VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_SPRT)) begin

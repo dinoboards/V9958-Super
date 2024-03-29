@@ -127,21 +127,27 @@ module MEM_CONTROLLER #(
     __din16 = {16{1'bx}};
     __wdm   = 2'bxx;
 
+    // implemented:
+    // 8 bit write
+    // 16 bit read
+    // 32 bit read
+    // 32 bit write
+    // todo:
+    // 16 bit write - for colour mid command operations.
+    // for rendering super res, always read 32 for each 4th pixel clock.
     case (operation_word_size)
       `MEMORY_WIDTH_8: begin
-        /* dout8 = addr[1:0] == 2'b11 ? __dout32[31:24] :
-                   addr[1:0] == 2'b10 ? __dout32[23:16] :
-                   addr[1:0] == 2'b01 ? __dout32[15:08] :
-                   addr[1:0] == 2'b00 ? __dout32[07:00] : error */
         __din16 = {din8, din8};
         __wdm   = {~addr[0], addr[0]};
       end
-      `MEMORY_WIDTH_16: begin
-        dout16  = word_addr[0] ? __dout32[31:16] : __dout32[15:0];
-        dout32  = {16'b0, dout16[15:0]};
 
-        __din16 = {din8, din8};  //writing a single 16 bit value is not supported by sdram
+      `MEMORY_WIDTH_16: begin
+        dout16 = word_addr[0] ? __dout32[31:16] : __dout32[15:0];
+        dout32 = {16'b0, dout16[15:0]};
+
+        // __din16 = din16;  //writing a single 16 bit value is not supported yet
       end
+
       `MEMORY_WIDTH_32: begin
         dout32 = __dout32;
         __wdm  = 2'b00;
@@ -151,7 +157,7 @@ module MEM_CONTROLLER #(
 
 
   assign operation_din32 = busy ? requested_din32 : din32;  //if this line moved to the top of the always_ff block, it will cause a bug!
-  assign operation_read = busy ? MemRD : read;
+  assign operation_read  = busy ? MemRD : read;
   sdram #(
       .FREQ(FREQ)
   ) u_sdram (

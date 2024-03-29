@@ -271,7 +271,7 @@ module VDP (
   bit  [ 1:0] vdp_cmd_vram_wr_size;
   wire        VDPCMDVRAMRDREQ;
   wire [16:0] VDPCMDVRAMACCESSADDR;
-  wire [ 7:0] VDPCMDVRAMWRDATA;
+  wire [ 7:0] VDP_CMD_VRAM_WR_DATA_8;
   bit  [31:0] VDPCMDVRAMWRDATA_32;
 
   reg         VDP_COMMAND_DRIVE;
@@ -527,51 +527,51 @@ module VDP (
   assign TEXT_MODE = VDPMODETEXT1 | VDPMODETEXT1Q | VDPMODETEXT2;
 
   ADDRESS_BUS address_bus (
-      .CLK21M              (CLK21M),
-      .RESET               (RESET),
-      .DOTSTATE            (DOTSTATE),
-      .PREWINDOW           (PREWINDOW),
-      .REG_R1_DISP_ON      (REG_R1_DISP_ON),
-      .EIGHTDOTSTATE       (EIGHTDOTSTATE),
-      .TXVRAMREADEN        (TXVRAMREADEN),
-      .PREWINDOW_X         (PREWINDOW_X),
-      .PREWINDOW_Y_SP      (PREWINDOW_Y_SP),
-      .SPVRAMACCESSING     (SPVRAMACCESSING),
-      .TEXT_MODE           (TEXT_MODE),             // TEXT MODE 1, 2 or 1Q
-      .VDPMODETEXT1        (VDPMODETEXT1),          // TEXT MODE 1      (SCREEN0 WIDTH 40)
-      .VDPMODETEXT1Q       (VDPMODETEXT1Q),         // TEXT MODE 1      (??)
-      .VDPMODEMULTI        (VDPMODEMULTI),          // MULTICOLOR MODE  (SCREEN3)
-      .VDPMODEMULTIQ       (VDPMODEMULTIQ),         // MULTICOLOR MODE  (??)
-      .VDPMODEGRAPHIC1     (VDPMODEGRAPHIC1),       // GRAPHIC MODE 1   (SCREEN1)
-      .VDPMODEGRAPHIC2     (VDPMODEGRAPHIC2),       // GRAPHIC MODE 2   (SCREEN2)
-      .VDPMODEGRAPHIC3     (VDPMODEGRAPHIC3),       // GRAPHIC MODE 2   (SCREEN4)
-      .VDPMODEGRAPHIC4     (VDPMODEGRAPHIC4),       // GRAPHIC MODE 4   (SCREEN5)
-      .VDPMODEGRAPHIC5     (VDPMODEGRAPHIC5),       // GRAPHIC MODE 5   (SCREEN6)
-      .VDPMODEGRAPHIC6     (VDPMODEGRAPHIC6),       // GRAPHIC MODE 6   (SCREEN7)
-      .VDPMODEGRAPHIC7     (VDPMODEGRAPHIC7),       // GRAPHIC MODE 7   (SCREEN8,10,11,12)
-      .VDPMODEISHIGHRES    (VDPMODEISHIGHRES),      // TRUE WHEN MODE GRAPHIC5, 6
-      .VDPVRAMACCESSDATA   (VDPVRAMACCESSDATA),
-      .VDPVRAMADDRSETREQ   (VDPVRAMADDRSETREQ),
-      .VDPVRAMACCESSADDRTMP(VDPVRAMACCESSADDRTMP),
-      .VDPVRAMWRREQ        (VDPVRAMWRREQ),
-      .VDPVRAMRDREQ        (VDPVRAMRDREQ),
-      .VDP_COMMAND_ACTIVE  (VDP_COMMAND_ACTIVE),
-      .vdp_cmd_vram_wr_req (vdp_cmd_vram_wr_req),
-      .vdp_cmd_vram_wr_size(vdp_cmd_vram_wr_size),
-      .VDPCMDVRAMRDREQ     (VDPCMDVRAMRDREQ),
-      .VDPVRAMREADINGA     (VDPVRAMREADINGA),
-      .VDPCMDVRAMRDACK     (VDPCMDVRAMRDACK),
-      .VDPCMDVRAMACCESSADDR(VDPCMDVRAMACCESSADDR),
-      .VDPCMDVRAMWRDATA    (VDPCMDVRAMWRDATA),
-      .PRAMADRT12          (PRAMADRT12),
-      .VDPCMDVRAMWRDATA_32 (VDPCMDVRAMWRDATA_32),
-      .PRAMADRSPRITE       (PRAMADRSPRITE),
-      .PRAMADRG123M        (PRAMADRG123M),
-      .PRAMADRG4567        (PRAMADRG4567),
-      .VDPCMDVRAMREADINGA  (VDPCMDVRAMREADINGA),
-      .super_vram_addr     (super_vram_addr),
-      .vdp_super           (vdp_super),
-      .super_res_drawing   (super_res_drawing),
+      .CLK21M                (CLK21M),
+      .RESET                 (RESET),
+      .DOTSTATE              (DOTSTATE),
+      .PREWINDOW             (PREWINDOW),
+      .REG_R1_DISP_ON        (REG_R1_DISP_ON),
+      .EIGHTDOTSTATE         (EIGHTDOTSTATE),
+      .TXVRAMREADEN          (TXVRAMREADEN),
+      .PREWINDOW_X           (PREWINDOW_X),
+      .PREWINDOW_Y_SP        (PREWINDOW_Y_SP),
+      .SPVRAMACCESSING       (SPVRAMACCESSING),
+      .TEXT_MODE             (TEXT_MODE),               // TEXT MODE 1, 2 or 1Q
+      .VDPMODETEXT1          (VDPMODETEXT1),            // TEXT MODE 1      (SCREEN0 WIDTH 40)
+      .VDPMODETEXT1Q         (VDPMODETEXT1Q),           // TEXT MODE 1      (??)
+      .VDPMODEMULTI          (VDPMODEMULTI),            // MULTICOLOR MODE  (SCREEN3)
+      .VDPMODEMULTIQ         (VDPMODEMULTIQ),           // MULTICOLOR MODE  (??)
+      .VDPMODEGRAPHIC1       (VDPMODEGRAPHIC1),         // GRAPHIC MODE 1   (SCREEN1)
+      .VDPMODEGRAPHIC2       (VDPMODEGRAPHIC2),         // GRAPHIC MODE 2   (SCREEN2)
+      .VDPMODEGRAPHIC3       (VDPMODEGRAPHIC3),         // GRAPHIC MODE 2   (SCREEN4)
+      .VDPMODEGRAPHIC4       (VDPMODEGRAPHIC4),         // GRAPHIC MODE 4   (SCREEN5)
+      .VDPMODEGRAPHIC5       (VDPMODEGRAPHIC5),         // GRAPHIC MODE 5   (SCREEN6)
+      .VDPMODEGRAPHIC6       (VDPMODEGRAPHIC6),         // GRAPHIC MODE 6   (SCREEN7)
+      .VDPMODEGRAPHIC7       (VDPMODEGRAPHIC7),         // GRAPHIC MODE 7   (SCREEN8,10,11,12)
+      .VDPMODEISHIGHRES      (VDPMODEISHIGHRES),        // TRUE WHEN MODE GRAPHIC5, 6
+      .VDPVRAMACCESSDATA     (VDPVRAMACCESSDATA),
+      .VDPVRAMADDRSETREQ     (VDPVRAMADDRSETREQ),
+      .VDPVRAMACCESSADDRTMP  (VDPVRAMACCESSADDRTMP),
+      .VDPVRAMWRREQ          (VDPVRAMWRREQ),
+      .VDPVRAMRDREQ          (VDPVRAMRDREQ),
+      .VDP_COMMAND_ACTIVE    (VDP_COMMAND_ACTIVE),
+      .vdp_cmd_vram_wr_req   (vdp_cmd_vram_wr_req),
+      .vdp_cmd_vram_wr_size  (vdp_cmd_vram_wr_size),
+      .VDPCMDVRAMRDREQ       (VDPCMDVRAMRDREQ),
+      .VDPVRAMREADINGA       (VDPVRAMREADINGA),
+      .VDPCMDVRAMRDACK       (VDPCMDVRAMRDACK),
+      .VDPCMDVRAMACCESSADDR  (VDPCMDVRAMACCESSADDR),
+      .VDP_CMD_VRAM_WR_DATA_8(VDP_CMD_VRAM_WR_DATA_8),
+      .PRAMADRT12            (PRAMADRT12),
+      .VDPCMDVRAMWRDATA_32   (VDPCMDVRAMWRDATA_32),
+      .PRAMADRSPRITE         (PRAMADRSPRITE),
+      .PRAMADRG123M          (PRAMADRG123M),
+      .PRAMADRG4567          (PRAMADRG4567),
+      .VDPCMDVRAMREADINGA    (VDPCMDVRAMREADINGA),
+      .super_vram_addr       (super_vram_addr),
+      .vdp_super             (vdp_super),
+      .super_res_drawing     (super_res_drawing),
 
       .vdp_cmd_vram_wr_ack(vdp_cmd_vram_wr_ack),
       .VDPCMDVRAMREADINGR (VDPCMDVRAMREADINGR),
@@ -875,7 +875,7 @@ module VDP (
       .vram_wr_size(vdp_cmd_vram_wr_size),
       .p_vram_rd_req(VDPCMDVRAMRDREQ),
       .p_vram_access_addr(VDPCMDVRAMACCESSADDR),
-      .p_vram_wr_data(VDPCMDVRAMWRDATA),
+      .p_vram_wr_data_8(VDP_CMD_VRAM_WR_DATA_8),
       .p_vram_wr_data_32(VDPCMDVRAMWRDATA_32),
       .p_clr(VDPCMDCLR),
       .p_ce(VDPCMDCE),

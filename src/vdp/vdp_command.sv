@@ -82,7 +82,7 @@ module VDP_COMMAND (
     output bit [1:0] vram_wr_size,
     output bit p_vram_rd_req,
     output bit [16:0] p_vram_access_addr,
-    output bit [7:0] p_vram_wr_data,
+    output bit [7:0] p_vram_wr_data_8,
     output bit [31:0] p_vram_wr_data_32,
     output bit [7:0] p_clr,
     output bit p_ce,
@@ -124,7 +124,7 @@ module VDP_COMMAND (
   bit        internal_vram_wr_req;
   bit        vram_rd_req;
   bit [16:0] vram_access_addr;
-  bit [ 7:0] vram_wr_data;
+  bit [ 7:0] vram_wr_data_8;
   bit [31:0] vram_wr_data_32;
   bit [ 7:0] CLR;  // R44, S#7
 
@@ -186,7 +186,7 @@ module VDP_COMMAND (
   assign vram_wr_req = cmd_enable ? internal_vram_wr_req : vram_wr_ack;
   assign p_vram_rd_req = vram_rd_req;
   assign p_vram_access_addr = vram_access_addr;
-  assign p_vram_wr_data = vram_wr_data;
+  assign p_vram_wr_data_8 = vram_wr_data_8;
   assign p_vram_wr_data_32 = vram_wr_data_32;
   assign p_clr = CLR;
   assign p_ce = CE;
@@ -284,13 +284,13 @@ module VDP_COMMAND (
     // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
     // ON THE POINT TO BE WRITTEN.
     // original 8 bit operations
-    if (((CMR[3] == 1'b0) || ((vram_wr_data & COLMASK) != 8'b00000000))) begin
+    if (((CMR[3] == 1'b0) || ((vram_wr_data_8 & COLMASK) != 8'b00000000))) begin
       case (CMR[2:0])
-        IMPB210: logical_operation_dest_colour = vram_wr_data & COLMASK;
-        ANDB210: logical_operation_dest_colour = (vram_wr_data & COLMASK) & RDPOINT;
-        ORB210:  logical_operation_dest_colour = (vram_wr_data & COLMASK) | RDPOINT;
-        EORB210: logical_operation_dest_colour = (vram_wr_data & COLMASK) ^ RDPOINT;
-        NOTB210: logical_operation_dest_colour = ~(vram_wr_data & COLMASK);
+        IMPB210: logical_operation_dest_colour = vram_wr_data_8 & COLMASK;
+        ANDB210: logical_operation_dest_colour = (vram_wr_data_8 & COLMASK) & RDPOINT;
+        ORB210:  logical_operation_dest_colour = (vram_wr_data_8 & COLMASK) | RDPOINT;
+        EORB210: logical_operation_dest_colour = (vram_wr_data_8 & COLMASK) ^ RDPOINT;
+        NOTB210: logical_operation_dest_colour = ~(vram_wr_data_8 & COLMASK);
         default: logical_operation_dest_colour = RDPOINT;
       endcase
 
@@ -401,7 +401,7 @@ module VDP_COMMAND (
       reg_wr_ack           <= 0;
       internal_vram_wr_req <= 0;
       vram_rd_req          <= 0;
-      vram_wr_data         <= 0;
+      vram_wr_data_8       <= 0;
       vram_wr_data_32      <= 0;
       TR                   <= 1'b1;  // TRANSFER READY
       CE                   <= 0;  // COMMAND EXECUTING
@@ -493,7 +493,7 @@ module VDP_COMMAND (
               // CPU HAS TRANSFERRED DATA TO (OR FROM) THE COLOR REGISTER
               TR <= 1'b1;
               // VDP IS READY TO RECEIVE THE NEXT TRANSFER.
-              vram_wr_data <= CLR;
+              vram_wr_data_8 <= CLR;
               state <= (CMR[6] == 1'b0) ? PRE_RD_VRAM : WR_VRAM;  // LMMC OR HMMC
             end
           end
@@ -558,7 +558,7 @@ module VDP_COMMAND (
               sx_tmp <= sx_tmp + XCOUNTDELTA;
               case (CMR[7:4])
                 LMMM: begin
-                  vram_wr_data <= RDPOINT;
+                  vram_wr_data_8 <= RDPOINT;
                   state <= PRE_RD_VRAM;
                 end
                 LMCM: begin
@@ -569,7 +569,7 @@ module VDP_COMMAND (
                 end
                 default: begin
                   // REMAINING: YMMM, HMMM
-                  vram_wr_data <= vram_rd_data;
+                  vram_wr_data_8 <= vram_rd_data;
                   state <= WR_VRAM;
                 end
               endcase
@@ -589,21 +589,21 @@ module VDP_COMMAND (
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
             if (vram_rd_req == vram_rd_ack) begin
               if (graphic_4_or_6) begin
-                vram_wr_data = rd_x_low[0] ? {vram_rd_data[7:4], logical_operation_dest_colour[3:0]} : {logical_operation_dest_colour[3:0], vram_rd_data[3:0]};
+                vram_wr_data_8 = rd_x_low[0] ? {vram_rd_data[7:4], logical_operation_dest_colour[3:0]} : {logical_operation_dest_colour[3:0], vram_rd_data[3:0]};
 
               end else if (mode_graphic_5) begin
                 case (rd_x_low)
-                  2'b00: vram_wr_data <= {logical_operation_dest_colour[1:0], vram_rd_data[5:0]};
-                  2'b01: vram_wr_data <= {vram_rd_data[7:6], logical_operation_dest_colour[1:0], vram_rd_data[3:0]};
-                  2'b10: vram_wr_data <= {vram_rd_data[7:4], logical_operation_dest_colour[1:0], vram_rd_data[1:0]};
-                  2'b11: vram_wr_data <= {vram_rd_data[7:2], logical_operation_dest_colour[1:0]};
+                  2'b00: vram_wr_data_8 <= {logical_operation_dest_colour[1:0], vram_rd_data[5:0]};
+                  2'b01: vram_wr_data_8 <= {vram_rd_data[7:6], logical_operation_dest_colour[1:0], vram_rd_data[3:0]};
+                  2'b10: vram_wr_data_8 <= {vram_rd_data[7:4], logical_operation_dest_colour[1:0], vram_rd_data[1:0]};
+                  2'b11: vram_wr_data_8 <= {vram_rd_data[7:2], logical_operation_dest_colour[1:0]};
                 endcase
 
               end else if (mode_graphic_super_colour) begin
                 vram_wr_data_32 <= logical_operation_dest_colour_32;
 
               end else begin
-                vram_wr_data <= logical_operation_dest_colour;
+                vram_wr_data_8 <= logical_operation_dest_colour;
               end
 
               state <= WR_VRAM;
@@ -661,7 +661,7 @@ module VDP_COMMAND (
             if (((nx_tmp == NX) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK))) begin
               state <= EXEC_END;
             end else begin
-              vram_wr_data <= CLR;
+              vram_wr_data_8 <= CLR;
               // COLOR MUST BE RE-MASKED, JUST IN CASE THAT SCREENMODE WAS CHANGED
               CLR <= CLR & COLMASK;
               state <= PRE_RD_VRAM;
@@ -719,7 +719,7 @@ module VDP_COMMAND (
                   state <= RD_VRAM;
                 end
                 HMMV: begin
-                  vram_wr_data <= CLR;
+                  vram_wr_data_8 <= CLR;
                   state <= WR_VRAM;
                 end
                 LMMC: begin
@@ -732,7 +732,7 @@ module VDP_COMMAND (
                   state <= RD_VRAM;
                 end
                 LMMV, LINE, PSET: begin
-                  vram_wr_data <= CLR;
+                  vram_wr_data_8 <= CLR;
                   //translate GRAPHICS 7 RGB representation to 24 bit rep
                   vram_wr_data_32 <= super_rgb_colour_reg_applied ? super_rgb_colour_reg : {8'b0, CLR[7:5], 5'b0, CLR[4:2], 5'b0, CLR[1:0], 6'b0};
                   state <= PRE_RD_VRAM;
