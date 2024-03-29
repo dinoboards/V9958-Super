@@ -50,7 +50,7 @@ module ADDRESS_BUS #(
     output bit          VDPCMDVRAMREADINGR,
     output bit          VDP_COMMAND_DRIVE,
     output bit   [16:0] IRAMADR,
-    output bit   [ 7:0] PRAMDBO,
+    output bit   [ 7:0] PRAMDBO_8,
     output bit          PRAMWE_N,
     output bit   [ 1:0] PRAM_SIZE,
     output bit          VDPVRAMREADINGR,
@@ -77,7 +77,7 @@ module ADDRESS_BUS #(
 
     if ((RESET == 1'b1)) begin
       IRAMADR <= {17{1'b1}};
-      PRAMDBO <= {8{1'bZ}};
+      PRAMDBO_8 <= {8{1'bZ}};
       PRAMWE_N <= 1'b1;
       PRAM_SIZE <= `MEMORY_WIDTH_16;
       VDPVRAMREADINGR <= 1'b0;
@@ -161,7 +161,7 @@ module ADDRESS_BUS #(
         end else begin
           VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDR + 1);
         end
-        PRAMDBO <= VDPVRAMACCESSDATA;
+        PRAMDBO_8 <= VDPVRAMACCESSDATA;
         PRAMWE_N <= 1'b0;
         PRAM_SIZE <= `MEMORY_WIDTH_8;
         VDPVRAMWRACK <= ~VDPVRAMWRACK;
@@ -183,7 +183,7 @@ module ADDRESS_BUS #(
         end else begin
           VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDRV + 1);
         end
-        PRAMDBO <= 8'bZ;
+        PRAMDBO_8 <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
         PRAM_SIZE <= `MEMORY_WIDTH_16;
@@ -192,7 +192,7 @@ module ADDRESS_BUS #(
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
-        PRAMDBO <= VDPCMDVRAMWRDATA;
+        PRAMDBO_8 <= VDPCMDVRAMWRDATA;
         PRAMDBO_32 <= VDPCMDVRAMWRDATA_32;
         PRAMWE_N <= 1'b0;
         PRAM_SIZE <= vdp_cmd_vram_wr_size;
@@ -201,7 +201,7 @@ module ADDRESS_BUS #(
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
-        PRAMDBO <= 8'bZ;
+        PRAMDBO_8 <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
         PRAM_SIZE <= `MEMORY_WIDTH_16;
@@ -212,7 +212,7 @@ module ADDRESS_BUS #(
         IRAMADR <= PRAMADRSPRITE;
         PRAMWE_N <= 1'b1;
         PRAM_SIZE <= `MEMORY_WIDTH_16;
-        PRAMDBO <= 8'bZ;
+        PRAMDBO_8 <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
 
       end else begin
@@ -223,7 +223,7 @@ module ADDRESS_BUS #(
 
         if (vdp_super) begin
           IRAMADR <= super_vram_addr;
-          PRAMDBO <= 8'bZ;
+          PRAMDBO_8 <= 8'bZ;
           PRAMDBO_32 <= 32'bZ;
           PRAMWE_N <= 1'b1;
           PRAM_SIZE <= `MEMORY_WIDTH_32;
@@ -232,10 +232,10 @@ module ADDRESS_BUS #(
 
           case (DOTSTATE)
             2'b10: begin
-              PRAMDBO <= 8'bZ;
+              PRAMDBO_8  <= 8'bZ;
               PRAMDBO_32 <= 32'bZ;
-              PRAMWE_N <= 1'b1;
-              PRAM_SIZE <= `MEMORY_WIDTH_16;
+              PRAMWE_N   <= 1'b1;
+              PRAM_SIZE  <= `MEMORY_WIDTH_16;
               if ((TEXT_MODE == 1'b1)) begin
                 IRAMADR <= PRAMADRT12;
               end else if (((VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1) || (VDPMODEGRAPHIC3 == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1))) begin
@@ -245,10 +245,10 @@ module ADDRESS_BUS #(
               end
             end
             2'b01: begin
-              PRAMDBO <= 8'bZ;
+              PRAMDBO_8  <= 8'bZ;
               PRAMDBO_32 <= 32'bZ;
-              PRAMWE_N <= 1'b1;
-              PRAM_SIZE <= `MEMORY_WIDTH_16;
+              PRAMWE_N   <= 1'b1;
+              PRAM_SIZE  <= `MEMORY_WIDTH_16;
               if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
                 IRAMADR <= PRAMADRG4567;
               end

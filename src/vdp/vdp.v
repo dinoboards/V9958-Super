@@ -73,9 +73,9 @@ module VDP (
     output reg          PRAMWE_N,
     output bit   [ 1:0] PRAM_SIZE,
     output wire  [16:0] PRAMADR,
-    input  wire  [15:0] PRAMDBI,
+    input  wire  [15:0] PRAMDBI_16,
     input  bit   [31:0] PRAMDBI_32,
-    output reg   [ 7:0] PRAMDBO,
+    output reg   [ 7:0] PRAMDBO_8,
     output logic [31:0] PRAMDBO_32,
     input  wire         VDPSPEEDMODE,
     output wire         PVIDEODHCLK,
@@ -319,9 +319,9 @@ module VDP (
 
   assign PRAMADR = IRAMADR;
   assign XRAMSEL = IRAMADR[0];
-  assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI[7:0] : PRAMDBI[15:8];
+  assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
   assign PRAMDAT_32 = PRAMDBI_32;
-  assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI[7:0] : PRAMDBI[15:8];
+  assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
 
   //--------------------------------------------------------------
   // DISPLAY COMPONENTS
@@ -577,7 +577,7 @@ module VDP (
       .VDPCMDVRAMREADINGR (VDPCMDVRAMREADINGR),
       .VDP_COMMAND_DRIVE  (VDP_COMMAND_DRIVE),
       .IRAMADR            (IRAMADR),
-      .PRAMDBO            (PRAMDBO),
+      .PRAMDBO_8          (PRAMDBO_8),
       .PRAMWE_N           (PRAMWE_N),
       .PRAM_SIZE          (PRAM_SIZE),
       .VDPVRAMREADINGR    (VDPVRAMREADINGR),

@@ -94,9 +94,9 @@ module v9958_top (
   bit          WeVdp_n;
   bit   [ 1:0] VdpDb_size;
   bit   [16:0] VdpAdr;
-  bit   [ 7:0] VrmDbo;
+  bit   [ 7:0] VrmDbo_8;
   bit   [31:0] VrmDbo_32;
-  bit   [15:0] VrmDbi;
+  bit   [15:0] VrmDbi_16;
   bit   [31:0] VrmDbi_32;
 
   logic [10:0] cx;
@@ -131,9 +131,9 @@ module v9958_top (
       .fail(ram_fail),
       .enabled(ram_enabled),
       .addr(VdpAdr),
-      .din8(VrmDbo),
+      .din8(VrmDbo_8),
       .din32(VrmDbo_32),
-      .dout16(VrmDbi),
+      .dout16(VrmDbi_16),
       .dout32(VrmDbi_32),
       .word_size(VdpDb_size),
       .IO_sdram_dq(IO_sdram_dq),
@@ -185,9 +185,9 @@ module v9958_top (
       .PRAMWE_N    (WeVdp_n),
       .PRAM_SIZE   (VdpDb_size),
       .PRAMADR     (VdpAdr),
-      .PRAMDBI     (VrmDbi),
+      .PRAMDBI_16  (VrmDbi_16),
       .PRAMDBI_32  (VrmDbi_32),
-      .PRAMDBO     (VrmDbo),
+      .PRAMDBO_8   (VrmDbo_8),
       .PRAMDBO_32  (VrmDbo_32),
       .VDPSPEEDMODE(1'b1),                    // for V9958 MSX2+/tR VDP
       .PVIDEODHCLK (VideoDHClk),
