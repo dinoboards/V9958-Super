@@ -75,7 +75,6 @@ module MEM_CONTROLLER #(
   bit [22:0] operation_addr;  // address captured at time operation initiated
   bit [ 1:0] __wdm;
   bit [31:0] __dout32;
-  bit [31:0] __din32;
   bit [15:0] __din16;
   bit [ 1:0] requested_word_size;  // The word size captured at time operation initiated
   bit [ 1:0] operation_word_size;
@@ -100,7 +99,6 @@ module MEM_CONTROLLER #(
 
   always_comb begin
     dout32  = {32{1'bx}};
-    __din32 = {32{1'bx}};
     dout16  = {16{1'bx}};
     __din16 = {16{1'bx}};
     __wdm   = 2'bxx;
@@ -121,9 +119,8 @@ module MEM_CONTROLLER #(
         __din16 = {din8, din8};  //writing a single 16 bit value is not supported by sdram
       end
       `MEMORY_WIDTH_32: begin
-        dout32  = __dout32;
-        __din32 = din32;
-        __wdm   = 2'b00;
+        dout32 = __dout32;
+        __wdm  = 2'b00;
       end
     endcase
   end
@@ -150,7 +147,7 @@ module MEM_CONTROLLER #(
       .wr(busy ? MemWR : write),
       .refresh(busy ? MemRefresh : refresh),
       .din(busy ? MemDin : __din16),
-      .din32(busy ? MemDin32 : __din32),
+      .din32(busy ? MemDin32 : din32),
       .wdm(__wdm),
       .dout(),
       .dout32(MemDout32),
@@ -190,7 +187,7 @@ module MEM_CONTROLLER #(
           MemRefresh <= refresh;
           busy <= 1'b1;
           MemDin <= __din16;
-          MemDin32 <= __din32;
+          MemDin32 <= din32;
           cycles <= 3'd1;
           r_read <= read;
 
