@@ -70,20 +70,31 @@ module MEM_CONTROLLER #(
 
 );
 
-  bit [22:0] word_addr;  // The address to read from or write to in the SDRAM
-  bit [22:0] requested_addr;  // address captured at time operation initiated
-  bit [22:0] operation_addr;  // address captured at time operation initiated
-  bit [ 1:0] __wdm;
-  bit [31:0] __dout32;
-  bit [15:0] __din16;
-  bit [ 1:0] requested_word_size;  // The word size captured at time operation initiated
-  bit [ 1:0] operation_word_size;
+  bit   [22:0] word_addr;  // The address to read from or write to in the SDRAM
+  bit   [22:0] requested_addr;  // address captured at time operation initiated
+  bit   [22:0] operation_addr;  // address captured at time operation initiated
+  logic [31:0] operation_din32;
+  bit   [ 1:0] __wdm;
+  bit   [31:0] __dout32;
+  bit   [15:0] __din16;
+  bit   [ 1:0] requested_word_size;  // The word size captured at time operation initiated
+  bit   [ 1:0] operation_word_size;
+  logic [31:0] MemDin32;
+  bit MemRD, MemWR, MemRefresh, MemInitializing;
+  bit [15:0] MemDin;
+  bit [31:0] MemDout32;
+  bit [2:0] cycles;
+  bit r_read;
+  bit [31:0] data32;
+  bit MemBusy, MemDataReady;
 
   assign __operation_initiated = read || write;
   assign operation_word_size = __operation_initiated ? word_size : requested_word_size;
   assign operation_addr = __operation_initiated ? addr : requested_addr;
 
   assign word_addr = {1'b0, operation_addr[22:1]};
+
+  assign __dout32 = (cycles == 3'd4 && r_read) ? MemDout32 : data32;
 
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
@@ -93,6 +104,19 @@ module MEM_CONTROLLER #(
       if (read || write) begin
         requested_word_size <= word_size;
         requested_addr <= addr;
+      end
+    end
+  end
+
+
+  always_ff @(posedge clk or negedge resetn) begin
+    if (~resetn) begin
+      MemDin32 <= {32{1'bx}};
+    end else begin
+      if (!busy) begin
+        if (write) begin
+          MemDin32 <= din32;
+        end
       end
     end
   end
@@ -125,16 +149,8 @@ module MEM_CONTROLLER #(
     endcase
   end
 
-  bit MemRD, MemWR, MemRefresh, MemInitializing;
-  bit [15:0] MemDin;
-  bit [31:0] MemDin32;
-  bit [31:0] MemDout32;
-  bit [2:0] cycles;
-  bit r_read;
-  bit [31:0] data32;
-  bit MemBusy, MemDataReady;
 
-  assign __dout32 = (cycles == 3'd4 && r_read) ? MemDout32 : data32;
+  assign operation_din32 = busy ? MemDin32 : din32;  //if this line moved to the top of the always_ff block, it will cause a bug!
 
   sdram #(
       .FREQ(FREQ)
@@ -147,7 +163,7 @@ module MEM_CONTROLLER #(
       .wr(busy ? MemWR : write),
       .refresh(busy ? MemRefresh : refresh),
       .din(busy ? MemDin : __din16),
-      .din32(busy ? MemDin32 : din32),
+      .din32(operation_din32),
       .wdm(__wdm),
       .dout(),
       .dout32(MemDout32),
@@ -167,12 +183,12 @@ module MEM_CONTROLLER #(
       .O_sdram_dqm(O_sdram_dqm)
   );
 
-  always @(posedge clk or negedge resetn) begin
-
+  always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
       busy <= 1'b1;
       fail <= 1'b0;
       MemInitializing <= 1'b1;
+
     end else begin
       MemWR <= 1'b0;
       MemRD <= 1'b0;
@@ -187,17 +203,17 @@ module MEM_CONTROLLER #(
           MemRefresh <= refresh;
           busy <= 1'b1;
           MemDin <= __din16;
-          MemDin32 <= din32;
           cycles <= 3'd1;
           r_read <= read;
-
         end
+
       end else if (MemInitializing) begin
         if (~MemBusy) begin
           // initialization is done
           MemInitializing <= 1'b0;
           busy <= 1'b0;
         end
+
       end else begin
         // Wait for operation to finish and latch incoming data on read.
         if (cycles == 3'd4) begin
