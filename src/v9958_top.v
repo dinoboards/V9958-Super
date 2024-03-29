@@ -118,14 +118,6 @@ module v9958_top (
   assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
   assign memory_refresh = ~VideoDLClk & ~VideoDHClk & ~ram_busy;
 
-  bit vram_32_mode;  // 0: 16 bit mode, 1: 32 bit mode
-  assign vram_32_mode = VdpDb_size == `MEMORY_WIDTH_32;
-
-  // if read and not 32, then size = 16
-  // if read and 32, then size = 32
-  // if write and 32, then size = 32
-  // if write and not 32, then size = 8
-
   MEM_CONTROLLER #(
       .FREQ(108_000_000)
   ) vram (
@@ -143,7 +135,7 @@ module v9958_top (
       .din32(VrmDbo_32),
       .dout16(VrmDbi),
       .dout32(VrmDbi_32),
-      .word_size(vram_32_mode ? `MEMORY_WIDTH_32 : (v9958_read ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8)),
+      .word_size(VdpDb_size),
       .IO_sdram_dq(IO_sdram_dq),
       .O_sdram_addr(O_sdram_addr),
       .O_sdram_ba(O_sdram_ba),

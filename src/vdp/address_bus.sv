@@ -79,7 +79,7 @@ module ADDRESS_BUS #(
       IRAMADR <= {17{1'b1}};
       PRAMDBO <= {8{1'bZ}};
       PRAMWE_N <= 1'b1;
-      PRAM_SIZE <= `MEMORY_WIDTH_8;
+      PRAM_SIZE <= `MEMORY_WIDTH_16;
       VDPVRAMREADINGR <= 1'b0;
       VDPVRAMRDACK <= 1'b0;
       VDPVRAMWRACK <= 1'b0;
@@ -186,7 +186,7 @@ module ADDRESS_BUS #(
         PRAMDBO <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
-        PRAM_SIZE <= `MEMORY_WIDTH_8;
+        PRAM_SIZE <= `MEMORY_WIDTH_16;
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
         VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
 
@@ -204,14 +204,14 @@ module ADDRESS_BUS #(
         PRAMDBO <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
         PRAMWE_N <= 1'b1;
-        PRAM_SIZE <= `MEMORY_WIDTH_8;
+        PRAM_SIZE <= `MEMORY_WIDTH_16;
         VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_SPRT)) begin
         // VRAM READ BY SPRITE MODULE
         IRAMADR <= PRAMADRSPRITE;
         PRAMWE_N <= 1'b1;
-        PRAM_SIZE <= `MEMORY_WIDTH_8;
+        PRAM_SIZE <= `MEMORY_WIDTH_16;
         PRAMDBO <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
 
@@ -235,7 +235,7 @@ module ADDRESS_BUS #(
               PRAMDBO <= 8'bZ;
               PRAMDBO_32 <= 32'bZ;
               PRAMWE_N <= 1'b1;
-              PRAM_SIZE <= `MEMORY_WIDTH_8;
+              PRAM_SIZE <= `MEMORY_WIDTH_16;
               if ((TEXT_MODE == 1'b1)) begin
                 IRAMADR <= PRAMADRT12;
               end else if (((VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1) || (VDPMODEGRAPHIC3 == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1))) begin
@@ -248,7 +248,7 @@ module ADDRESS_BUS #(
               PRAMDBO <= 8'bZ;
               PRAMDBO_32 <= 32'bZ;
               PRAMWE_N <= 1'b1;
-              PRAM_SIZE <= `MEMORY_WIDTH_8;
+              PRAM_SIZE <= `MEMORY_WIDTH_16;
               if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
                 IRAMADR <= PRAMADRG4567;
               end
