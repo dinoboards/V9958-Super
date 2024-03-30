@@ -24,12 +24,6 @@
 // This can be generated with PLL's clkoutp output.
 //
 
-/*
-* If wdm is 01, then only the lower 8 bits are written;
-* if wdm is 10, then only the upper 8 bits are written;
-* if wdm is 11, then both bytes are written;
-* if wdm is 00, then all 32 bits of din_32 are written.
-*/
 
 module sdram #(
     // Clock frequency, max 66.7Mhz with current set of T_xx/CAS parameters.
@@ -69,9 +63,8 @@ module sdram #(
     input  bit                  wr,          // command: write
     input  bit                  refresh,     // command: auto refresh. 4096 refresh cycles in 64ms. Once per 15us.
     input  bit [          22:0] addr,        // byte address
-    input  bit [          15:0] din,         // data input
-    input  bit [          31:0] din32,       // data input when wdm is 00
-    input  bit [           1:0] wdm,         // write data mask
+    input  bit [          31:0] din32,       // data input when wdm is 0000
+    input  bit [           3:0] wdm,         // write data mask - 4-bit mask to control individual byte writing.  bytes are only written if coresponding bit is 0.
     output bit [DATA_WIDTH-1:0] dout32,      // 32-bit data output
     output bit                  data_ready,  // available 6 cycles after wr is set
     output bit                  busy,        // 0: ready for next command
@@ -257,8 +250,8 @@ module sdram #(
           {FF_SDRAM_nRAS, FF_SDRAM_nCAS, FF_SDRAM_nWE} <= CMD_Write;
           FF_SDRAM_A[10]                               <= 1'b1;  // set auto precharge
           FF_SDRAM_A[9:0]                              <= {1'b0, addr[COL_WIDTH-1+1:1]};  // column address
-          FF_SDRAM_DQM                                 <= wdm == 2'b00 ? {4'b0000} : addr[0] == 1'd0 ? {2'b11, wdm} : {wdm, 2'b11};  // only write the correct byte
-          dq_out                                       <= wdm == 2'b00 ? din32 : {din, din};
+          FF_SDRAM_DQM                                 <= wdm;
+          dq_out                                       <= din32;
           dq_oen                                       <= 1'b0;  // DQ output on
         end
         {

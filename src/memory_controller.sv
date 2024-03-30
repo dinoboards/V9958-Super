@@ -70,18 +70,18 @@ module MEM_CONTROLLER #(
 
 );
 
-  bit   [22:0] word_addr;  // The address to read from or write to in the SDRAM
-  bit   [22:0] requested_addr;  // address captured at time operation initiated
-  bit   [22:0] operation_addr;  // address captured at time operation initiated
-  logic [31:0] operation_din32;
-  bit   [ 1:0] __wdm;
-  bit   [31:0] __dout32;
-  bit   [15:0] __din16;
-  bit   [ 1:0] requested_word_size;  // The word size captured at time operation initiated
-  bit   [ 1:0] operation_word_size;
-  logic [31:0] requested_din32;
+  bit [22:0] word_addr;  // The address to read from or write to in the SDRAM
+  bit [22:0] requested_addr;  // address captured at time operation initiated
+  bit [22:0] operation_addr;  // address captured at time operation initiated
+  bit [31:0] operation_din32;
+  bit [ 1:0] __wdm;
+  bit [ 3:0] wdm;
+  bit [31:0] __dout32;
+  bit [31:0] __din32;
+  bit [ 1:0] requested_word_size;  // The word size captured at time operation initiated
+  bit [ 1:0] operation_word_size;
+  bit [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
-  bit [15:0] MemDin;
   bit [31:0] MemDout32;
   bit [2:0] cycles;
   bit r_read;
@@ -89,6 +89,7 @@ module MEM_CONTROLLER #(
   bit MemBusy, MemDataReady;
   bit __operation_initiated;
   bit operation_read;
+  bit operation_write;
 
   assign __operation_initiated = read || write;
   assign operation_word_size = __operation_initiated ? word_size : requested_word_size;
@@ -111,55 +112,41 @@ module MEM_CONTROLLER #(
   end
 
 
-  always_ff @(posedge clk or negedge resetn) begin
-    if (~resetn) begin
-      requested_din32 <= {32{1'bx}};
-    end else begin
-      if (!busy) begin
-        if (write) begin
-          requested_din32 <= din32;
-        end
-      end
-    end
-  end
-
   always_comb begin
-    dout32  = {32{1'bx}};
-    dout16  = {16{1'bx}};
-    __din16 = {16{1'bx}};
-    __wdm   = 2'bxx;
+    dout32 = {32{1'bx}};
+    dout16 = {16{1'bx}};
+    __din32 = {32{1'bx}};
+    __wdm = 2'bxx;
+    wdm = 4'bxxxx;
 
-    // implemented:
-    // 8 bit write
-    // 16 bit read
-    // 32 bit read
-    // 32 bit write
-    // todo:
-    // 16 bit write - for colour mid command operations.
-    // for rendering super res, always read 32 for each 4th pixel clock.
     case (operation_word_size)
       `MEMORY_WIDTH_8: begin
-        __din16 = {din8, din8};
-        __wdm   = {~addr[0], addr[0]};
+        __din32 = {din8, din8, din8, din8};
+
+        __wdm = {~addr[0], addr[0]};
+        wdm = word_addr[0] == 1'd0 ? {2'b11, __wdm} : {__wdm, 2'b11};  // only write the correct byte
       end
 
       `MEMORY_WIDTH_16: begin
-        dout16 = word_addr[0] ? __dout32[31:16] : __dout32[15:0];
-        dout32 = {16'b0, dout16[15:0]};
+        dout32 = {16'b0, word_addr[0] ? __dout32[31:16] : __dout32[15:0]};
+        dout16 = dout32[15:0];
 
-        // __din16 = din16;  //writing a single 16 bit value is not supported yet
+        // __din32 = {din16, din16};  //writing a single 16 bit value is not supported yet
+        //wdm=????
       end
 
       `MEMORY_WIDTH_32: begin
-        dout32 = __dout32;
-        __wdm  = 2'b00;
+        __din32 = din32;
+        dout32  = __dout32;
+        __wdm   = 2'b0000;
       end
     endcase
   end
 
 
-  assign operation_din32 = busy ? requested_din32 : din32;  //if this line moved to the top of the always_ff block, it will cause a bug!
+  assign operation_write = busy ? MemWR : write;
   assign operation_read  = busy ? MemRD : read;
+
   sdram #(
       .FREQ(FREQ)
   ) u_sdram (
@@ -168,11 +155,10 @@ module MEM_CONTROLLER #(
       .resetn(resetn),
       .addr(word_addr),
       .rd(operation_read),
-      .wr(busy ? MemWR : write),
+      .wr(operation_write),
       .refresh(busy ? MemRefresh : refresh),
-      .din(busy ? MemDin : __din16),
-      .din32(operation_din32),
-      .wdm(__wdm),
+      .din32(busy ? requested_din32 : __din32),
+      .wdm(wdm),
       .dout32(MemDout32),
       .busy(MemBusy),
       .data_ready(MemDataReady),
@@ -209,7 +195,7 @@ module MEM_CONTROLLER #(
           MemRD <= read;
           MemRefresh <= refresh;
           busy <= 1'b1;
-          MemDin <= __din16;
+          requested_din32 <= __din32;
           cycles <= 3'd1;
           r_read <= read;
         end
