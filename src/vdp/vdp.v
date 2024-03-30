@@ -73,7 +73,6 @@ module VDP (
     output reg          PRAMWE_N,
     output bit   [ 1:0] PRAM_SIZE,
     output wire  [16:0] PRAMADR,
-    input  wire  [15:0] PRAMDBI_16,
     input  bit   [31:0] PRAMDBI_32,
     output reg   [ 7:0] PRAMDBO_8,
     output logic [31:0] PRAMDBO_32,
@@ -324,9 +323,9 @@ module VDP (
 
   assign PRAMADR = IRAMADR;
   assign XRAMSEL = IRAMADR[0];
-  assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
+  assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI_32[7:0] : PRAMDBI_32[15:8];
   assign PRAMDAT_32 = PRAMDBI_32;
-  assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
+  assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI_32[7:0] : PRAMDBI_32[15:8];
 
   //--------------------------------------------------------------
   // DISPLAY COMPONENTS

@@ -40,14 +40,13 @@ module MEM_CONTROLLER #(
     input bit        refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
     input bit [22:0] addr,       // The address to read from or write to in the SDRAM
 
-    input bit [1:0] word_size,  //00 -> 8, 01 -> 16, 02 -> 32
+    input bit [1:0] word_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
 
     input bit   [ 7:0] din8,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
     // input bit   [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
     input logic [31:0] din32, // The data to be written to the SDRAM when wdm is 00
 
     // output bit [ 7:0] dout8,   // The data read from the SDRAM. Available 4 cycles after the read signal is set.
-    output bit [15:0] dout16,  // The data read from the SDRAM. Available 4 cycles after the read signal is set.
     output bit [31:0] dout32,
 
     output bit busy,    // Signal indicating that an operation is in progress.
@@ -101,7 +100,7 @@ module MEM_CONTROLLER #(
 
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
-      requested_word_size <= 2'b00;
+      requested_word_size <= `MEMORY_WIDTH_16;
       requested_addr <= 23'b0;
     end else begin
       if (read || write) begin
@@ -111,10 +110,8 @@ module MEM_CONTROLLER #(
     end
   end
 
-
   always_comb begin
     dout32 = {32{1'bx}};
-    dout16 = {16{1'bx}};
     __din32 = {32{1'bx}};
     __wdm = 2'bxx;
     wdm = 4'bxxxx;
@@ -129,7 +126,6 @@ module MEM_CONTROLLER #(
 
       `MEMORY_WIDTH_16: begin
         dout32 = {16'b0, word_addr[0] ? __dout32[31:16] : __dout32[15:0]};
-        dout16 = dout32[15:0];
 
         // __din32 = {din16, din16};  //writing a single 16 bit value is not supported yet
         //wdm=????
@@ -142,7 +138,6 @@ module MEM_CONTROLLER #(
       end
     endcase
   end
-
 
   assign operation_write = busy ? MemWR : write;
   assign operation_read  = busy ? MemRD : read;
