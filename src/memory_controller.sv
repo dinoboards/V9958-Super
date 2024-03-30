@@ -87,6 +87,8 @@ module MEM_CONTROLLER #(
   bit r_read;
   bit [31:0] data32;
   bit MemBusy, MemDataReady;
+  bit __operation_initiated;
+  bit operation_read;
 
   assign __operation_initiated = read || write;
   assign operation_word_size = __operation_initiated ? word_size : requested_word_size;

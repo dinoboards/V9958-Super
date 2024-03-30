@@ -215,6 +215,8 @@ module VDP_REGISTER (
 
   bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
   bit super_rgb_loading;  // set if RGBs are being loaded into R#30
+  bit mode_graphic_7_base;
+  bit mode_graphic_super_base;
 
   assign ACK = FF_ACK;
   assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;

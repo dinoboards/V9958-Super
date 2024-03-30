@@ -31,7 +31,7 @@ module VDP_SUPER_RES (
   bit super_high_res_visible_y;
   bit last_line;
   bit active_line;  // true if line is drawn from sdram, false if drawn from line buffer
-
+  bit super_res_visible;
   bit [31:0] line_buffer[`MAX_PIXEL_WIDTH];
   bit [7:0] line_buffer_index;
 

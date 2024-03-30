@@ -115,6 +115,7 @@ module VDP (
   wire        REQ_VSYNC_INT_N;
 
   // FOR HSYNC INTERRUPT
+  bit         HSYNC;
   wire        HSYNCINT_N;
   wire        CLR_HSYNC_INT;
   wire        REQ_HSYNC_INT_N;
@@ -304,6 +305,10 @@ module VDP (
   // SUPER 24 bit RGB COLOUR
   bit  [31:0] super_rgb_colour_reg;
   bit         super_rgb_colour_reg_applied;
+  bit         super_color;
+  bit         super_mid;
+  bit         super_res;
+
 
   parameter VRAM_ACCESS_IDLE = 0;
   parameter VRAM_ACCESS_DRAW = 1;

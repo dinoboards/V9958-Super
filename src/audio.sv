@@ -21,6 +21,7 @@ module AUDIO #(
   bit [15:0] adc_sample;
   bit sck_enable;
   bit [11:0] audio_sample;
+  bit sample_valid;
 
   always @(posedge clk) begin
     audio_sample_word0[0] <= sample_w;
