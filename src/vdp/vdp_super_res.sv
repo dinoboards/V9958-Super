@@ -24,7 +24,6 @@ module VDP_SUPER_RES (
 
   import custom_timings::*;
 
-  // bit super_high_res;
   bit [31:0] high_res_data;
   bit [31:0] next_rgb;
   bit super_high_res_visible_x;
@@ -34,8 +33,6 @@ module VDP_SUPER_RES (
   bit super_res_visible;
   bit [31:0] line_buffer[`MAX_PIXEL_WIDTH];
   bit [7:0] line_buffer_index;
-
-  // assign super_high_res = (vdp_super & super_color) | (vdp_super & super_mid);
 
   // pixel format for super_mid: RRRR RGGG GGGB BBBB
   bit [4:0] high_mid_pixel_red;
