@@ -21,7 +21,7 @@
  "EXTERNAL_MASTER_CONFIG_CLOCK" : false,
  "Enable_DSRM" : false,
  "FORMAT" : "binary",
- "FREQUENCY_DIVIDER" : "1",
+ "FREQUENCY_DIVIDER" : "",
  "FSM Compiler" : true,
  "Fanout_Guide" : 10000,
  "Frequency" : "Auto",
@@ -57,7 +57,7 @@
  "Multiple_File_Compilation_Unit" : true,
  "Number_of_Critical_Paths" : "",
  "Number_of_Start/End_Points" : "",
- "OUTPUT_BASE_NAME" : "tn_vdp_v3_v9958",
+ "OUTPUT_BASE_NAME" : "hdmi",
  "POWER_ON_RESET_MONITOR" : true,
  "PRINT_BSRAM_VALUE" : true,
  "PROGRAM_DONE_BYPASS" : false,
@@ -102,6 +102,6 @@
  "Verilog_Standard" : "Vlg_Std_Sysv2017",
  "WAKE_UP" : "0",
  "Write_Vendor_Constraint_File" : true,
- "show_all_warnings" : false,
+ "show_all_warnings" : true,
  "turn_off_bg" : false
 }

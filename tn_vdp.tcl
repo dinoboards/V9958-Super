@@ -57,8 +57,8 @@ set_device -device_version C GW2AR-LV18QN88C8/I7
 set_option -top_module v9958_top
 set_option -loading_rate 250/10
 set_option -timing_driven 0
-set_option -place_option 0
-set_option -route_option 0
+set_option -place_option 1
+set_option -route_option 1
 set_option -bit_compress 1
 set_option -bit_crc_check 1
 set_option -bit_security 1
