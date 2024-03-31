@@ -87,7 +87,7 @@ module ADDRESS_BUS #(
       PRAMDBO_8 <= {8{1'bZ}};
       PRAMWE_N <= 1'b1;
       PRAM_RD_SIZE <= `MEMORY_WIDTH_16;
-      PRAM_WR_SIZE <= `MEMORY_WIDTH_16;
+      PRAM_WR_SIZE <= `MEMORY_WIDTH_8;
       VDPVRAMREADINGR <= 1'b0;
       VDPVRAMRDACK <= 1'b0;
       VDPVRAMWRACK <= 1'b0;

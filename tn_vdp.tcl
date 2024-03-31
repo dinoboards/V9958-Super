@@ -56,6 +56,7 @@ set_device -device_version C GW2AR-LV18QN88C8/I7
 
 set_option -top_module v9958_top
 set_option -loading_rate 250/10
+set_option -timing_driven 0
 set_option -place_option 0
 set_option -route_option 0
 set_option -bit_compress 1
@@ -67,6 +68,6 @@ set_option -use_mspi_as_gpio 1
 set_option -verilog_std sysv2017
 set_option -vhdl_std vhd2008
 set_option -print_all_synthesis_warning 1
-# set_option -show_all_warn 1
+set_option -show_all_warn 1
 
 run pnr

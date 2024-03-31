@@ -403,7 +403,7 @@ module VDP_COMMAND (
       //x is 0 to 359, and y 0 to 187 or for 60hz mode y is 0 to 239
       //addr = y * 360*2 + x*2
 
-      vram_access_addr = (vram_access_y * 360) + (vram_access_x);
+      vram_access_addr = (vram_access_y * 360 * 2) + (vram_access_x * 2);
 
     end else begin
       vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};

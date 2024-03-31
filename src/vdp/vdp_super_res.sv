@@ -78,7 +78,7 @@ module VDP_SUPER_RES (
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
-      super_res_vram_addr <= {17{1'bZ}};
+      super_res_vram_addr <= {17{1'b0}};
       next_rgb <= '{default: 0};
       high_res_data <= '{default: 0};
       line_buffer_index <= 0;
@@ -100,11 +100,11 @@ module VDP_SUPER_RES (
         //723 (FS) VRAM refreshing
 
         724: begin  //(DL)
-          if (last_line && super_color) begin
-            super_res_vram_addr <= 4;
-          end else if (last_line && super_mid) begin
-            super_res_vram_addr <= 2;
-          end
+           if (last_line && super_color) begin
+             super_res_vram_addr <= 4;
+           end else if (last_line && super_mid) begin
+             super_res_vram_addr <= 2;
+           end
         end
 
         725: begin  //(DA)
@@ -134,11 +134,11 @@ module VDP_SUPER_RES (
 
                 line_buffer_index <= 8'(line_buffer_index + 1);
 
-                if (active_line && super_color) begin
-                  super_res_vram_addr <= 17'(super_res_vram_addr + 4);
-                end else if (active_line && super_mid) begin
-                  super_res_vram_addr <= 17'(super_res_vram_addr + 2);
-                end
+               if (active_line && super_color) begin
+                 super_res_vram_addr <= 17'(super_res_vram_addr + 4);
+               end else if (active_line && super_mid) begin
+                 super_res_vram_addr <= 17'(super_res_vram_addr + 2);
+               end
 
               end
 
