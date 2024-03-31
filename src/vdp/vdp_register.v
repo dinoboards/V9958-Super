@@ -187,7 +187,7 @@ module VDP_REGISTER (
   reg [3:0] VDPR16PALNUM;
   reg [5:0] VDPR17REGNUM;
   reg VDPR17INCREGNUM;
-  wire [7:0] PALETTEADDR;
+  wire [3:0] PALETTEADDR;
   wire PALETTEWE;
   reg [7:0] PALETTEDATARB_IN;
   reg [7:0] PALETTEDATAG_IN;
@@ -247,7 +247,7 @@ module VDP_REGISTER (
 
   //--------------------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       FF_ACK <= 1'b0;
     end else begin
       FF_ACK <= REQ;
@@ -256,7 +256,7 @@ module VDP_REGISTER (
 
   //--------------------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       REG_R1_DISP_ON <= 1'd0;
       REG_R0_DISP_MODE <= 3'd0;
       REG_R1_DISP_MODE <= 2'd0;
@@ -287,29 +287,29 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   // PALETTE REGISTER
   //------------------------------------------------------------------------
-  assign PALETTEADDR = (FF_PALETTE_IN == 1'b1) ? {4'b0000, PALETTEWRNUM} : {4'b0000, PALETTEADDR_OUT};
-  assign PALETTEWE = (FF_PALETTE_IN == 1'b1) ? 1'b1 : 1'b0;
-  assign W_EVEN_DOTSTATE = (DOTSTATE == 2'b00 || DOTSTATE == 2'b11) ? 1'b1 : 1'b0;
+  assign PALETTEADDR = FF_PALETTE_IN ? PALETTEWRNUM : PALETTEADDR_OUT;
+  assign PALETTEWE = FF_PALETTE_IN;
+  assign W_EVEN_DOTSTATE = (DOTSTATE == 2'b00 || DOTSTATE == 2'b11);
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_PALETTE_IN <= 1'b0;
+    if (RESET) begin
+      FF_PALETTE_IN <= 0;
     end else begin
-      if ((W_EVEN_DOTSTATE == 1'b1)) begin
-        FF_PALETTE_IN <= 1'b0;
+      if (W_EVEN_DOTSTATE) begin
+        FF_PALETTE_IN <= 0;
       end else begin
-        if ((FF_PALETTE_WR_REQ != FF_PALETTE_WR_ACK)) begin
-          FF_PALETTE_IN <= 1'b1;
+        if (FF_PALETTE_WR_REQ != FF_PALETTE_WR_ACK) begin
+          FF_PALETTE_IN <= 1;
         end
       end
     end
   end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_PALETTE_WR_ACK <= 1'b0;
+    if (RESET) begin
+      FF_PALETTE_WR_ACK <= 0;
     end else begin
-      if ((W_EVEN_DOTSTATE == 1'b0)) begin
-        if ((FF_PALETTE_WR_REQ != FF_PALETTE_WR_ACK)) begin
+      if (!W_EVEN_DOTSTATE) begin
+        if (FF_PALETTE_WR_REQ != FF_PALETTE_WR_ACK) begin
           FF_PALETTE_WR_ACK <= ~FF_PALETTE_WR_ACK;
         end
       end
@@ -336,7 +336,7 @@ module VDP_REGISTER (
   // PROCESS OF CPU READ REQUEST
   //------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       DBI <= 8'd0;
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
@@ -419,7 +419,7 @@ module VDP_REGISTER (
   // HSYNC INTERRUPT RESET CONTROL
   //------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       CLR_HSYNC_INT <= 1'b0;
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
@@ -447,7 +447,7 @@ module VDP_REGISTER (
   // VSYNC INTERRUPT RESET CONTROL
   //------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       CLR_VSYNC_INT <= 1'b0;
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
@@ -469,7 +469,7 @@ module VDP_REGISTER (
   // PROCESS OF CPU WRITE REQUEST
   //------------------------------------------------------------------------
   always_ff @(posedge RESET or posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET) begin
       VDPP1DATA <= 8'd0;
       VDPP1IS1STBYTE <= 1'b1;
       VDPP2IS1STBYTE <= 1'b1;
