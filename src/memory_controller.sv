@@ -43,9 +43,9 @@ module MEM_CONTROLLER #(
     input bit [1:0] word_rd_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
     input bit [1:0] word_wr_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
 
-    input bit   [ 7:0] din8,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
-    // input bit   [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
-    input logic [31:0] din32, // The data to be written to the SDRAM when wdm is 00
+    input bit   [ 7:0] din8,   // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
+    input bit   [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
+    input logic [31:0] din32,  // The data to be written to the SDRAM when wdm is 00
 
     // output bit [ 7:0] dout8,   // The data read from the SDRAM. Available 4 cycles after the read signal is set.
     output bit [31:0] dout32,
@@ -154,8 +154,8 @@ module MEM_CONTROLLER #(
       end
 
       `MEMORY_WIDTH_16: begin
-        // __din32 = {din16, din16};  //writing a single 16 bit value is not supported yet
-        //wdm=????
+        __din32 = {din16, din16};  //writing a single 16 bit value is not supported yet
+        wdm = word_addr[0] == 1'd0 ? {4'b1100} : {2'b0011};  // only write the correct word
       end
 
       `MEMORY_WIDTH_32: begin

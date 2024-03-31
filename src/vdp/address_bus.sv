@@ -1,64 +1,70 @@
 module ADDRESS_BUS #(
 ) (
-    input bit        CLK21M,
-    input bit        RESET,
-    input bit [ 1:0] DOTSTATE,
-    input bit        PREWINDOW,
-    input bit        REG_R1_DISP_ON,
-    input bit [ 2:0] EIGHTDOTSTATE,
-    input bit        TXVRAMREADEN,
-    input bit        PREWINDOW_X,
-    input bit        PREWINDOW_Y_SP,
-    input bit        SPVRAMACCESSING,
-    input bit        TEXT_MODE,               // TEXT MODE 1, 2 or 1Q
-    input bit        VDPMODETEXT1,            // TEXT MODE 1      (SCREEN0 WIDTH 40)
-    input bit        VDPMODETEXT1Q,           // TEXT MODE 1      (??)
-    input bit        VDPMODEMULTI,            // MULTICOLOR MODE  (SCREEN3)
-    input bit        VDPMODEMULTIQ,           // MULTICOLOR MODE  (??)
-    input bit        VDPMODEGRAPHIC1,         // GRAPHIC MODE 1   (SCREEN1)
-    input bit        VDPMODEGRAPHIC2,         // GRAPHIC MODE 2   (SCREEN2)
-    input bit        VDPMODEGRAPHIC3,         // GRAPHIC MODE 2   (SCREEN4)
-    input bit        VDPMODEGRAPHIC4,         // GRAPHIC MODE 4   (SCREEN5)
-    input bit        VDPMODEGRAPHIC5,         // GRAPHIC MODE 5   (SCREEN6)
-    input bit        VDPMODEGRAPHIC6,         // GRAPHIC MODE 6   (SCREEN7)
-    input bit        VDPMODEGRAPHIC7,         // GRAPHIC MODE 7   (SCREEN8,10,11,12)
-    input bit        VDPMODEISHIGHRES,        // TRUE WHEN MODE GRAPHIC5, 6
-    input bit [ 7:0] VDPVRAMACCESSDATA,
-    input bit        VDPVRAMADDRSETREQ,
-    input bit [16:0] VDPVRAMACCESSADDRTMP,
-    input bit        VDPVRAMWRREQ,
-    input bit        VDPVRAMRDREQ,
-    input bit        VDP_COMMAND_ACTIVE,
-    input bit        vdp_cmd_vram_wr_req,
-    input bit [ 1:0] vdp_cmd_vram_wr_size,
-    input bit        VDPCMDVRAMRDREQ,
-    input bit        VDPVRAMREADINGA,
-    input bit        VDPCMDVRAMRDACK,
-    input bit [16:0] VDPCMDVRAMACCESSADDR,
-    input bit [ 7:0] VDP_CMD_VRAM_WR_DATA_8,
-    input bit [16:0] PRAMADRT12,
-    input bit [31:0] VDPCMDVRAMWRDATA_32,
-    input bit [16:0] PRAMADRSPRITE,
-    input bit [16:0] PRAMADRG123M,
-    input bit [16:0] PRAMADRG4567,
-    input bit        VDPCMDVRAMREADINGA,
-    input bit [16:0] super_vram_addr,
-    input            vdp_super,
-    input bit        super_res_drawing,
+    input bit          CLK21M,
+    input bit          RESET,
+    input bit   [ 1:0] DOTSTATE,
+    input bit          PREWINDOW,
+    input bit          REG_R1_DISP_ON,
+    input bit   [ 2:0] EIGHTDOTSTATE,
+    input bit          TXVRAMREADEN,
+    input bit          PREWINDOW_X,
+    input bit          PREWINDOW_Y_SP,
+    input bit          SPVRAMACCESSING,
+    input bit          TEXT_MODE,               // TEXT MODE 1, 2 or 1Q
+    input bit          VDPMODETEXT1,            // TEXT MODE 1      (SCREEN0 WIDTH 40)
+    input bit          VDPMODETEXT1Q,           // TEXT MODE 1      (??)
+    input bit          VDPMODEMULTI,            // MULTICOLOR MODE  (SCREEN3)
+    input bit          VDPMODEMULTIQ,           // MULTICOLOR MODE  (??)
+    input bit          VDPMODEGRAPHIC1,         // GRAPHIC MODE 1   (SCREEN1)
+    input bit          VDPMODEGRAPHIC2,         // GRAPHIC MODE 2   (SCREEN2)
+    input bit          VDPMODEGRAPHIC3,         // GRAPHIC MODE 2   (SCREEN4)
+    input bit          VDPMODEGRAPHIC4,         // GRAPHIC MODE 4   (SCREEN5)
+    input bit          VDPMODEGRAPHIC5,         // GRAPHIC MODE 5   (SCREEN6)
+    input bit          VDPMODEGRAPHIC6,         // GRAPHIC MODE 6   (SCREEN7)
+    input bit          VDPMODEGRAPHIC7,         // GRAPHIC MODE 7   (SCREEN8,10,11,12)
+    input bit          VDPMODEISHIGHRES,        // TRUE WHEN MODE GRAPHIC5, 6
+    input bit   [ 7:0] VDPVRAMACCESSDATA,
+    input bit          VDPVRAMADDRSETREQ,
+    input bit   [16:0] VDPVRAMACCESSADDRTMP,
+    input bit          VDPVRAMWRREQ,
+    input bit          VDPVRAMRDREQ,
+    input bit          VDP_COMMAND_ACTIVE,
+    input bit          vdp_cmd_vram_wr_req,
+    input bit   [ 1:0] vdp_cmd_vram_wr_size,
+    input bit          VDPCMDVRAMRDREQ,
+    input bit          VDPVRAMREADINGA,
+    input bit          VDPCMDVRAMRDACK,
+    input bit   [16:0] VDPCMDVRAMACCESSADDR,
+    input bit   [ 7:0] VDP_CMD_VRAM_WR_DATA_8,
+    input bit   [16:0] PRAMADRT12,
+    input bit   [31:0] VDPCMDVRAMWRDATA_32,
+    input bit   [15:0] VDPCMDVRAMWRDATA_16,
+    input bit   [16:0] PRAMADRSPRITE,
+    input bit   [16:0] PRAMADRG123M,
+    input bit   [16:0] PRAMADRG4567,
+    input bit          VDPCMDVRAMREADINGA,
+    input logic [16:0] super_vram_addr,
+    input bit          vdp_super,
+    input bit          super_color,
+    input bit          super_mid,
 
-    output bit          vdp_cmd_vram_wr_ack,
-    output bit          VDPCMDVRAMREADINGR,
-    output bit          VDP_COMMAND_DRIVE,
-    output bit   [16:0] IRAMADR,
-    output bit   [ 7:0] PRAMDBO_8,
-    output bit          PRAMWE_N,
-    output bit   [ 1:0] PRAM_RD_SIZE,
-    output bit   [ 1:0] PRAM_WR_SIZE,
-    output bit          VDPVRAMREADINGR,
-    output bit          VDPVRAMRDACK,
-    output bit          VDPVRAMWRACK,
-    output bit          VDPVRAMADDRSETACK,
-    output logic [31:0] PRAMDBO_32
+    input bit super_res_drawing,
+
+    output bit        vdp_cmd_vram_wr_ack,
+    output bit        VDPCMDVRAMREADINGR,
+    output bit        VDP_COMMAND_DRIVE,
+    output bit [16:0] IRAMADR,
+    output bit [ 7:0] PRAMDBO_8,
+    output bit        PRAMWE_N,
+    output bit [ 1:0] PRAM_RD_SIZE,
+    output bit [ 1:0] PRAM_WR_SIZE,
+    output bit        VDPVRAMREADINGR,
+    output bit        VDPVRAMRDACK,
+    output bit        VDPVRAMWRACK,
+    output bit        VDPVRAMADDRSETACK,
+
+    output logic [31:0] PRAMDBO_32,
+    output logic [15:0] PRAMDBO_16
 );
 
   localparam VRAM_ACCESS_IDLE = 0;
@@ -187,6 +193,7 @@ module ADDRESS_BUS #(
         end
         PRAMDBO_8 <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
+        PRAMDBO_16 <= 16'bZ;
         PRAMWE_N <= 1'b1;
         PRAM_RD_SIZE <= `MEMORY_WIDTH_16;  // I think this only reads a single 8 bit value for the 16bit word
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
@@ -195,6 +202,7 @@ module ADDRESS_BUS #(
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPW)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO_8 <= VDP_CMD_VRAM_WR_DATA_8;
+        PRAMDBO_16 <= VDPCMDVRAMWRDATA_16;
         PRAMDBO_32 <= VDPCMDVRAMWRDATA_32;
         PRAMWE_N <= 1'b0;
         PRAM_WR_SIZE <= vdp_cmd_vram_wr_size;
@@ -205,6 +213,7 @@ module ADDRESS_BUS #(
         IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO_8 <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
+        PRAMDBO_16 <= 16'bZ;
         PRAMWE_N <= 1'b1;
         PRAM_RD_SIZE <= `MEMORY_WIDTH_16;  // I think this only reads a single 8 bit value for the 16bit word
         VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
@@ -215,20 +224,26 @@ module ADDRESS_BUS #(
         PRAMWE_N <= 1'b1;
         PRAM_RD_SIZE <= `MEMORY_WIDTH_16;
         PRAMDBO_8 <= 8'bZ;
+        PRAMDBO_16 <= 8'bZ;
         PRAMDBO_32 <= 32'bZ;
 
       end else begin
         // VRAM_ACCESS_DRAW
         // VRAM READ FOR SCREEN DRAWING
 
-        //todo set IRAMADR to high res address if in high res mode
-
         if (vdp_super) begin
           IRAMADR <= super_vram_addr;
           PRAMDBO_8 <= 8'bZ;
+          PRAMDBO_16 <= 8'bZ;
           PRAMDBO_32 <= 32'bZ;
           PRAMWE_N <= 1'b1;
-          PRAM_RD_SIZE <= `MEMORY_WIDTH_32;
+
+          if (super_color) begin
+            PRAM_RD_SIZE <= `MEMORY_WIDTH_32;
+          end else begin
+            PRAM_RD_SIZE <= `MEMORY_WIDTH_16;
+          end
+
 
         end else begin
 

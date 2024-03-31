@@ -15,7 +15,7 @@ module VDP_SUPER_RES (
 
     input bit [31:0] vrm_32,
 
-    output bit [16:0] super_res_vram_addr,
+    output logic [16:0] super_res_vram_addr,
     output bit [7:0] high_res_red,
     output bit [7:0] high_res_green,
     output bit [7:0] high_res_blue,
@@ -24,7 +24,7 @@ module VDP_SUPER_RES (
 
   import custom_timings::*;
 
-  bit super_high_res;
+  // bit super_high_res;
   bit [31:0] high_res_data;
   bit [31:0] next_rgb;
   bit super_high_res_visible_x;
@@ -35,20 +35,18 @@ module VDP_SUPER_RES (
   bit [31:0] line_buffer[`MAX_PIXEL_WIDTH];
   bit [7:0] line_buffer_index;
 
-  assign super_high_res = (vdp_super & super_color) | (vdp_super & super_mid);
+  // assign super_high_res = (vdp_super & super_color) | (vdp_super & super_mid);
 
   // pixel format for super_mid: GGGG GGRR RRRB BBBB
   // green <= data[15:10]; red <= data[9:5]; blue <= data[4:0]
 
-  bit [15:0] high_mid_pixel;
-  bit [ 5:0] high_mid_pixel_green;
-  bit [ 4:0] high_mid_pixel_red;
-  bit [ 4:0] high_mid_pixel_blue;
+  bit [5:0] high_mid_pixel_green;
+  bit [4:0] high_mid_pixel_red;
+  bit [4:0] high_mid_pixel_blue;
 
-  assign high_mid_pixel = cx[1:0] == 2'b10 || cx[1:0] == 2'b01 ? high_res_data[15:0] : high_res_data[31:16];
-  assign high_mid_pixel_green = high_mid_pixel[15:10];
-  assign high_mid_pixel_red = high_mid_pixel[9:5];
-  assign high_mid_pixel_blue = high_mid_pixel[4:0];
+  assign high_mid_pixel_green = high_res_data[15:10];
+  assign high_mid_pixel_red = high_res_data[9:5];
+  assign high_mid_pixel_blue = high_res_data[4:0];
 
   assign high_res_red = super_color ? high_res_data[23:16] : {high_mid_pixel_red, 3'b0};
   assign high_res_green = super_color ? high_res_data[15:8] : {high_mid_pixel_green, 2'b0};
@@ -61,7 +59,7 @@ module VDP_SUPER_RES (
   assign super_res_drawing = last_line || (super_res_visible && active_line);
 
   always_ff @(posedge reset or posedge clk) begin
-    if (reset | ~super_high_res) begin
+    if (reset | ~vdp_super) begin
       super_high_res_visible_x <= 0;
     end else begin
       if (cx == FRAME_WIDTH(pal_mode) - 1) super_high_res_visible_x <= 1;
@@ -70,7 +68,7 @@ module VDP_SUPER_RES (
   end
 
   always_ff @(posedge reset or posedge clk) begin
-    if (reset | ~super_high_res) begin
+    if (reset | ~vdp_super) begin
       super_high_res_visible_y <= 0;
     end else begin
       if (cx == (FRAME_WIDTH(pal_mode) - 1) && last_line) super_high_res_visible_y <= 1;
@@ -79,8 +77,8 @@ module VDP_SUPER_RES (
   end
 
   always_ff @(posedge reset or posedge clk) begin
-    if (reset | ~super_high_res) begin
-      super_res_vram_addr <= 0;
+    if (reset | ~vdp_super) begin
+      super_res_vram_addr <= {17{1'bZ}};
       next_rgb <= '{default: 0};
       high_res_data <= '{default: 0};
       line_buffer_index <= 0;
@@ -102,8 +100,10 @@ module VDP_SUPER_RES (
         //723 (FS) VRAM refreshing
 
         724: begin  //(DL)
-          if (last_line) begin
+          if (last_line && super_color) begin
             super_res_vram_addr <= 4;
+          end else if (last_line && super_mid) begin
+            super_res_vram_addr <= 2;
           end
         end
 
@@ -134,8 +134,10 @@ module VDP_SUPER_RES (
 
                 line_buffer_index <= 8'(line_buffer_index + 1);
 
-                if (active_line) begin
+                if (active_line && super_color) begin
                   super_res_vram_addr <= 17'(super_res_vram_addr + 4);
+                end else if (active_line && super_mid) begin
+                  super_res_vram_addr <= 17'(super_res_vram_addr + 2);
                 end
 
               end

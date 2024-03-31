@@ -64,10 +64,12 @@ module VDP_COMMAND (
     input bit mode_graphic_7,
     input bit mode_high_res,
     input bit mode_graphic_super_colour,
+    input bit mode_graphic_super_mid,
     input bit vram_wr_ack,
     input bit vram_rd_ack,
     input bit [7:0] vram_rd_data,
     input bit [31:0] vram_rd_data_32,
+    input bit [15:0] vram_rd_data_16,
     input bit reg_wr_req,
     input bit tr_clr_req,
     input bit [3:0] reg_num,
@@ -84,6 +86,7 @@ module VDP_COMMAND (
     output bit [16:0] p_vram_access_addr,
     output bit [7:0] p_vram_wr_data_8,
     output bit [31:0] p_vram_wr_data_32,
+    output bit [15:0] p_vram_wr_data_16,
     output bit [7:0] p_clr,
     output bit p_ce,
     output bit p_bd,
@@ -125,6 +128,7 @@ module VDP_COMMAND (
   bit        vram_rd_req;
   bit [16:0] vram_access_addr;
   bit [ 7:0] vram_wr_data_8;
+  bit [15:0] vram_wr_data_16;
   bit [31:0] vram_wr_data_32;
   bit [ 7:0] CLR;  // R44, S#7
 
@@ -188,6 +192,7 @@ module VDP_COMMAND (
   assign p_vram_access_addr = vram_access_addr;
   assign p_vram_wr_data_8 = vram_wr_data_8;
   assign p_vram_wr_data_32 = vram_wr_data_32;
+  assign p_vram_wr_data_16 = vram_wr_data_16;
   assign p_clr = CLR;
   assign p_ce = CE;
   assign p_bd = BD;
@@ -195,9 +200,9 @@ module VDP_COMMAND (
   assign p_sx_tmp = sx_tmp;
   assign current_command = CMR[7:4];
 
-  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_colour;
+  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_colour | mode_graphic_super_mid;
 
-  assign vram_wr_size = mode_graphic_super_colour ? `MEMORY_WIDTH_32 : `MEMORY_WIDTH_8;
+  assign vram_wr_size = mode_graphic_super_colour ? `MEMORY_WIDTH_32 : mode_graphic_super_mid ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8;
 
   bit graphic_4_or_6;
   assign graphic_4_or_6 = mode_graphic_4 || mode_graphic_6;
@@ -213,8 +218,10 @@ module VDP_COMMAND (
 
   bit [ 7:0] RDPOINT;
   bit [31:0] rd_point_32;
+  bit [15:0] rd_point_16;
   always_comb begin
     rd_point_32 = vram_rd_data_32;
+    rd_point_16 = vram_rd_data_16;
 
     // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
     if (graphic_4_or_6) begin
@@ -232,6 +239,11 @@ module VDP_COMMAND (
       //vram_rd_data_32 has the 24 bit RGB colour codes
       //need to convert that to the 8 bit colour code
       RDPOINT = {vram_rd_data_32[23:21], vram_rd_data_32[15:13], vram_rd_data_32[7:6]};
+
+    end else if (mode_graphic_super_mid) begin
+      //vram_rd_data_16 has the 16 bit RGB (GGGG GGRR RRRB BBBB) colour codes
+      //need to convert that to the 8 bit colour code
+      RDPOINT = {vram_rd_data_16[15:13], vram_rd_data_16[9:7], vram_rd_data_16[3:2]};
 
     end else begin
       RDPOINT = vram_rd_data;
@@ -276,6 +288,28 @@ module VDP_COMMAND (
 
     end else begin
       logical_operation_dest_colour_32 = rd_point_32;
+    end
+  end
+
+  bit [15:0] logical_operation_dest_colour_16;
+  always_comb begin
+    // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
+    // ON THE POINT TO BE WRITTEN.
+
+    //rd_point_32 = vram_rd_data_32
+    //enhanced 24 bit operations
+    if ((CMR[3] == 1'b0) || (vram_wr_data_16 != 16'b00000000)) begin
+      case (CMR[2:0])
+        IMPB210: logical_operation_dest_colour_16 = vram_wr_data_16;
+        ANDB210: logical_operation_dest_colour_16 = vram_wr_data_16 & rd_point_16;
+        ORB210:  logical_operation_dest_colour_16 = vram_wr_data_16 | rd_point_16;
+        EORB210: logical_operation_dest_colour_16 = vram_wr_data_16 ^ rd_point_16;
+        NOTB210: logical_operation_dest_colour_16 = ~vram_wr_data_16;
+        default: logical_operation_dest_colour_16 = rd_point_16;
+      endcase
+
+    end else begin
+      logical_operation_dest_colour_16 = rd_point_16;
     end
   end
 
@@ -360,11 +394,16 @@ module VDP_COMMAND (
 
     end else if (mode_graphic_super_colour) begin
       //resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
-      //addr is a 16bit boundary for a 32 bit retreival
-      //x = 0 to 511, y = 0 to 1023
-      //but for moment, assume x is 0 to 179, and y 0 to 143
+      //x is 0 to 179, and y 0 to 143
       //addr = 180*2*y + x*2
       vram_access_addr = (vram_access_y * 180 * 4) + (vram_access_x * 4);
+
+    end else if (mode_graphic_super_mid) begin
+      //2 bytes per pixel `GGGG GGRR RRRB BBBB` - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
+      //x is 0 to 359, and y 0 to 187 or for 60hz mode y is 0 to 239
+      //addr = y * 360*2 + x*2
+
+      vram_access_addr = (vram_access_y * 360) + (vram_access_x);
 
     end else begin
       vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};
@@ -402,6 +441,7 @@ module VDP_COMMAND (
       internal_vram_wr_req <= 0;
       vram_rd_req          <= 0;
       vram_wr_data_8       <= 0;
+      vram_wr_data_16      <= 0;
       vram_wr_data_32      <= 0;
       TR                   <= 1'b1;  // TRANSFER READY
       CE                   <= 0;  // COMMAND EXECUTING
@@ -602,6 +642,9 @@ module VDP_COMMAND (
               end else if (mode_graphic_super_colour) begin
                 vram_wr_data_32 <= logical_operation_dest_colour_32;
 
+              end else if (mode_graphic_super_mid) begin
+                vram_wr_data_16 <= logical_operation_dest_colour_16;
+
               end else begin
                 vram_wr_data_8 <= logical_operation_dest_colour;
               end
@@ -734,7 +777,34 @@ module VDP_COMMAND (
                 LMMV, LINE, PSET: begin
                   vram_wr_data_8 <= CLR;
                   //translate GRAPHICS 7 RGB representation to 24 bit rep
-                  vram_wr_data_32 <= super_rgb_colour_reg_applied ? super_rgb_colour_reg : {8'b0, CLR[7:5], 5'b0, CLR[4:2], 5'b0, CLR[1:0], 6'b0};
+
+                  if (super_rgb_colour_reg_applied) begin
+                    if (mode_graphic_super_colour) begin
+                      vram_wr_data_32 <= super_rgb_colour_reg;
+                    end else if (mode_graphic_super_mid) begin
+                      vram_wr_data_16 <= {super_rgb_colour_reg[23:18], super_rgb_colour_reg[15:10], super_rgb_colour_reg[7:4]};
+                    end else begin
+                      //should not get here
+                      vram_wr_data_32 <= 0;
+                      vram_wr_data_16 <= 0;
+                    end
+
+                  end else begin
+                    if (mode_graphic_super_colour) begin
+                      vram_wr_data_32 <= {8'b0, CLR[7:5], 5'b0, CLR[4:2], 5'b0, CLR[1:0], 6'b0};
+                    end else if (mode_graphic_super_mid) begin
+                      // `GGGG GGRR RRRB BBBB`
+                      vram_wr_data_16 <= {CLR[7:5], 3'b0, CLR[4:2], 3'b0, CLR[1:0], 2'b0};
+                    end else begin
+                      //should not get here
+                      vram_wr_data_32 <= 0;
+                      vram_wr_data_16 <= 0;
+                    end
+                  end
+
+
+
+
                   state <= PRE_RD_VRAM;
                 end
                 SRCH: begin

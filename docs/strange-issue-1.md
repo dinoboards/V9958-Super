@@ -78,3 +78,16 @@ With the (src/vdp/vdp_super_res.sv)[src/vdp/vdp_super_res.sv]:
 
 
 Is there some optimisation issue with the synthesizer and layout?  Does it corrupt something, when I have 2 increments applied to vram at 2 distinct states?
+
+## Worked Around
+
+1. By having the first increment and absolute assignment, and not using trinary operator and instead explicit conditions - the underlying problem seems to have been resolved.  Except, when I removed the diagnostic LEDs from the circuit, the issue comes back.
+
+2. Change place_option and route_option from 1 to 0 (0 being default) in tcl config:
+
+```
+set_option -place_option 0
+set_option -route_option 0
+```
+
+  I do wonder if these settings had been the cause all along.
