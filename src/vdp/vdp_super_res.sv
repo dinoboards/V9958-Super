@@ -95,10 +95,8 @@ module VDP_SUPER_RES (
         //723 (FS) VRAM refreshing
 
         724: begin  //(DL)
-          if (last_line && super_color) begin
+          if (last_line) begin
             super_res_vram_addr <= 4;
-          end else if (last_line && super_mid) begin
-            super_res_vram_addr <= 2;
           end
         end
 
@@ -129,10 +127,8 @@ module VDP_SUPER_RES (
 
                 line_buffer_index <= 8'(line_buffer_index + 1);
 
-                if (active_line && super_color) begin
+                if (active_line) begin
                   super_res_vram_addr <= 17'(super_res_vram_addr + 4);
-                end else if (active_line && super_mid) begin
-                  super_res_vram_addr <= 17'(super_res_vram_addr + 2);
                 end
 
               end
@@ -144,6 +140,7 @@ module VDP_SUPER_RES (
               end
 
               2: begin  // (AP)
+
               end
 
               3: begin  // (FS)

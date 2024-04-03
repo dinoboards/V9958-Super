@@ -75,6 +75,8 @@ module VDP (
     output bit   [ 1:0] PRAM_WR_SIZE,
     output wire  [16:0] PRAMADR,
     input  bit   [31:0] PRAMDBI_32,
+    input  bit   [31:0] PRAMDBI_32_B,
+    input  bit   [15:0] PRAMDBI_16,
     output reg   [ 7:0] PRAMDBO_8,
     output logic [31:0] PRAMDBO_32,
     output logic [15:0] PRAMDBO_16,
@@ -91,7 +93,7 @@ module VDP (
     output bit [7:0] green,
     output bit [7:0] blue,
 
-    output bit vdp_super
+    output bit       vdp_super
 );
 
   import custom_timings::*;
@@ -222,11 +224,6 @@ module VDP (
   bit         super_res_drawing;
   bit  [16:0] super_vram_addr;
 
-  // V9958 15 bit RGB
-  bit  [ 5:0] PVIDEOR;
-  bit  [ 5:0] PVIDEOG;
-  bit  [ 5:0] PVIDEOB;
-
   // SPRITE
   wire        SPMODE2;
   wire        SPVRAMACCESSING;
@@ -299,6 +296,7 @@ module VDP (
   reg  [16:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
   bit  [31:0] PRAMDAT_32;
+  bit  [31:0] PRAMDAT_32_B;
   bit  [15:0] PRAMDAT_16;
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
@@ -328,10 +326,11 @@ module VDP (
 
   assign PRAMADR = IRAMADR;
   assign XRAMSEL = IRAMADR[0];
-  assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI_32[7:0] : PRAMDBI_32[15:8];
+  assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
   assign PRAMDAT_32 = PRAMDBI_32;
-  assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI_32[7:0] : PRAMDBI_32[15:8];
-  assign PRAMDAT_16 = PRAMDBI_32[15:0];
+  assign PRAMDAT_32_B = PRAMDBI_32_B;
+  assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
+  assign PRAMDAT_16 = PRAMDBI_16;
 
   //--------------------------------------------------------------
   // DISPLAY COMPONENTS
@@ -346,9 +345,23 @@ module VDP (
   bit [7:0] high_res_green;
   bit [7:0] high_res_blue;
 
-  assign red   = vdp_super ? high_res_red : (scanlin && CY[0]) ? {1'b0, PVIDEOR, 1'b0} : {PVIDEOR, 2'b0};
-  assign green = vdp_super ? high_res_green : (scanlin && CY[0]) ? {1'b0, PVIDEOG, 1'b0} : {PVIDEOG, 2'b0};
-  assign blue  = vdp_super ? high_res_blue : (scanlin && CY[0]) ? {1'b0, PVIDEOB, 1'b0} : {PVIDEOB, 2'b0};
+  always_comb begin
+    if (vdp_super) begin
+      red   = high_res_red;
+      green = high_res_green;
+      blue  = high_res_blue;
+    end else begin
+      if (scanlin && CY[0]) begin
+        red   = {1'b0, IVIDEOR_VGA, 1'b0};
+        green = {1'b0, IVIDEOG_VGA, 1'b0};
+        blue  = {1'b0, IVIDEOB_VGA, 1'b0};
+      end else begin
+        red   = {IVIDEOR_VGA, 2'b0};
+        green = {IVIDEOG_VGA, 2'b0};
+        blue  = {IVIDEOB_VGA, 2'b0};
+      end
+    end
+  end
 
   VDP_VGA U_VDP_VGA (
       .CLK21M(CLK21M),
@@ -365,11 +378,6 @@ module VDP (
       .VIDEOGOUT(IVIDEOG_VGA),
       .VIDEOBOUT(IVIDEOB_VGA)
   );
-
-  // CHANGE DISPLAY MODE BY EXTERNAL INPUT PORT.
-  assign PVIDEOR = IVIDEOR_VGA;
-  assign PVIDEOG = IVIDEOG_VGA;
-  assign PVIDEOB = IVIDEOB_VGA;
 
 
   //---------------------------------------------------------------------------
@@ -934,7 +942,7 @@ module VDP (
       .cy(CY),
       .pal_mode(PAL_MODE),
       .REG_R1_DISP_ON(REG_R1_DISP_ON),
-      .vrm_32(PRAMDAT_32),
+      .vrm_32(PRAMDAT_32_B),
       .super_res_vram_addr(super_vram_addr),
       .high_res_red(high_res_red),
       .high_res_green(high_res_green),

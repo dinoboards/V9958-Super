@@ -150,7 +150,7 @@ module VDP_REGISTER (
     output wire VDPMODEISHIGHRES,
     output wire SPMODE2,
 
-    output bit vdp_super,
+    output vdp_super,
     output bit super_color,
     output bit super_mid,
     output bit super_res,
@@ -228,7 +228,8 @@ module VDP_REGISTER (
 
   assign mode_graphic_7_base = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
   assign mode_graphic_super_base = FF_REG_R31[0];  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
-  assign vdp_super = mode_graphic_super_base && mode_graphic_7_base;
+
+  assign vdp_super = mode_graphic_super_base & mode_graphic_7_base;
 
   assign VDPMODEGRAPHIC1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000);
   assign VDPMODETEXT1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001);

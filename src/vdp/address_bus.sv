@@ -96,7 +96,9 @@ module ADDRESS_BUS #(
       vdp_cmd_vram_wr_ack <= 1'b0;
       VDPCMDVRAMREADINGR <= 1'b0;
       VDP_COMMAND_DRIVE <= 1'b0;
+
     end else begin
+
       // MAIN STATE
       //----------------------------------------
       //
@@ -112,7 +114,7 @@ module ADDRESS_BUS #(
           //EIGHTDOTSTATE is 0 to 4, and displayed
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 
-        end else if (~vdp_super && (PREWINDOW && REG_R1_DISP_ON && TXVRAMREADEN)) begin
+        end else if (!vdp_super && (PREWINDOW && REG_R1_DISP_ON && TXVRAMREADEN)) begin
           // EIGHTDOTSTATE is 5 to 7, and displayed, and it is in text mode
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 
@@ -238,11 +240,11 @@ module ADDRESS_BUS #(
           PRAMDBO_32 <= 32'bZ;
           PRAMWE_N <= 1'b1;
 
-          if (super_color) begin
+          // if (super_color) begin
             PRAM_RD_SIZE <= `MEMORY_WIDTH_32;
-          end else begin
-            PRAM_RD_SIZE <= `MEMORY_WIDTH_16;
-          end
+          // end else begin
+          //   PRAM_RD_SIZE <= `MEMORY_WIDTH_16;
+          // end
 
 
         end else begin

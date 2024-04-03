@@ -9,9 +9,8 @@ module v9958_top (
 
     input [7:2] A,
 
-    input rd_n,
-    input wr_n,
-    input iorq_n,
+    input rd_iorq_n,
+    input wr_iorq_n,
 
     input clk,
 
@@ -99,6 +98,8 @@ module v9958_top (
   bit   [31:0] VrmDbo_32;
   bit   [15:0] VrmDbo_16;
   bit   [31:0] VrmDbi_32;
+  bit   [31:0] VrmDbi_32_B;
+  bit   [15:0] VrmDbi_16;
 
   logic [10:0] cx;
   logic [ 9:0] cy;
@@ -131,11 +132,13 @@ module v9958_top (
       .busy(ram_busy),
       .fail(ram_fail),
       .enabled(ram_enabled),
-      .addr(VdpAdr),
+      .addr({6'b0, VdpAdr}),
       .din8(VrmDbo_8),
       .din32(VrmDbo_32),
       .din16(VrmDbo_16),
       .dout32(VrmDbi_32),
+      .dout32B(VrmDbi_32_B),
+      .dout16(VrmDbi_16),
       .word_rd_size(VdpDb_Rd_size),
       .word_wr_size(VdpDb_Wr_size),
       .IO_sdram_dq(IO_sdram_dq),
@@ -155,9 +158,8 @@ module v9958_top (
       .clk(clk_w),
       .reset_n(reset_n_w),
       .A(A),
-      .rd_n(rd_n),
-      .wr_n(wr_n),
-      .iorq_n(iorq_n),
+      .rd_iorq_n(rd_iorq_n),
+      .wr_iorq_n(wr_iorq_n),
       .cd(cd),
       .clk_sdram(clk_sdram_w),
 
@@ -167,6 +169,7 @@ module v9958_top (
       .CpuDbi(CpuDbi),
       .cs_n  (cs_n)
   );
+
 
   bit       pal_mode;
   bit       scanlin;
@@ -190,6 +193,8 @@ module v9958_top (
       .PRAM_WR_SIZE(VdpDb_Wr_size),
       .PRAMADR     (VdpAdr),
       .PRAMDBI_32  (VrmDbi_32),
+      .PRAMDBI_32_B(VrmDbi_32_B),
+      .PRAMDBI_16  (VrmDbi_16),
       .PRAMDBO_8   (VrmDbo_8),
       .PRAMDBO_16  (VrmDbo_16),
       .PRAMDBO_32  (VrmDbo_32),

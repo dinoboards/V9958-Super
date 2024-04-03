@@ -26,8 +26,8 @@
 
 
 module sdram #(
-    // Clock frequency, max 66.7Mhz with current set of T_xx/CAS parameters.
-    parameter FREQ       = 54_000_000,
+    // Clock frequency, max 108Mhz with current set of T_xx/CAS parameters.
+    parameter FREQ       = 108_000_000,
     parameter DATA_WIDTH = 32,
     parameter ROW_WIDTH  = 11,          // 2K rows
     parameter COL_WIDTH  = 8,           // 256 words per row (1Kbytes)
@@ -56,28 +56,31 @@ module sdram #(
     output bit   [           3:0] O_sdram_dqm,
 
     // Logic side interface
-    input  bit                  clk,
-    input  bit                  clk_sdram,   // phase shifted from clk (normally 180-degrees)
-    input  bit                  resetn,
-    input  bit                  rd,          // command: read
-    input  bit                  wr,          // command: write
-    input  bit                  refresh,     // command: auto refresh. 4096 refresh cycles in 64ms. Once per 15us.
-    input  bit [          22:0] addr,        // byte address
-    input  bit [          31:0] din32,       // data input when wdm is 0000
-    input  bit [           3:0] wdm,         // write data mask - 4-bit mask to control individual byte writing.  bytes are only written if coresponding bit is 0.
-    output bit [DATA_WIDTH-1:0] dout32,      // 32-bit data output
-    output bit                  data_ready,  // available 6 cycles after wr is set
-    output bit                  busy,        // 0: ready for next command
-    output bit                  enabled
+    input  bit                    clk,
+    input  bit                    clk_sdram,   // phase shifted from clk (normally 180-degrees)
+    input  bit                    resetn,
+    input  bit                    rd,          // command: read
+    input  bit                    wr,          // command: write
+    input  bit                    refresh,     // command: auto refresh. 4096 refresh cycles in 64ms. Once per 15us.
+    input  bit   [          22:0] addr,        // byte address
+    input  bit   [          31:0] din32,       // data input when wdm is 0000
+    input  bit   [           3:0] wdm,         // write data mask - 4-bit mask to control individual byte writing.  bytes are only written if coresponding bit is 0.
+    output logic [DATA_WIDTH-1:0] dout32,      // 32-bit data output
+    output bit                    data_ready,  // available 6 cycles after wr is set
+    output bit                    busy,        // 0: ready for next command
+    output bit                    enabled
 );
 
   // Tri-state DQ input/output
-  bit                  dq_oen;  // 0 means output
-  bit [DATA_WIDTH-1:0] dq_out;
-  assign IO_sdram_dq = dq_oen ? 32'bzzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz : dq_out;
-  wire [DATA_WIDTH-1:0] dq_in = IO_sdram_dq;  // DQ input
+  bit                    dq_oen;  // 0 means output
+  bit   [DATA_WIDTH-1:0] dq_out;
+  logic [DATA_WIDTH-1:0] dq_in;
 
+  assign IO_sdram_dq = dq_oen ? 32'bzzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz_zzzz : dq_out;
+
+  assign dq_in = IO_sdram_dq;  // DQ input
   assign dout32 = dq_in;
+
   assign O_sdram_clk = clk_sdram;
   assign O_sdram_cke = 1'b1;
   assign O_sdram_cs_n = 1'b0;

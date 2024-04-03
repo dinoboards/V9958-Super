@@ -77,9 +77,6 @@ module VDP_VGA (
 
   import custom_timings::*;
 
-  // VIDEO OUTPUT ENABLE
-  bit video_out_x;
-
   // DOUBLE BUFFER SIGNAL
   wire [9:0] x_position_wr;
   reg [9:0] XPOSITIONR;
@@ -89,9 +86,9 @@ module VDP_VGA (
   wire [5:0] DATABOUT;
   bit [10:0] h_cnt;
 
-  assign VIDEOROUT = (video_out_x) ? DATAROUT : 0;
-  assign VIDEOGOUT = (video_out_x) ? DATAGOUT : 0;
-  assign VIDEOBOUT = (video_out_x) ? DATABOUT : 0;
+  assign VIDEOROUT = DATAROUT;
+  assign VIDEOGOUT = DATAGOUT;
+  assign VIDEOBOUT = DATABOUT;
 
   assign h_cnt = cy[0] ? cx + CLOCKS_PER_HALF_LINE(PALMODE) : cx;
   assign x_position_wr = h_cnt[10:1];
@@ -122,11 +119,6 @@ module VDP_VGA (
         XPOSITIONR <= 10'(XPOSITIONR + 1);
       end
     end
-  end
-
-  always_ff @(posedge RESET, posedge CLK21M) begin
-    if (RESET) video_out_x <= 0;
-    else video_out_x <= 1;
   end
 
 endmodule

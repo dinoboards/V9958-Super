@@ -1,15 +1,13 @@
 
 module cpu_io (
-
     input bit clk,
     input bit reset_n,
     input bit [7:2] A,
     inout logic [7:0] cd,
     input bit clk_sdram,
     input bit [7:0] CpuDbi,
-    input bit rd_n,
-    input bit wr_n,
-    input bit iorq_n,
+    input bit rd_iorq_n,
+    input bit wr_iorq_n,
 
     output bit CpuReq,
     output bit CpuWrt,
@@ -26,9 +24,9 @@ module cpu_io (
   bit       csr_n;
 
   assign addr = A[7] & ~A[6] & ~A[5] & A[4] & A[3] & ~A[2];  // $98 TO $9B
-  assign cs_n = !(addr & (!iorq_n));
-  assign csw_n = !((!cs_n) & (!wr_n));
-  assign csr_n = !((!cs_n) & (!rd_n));
+  assign csr_n = !(addr & !rd_iorq_n);
+  assign csw_n = !(addr & !wr_iorq_n);
+  assign cs_n = csr_n & csw_n;
 
   assign cd = csr_n == 0 ? CpuDbi : 8'bzzzzzzzz;
 

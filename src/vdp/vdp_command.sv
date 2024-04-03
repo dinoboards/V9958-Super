@@ -396,14 +396,14 @@ module VDP_COMMAND (
       //resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
       //x is 0 to 179, and y 0 to 143
       //addr = 180*2*y + x*2
-      vram_access_addr = (vram_access_y * 180 * 4) + (vram_access_x * 4);
+      vram_access_addr = 17'((vram_access_y * 180 * 4) + (vram_access_x * 4));
 
     end else if (mode_graphic_super_mid) begin
       //2 bytes per pixel `GGGG GGRR RRRB BBBB` - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
       //x is 0 to 359, and y 0 to 187 or for 60hz mode y is 0 to 239
       //addr = y * 360*2 + x*2
 
-      vram_access_addr = (vram_access_y * 360 * 2) + (vram_access_x * 2);
+      vram_access_addr = 17'((vram_access_y * 360 * 2) + (vram_access_x * 2));
 
     end else begin
       vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};

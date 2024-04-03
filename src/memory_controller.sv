@@ -47,8 +47,9 @@ module MEM_CONTROLLER #(
     input bit   [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
     input logic [31:0] din32,  // The data to be written to the SDRAM when wdm is 00
 
-    // output bit [ 7:0] dout8,   // The data read from the SDRAM. Available 4 cycles after the read signal is set.
+    output bit [15:0] dout16,  // The data read from the SDRAM. Available 4 cycles after the read signal is set.
     output bit [31:0] dout32,
+    output bit [31:0] dout32B, //2nd channel of 32 bit data - to avoid congestion???
 
     output bit busy,    // Signal indicating that an operation is in progress.
     output bit enabled, // Signal indicating that the memory controller is enabled.
@@ -77,6 +78,8 @@ module MEM_CONTROLLER #(
   bit [ 1:0] __wdm;
   bit [ 3:0] wdm;
   bit [31:0] __dout32;
+  bit [31:0] __dout32B;
+  bit [15:0] __dout16;
   bit [31:0] __din32;
   bit [ 1:0] requested_word_rd_size;  // The word size captured at time operation initiated
   bit [ 1:0] requested_word_wr_size;  // The word size captured at time operation initiated
@@ -84,10 +87,13 @@ module MEM_CONTROLLER #(
   bit [ 1:0] operation_word_wr_size;
   bit [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
-  bit [31:0] MemDout32;
+  logic [31:0] MemDout32;
+  logic [15:0] MemDout16;
   bit [2:0] cycles;
   bit r_read;
   bit [31:0] data32;
+  bit [31:0] data32B;
+  bit [15:0] data16;
   bit MemBusy, MemDataReady;
   bit __operation_initiated;
   bit operation_read;
@@ -101,6 +107,8 @@ module MEM_CONTROLLER #(
   assign word_addr = {1'b0, operation_addr[22:1]};
 
   assign __dout32 = (cycles == 3'd4 && r_read) ? MemDout32 : data32;
+  assign __dout32B = (cycles == 3'd4 && r_read) ? MemDout32 : data32B;
+  assign __dout16 = (cycles == 3'd4 && r_read) ? MemDout16 : data16;
 
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
@@ -124,18 +132,21 @@ module MEM_CONTROLLER #(
   end
 
   always_comb begin
-    dout32 = {32{1'bx}};
+    dout16  = {16{1'bx}};
+    dout32  = {32{1'bx}};
+    dout32B = {32{1'bx}};
 
     case (operation_word_rd_size)
       `MEMORY_WIDTH_8: begin
       end
 
       `MEMORY_WIDTH_16: begin
-        dout32 = {16'b0, word_addr[0] ? __dout32[31:16] : __dout32[15:0]};
+        dout16 = __dout16;
       end
 
       `MEMORY_WIDTH_32: begin
-        dout32 = __dout32;
+        dout32  = __dout32;
+        dout32B = __dout32B;
       end
     endcase
   end
@@ -197,6 +208,8 @@ module MEM_CONTROLLER #(
       .O_sdram_dqm(O_sdram_dqm)
   );
 
+  assign MemDout16 = word_addr[0] ? MemDout32[31:16] : MemDout32[15:0];
+
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
       busy <= 1'b1;
@@ -236,7 +249,9 @@ module MEM_CONTROLLER #(
             if (~MemDataReady)  // assert data ready
               fail <= 1'b1;
             if (r_read) begin
-              data32 <= MemDout32;
+              data32  <= MemDout32;
+              data32B <= MemDout32;
+              data16  <= MemDout16;
             end
             r_read <= 1'b0;
           end
