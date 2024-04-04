@@ -77,9 +77,6 @@ module MEM_CONTROLLER #(
   bit [31:0] operation_din32;
   bit [1:0] __wdm;
   bit [3:0] wdm;
-  bit [31:0] __dout32;
-  bit [31:0] __dout32B;
-  bit [15:0] __dout16;
   bit [31:0] __din32;
   bit [1:0] requested_word_wr_size;  // The word size captured at time operation initiated
   bit [1:0] operation_word_wr_size;
@@ -103,9 +100,9 @@ module MEM_CONTROLLER #(
 
   assign word_addr = {1'b0, operation_addr[22:1]};
 
-  assign __dout32 = (cycles == 3'd4 && r_read) ? MemDout32 : data32;
-  assign __dout32B = (cycles == 3'd4 && r_read) ? MemDout32 : data32B;
-  assign __dout16 = (cycles == 3'd4 && r_read) ? MemDout16 : data16;
+  assign dout32 = data32;
+  assign dout32B = data32B;
+  assign dout16 = data16;
 
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
@@ -121,12 +118,6 @@ module MEM_CONTROLLER #(
         requested_addr <= addr;
       end
     end
-  end
-
-  always_comb begin
-    dout16  = __dout16;
-    dout32  = __dout32;
-    dout32B = __dout32B;
   end
 
   always_comb begin

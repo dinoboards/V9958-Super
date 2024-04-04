@@ -398,15 +398,15 @@ module VDP_SPRITE (
   // [Y_TEST]Yテスト用の信号
   // (Signals for Y test)
   //---------------------------------------------------------------------------
-  assign W_SPLISTUPY = FF_CUR_Y[7:0] - PRAMDAT;
+  assign W_SPLISTUPY = (DOTSTATE == 2'b01) ? FF_CUR_Y[7:0] - PRAMDAT : 8'bx;
 
   // [Y_TEST]着目スプライトを現ラインに表示するかどうかの信号
   // (Signal indicating whether to display the sprite on the current line)
-  assign W_TARGET_SP_EN = (((W_SPLISTUPY[7:3] == 5'b00000) && (REG_R1_SP_SIZE == 1'b0) && (REG_R1_SP_ZOOM == 1'b0)) || ((W_SPLISTUPY[7:4] == 4'b0000) && (REG_R1_SP_SIZE == 1'b1) && (REG_R1_SP_ZOOM == 1'b0)) || ((W_SPLISTUPY[7:4] == 4'b0000) && (REG_R1_SP_SIZE == 1'b0) && (REG_R1_SP_ZOOM == 1'b1)) || ((W_SPLISTUPY[7:5] == 3'b000) && (REG_R1_SP_SIZE == 1'b1) && (REG_R1_SP_ZOOM == 1'b1))) ? 1'b1 : 1'b0;
+  assign W_TARGET_SP_EN = (DOTSTATE == 2'b01) ? ((((W_SPLISTUPY[7:3] == 5'b00000) && (REG_R1_SP_SIZE == 1'b0) && (REG_R1_SP_ZOOM == 1'b0)) || ((W_SPLISTUPY[7:4] == 4'b0000) && (REG_R1_SP_SIZE == 1'b1) && (REG_R1_SP_ZOOM == 1'b0)) || ((W_SPLISTUPY[7:4] == 4'b0000) && (REG_R1_SP_SIZE == 1'b0) && (REG_R1_SP_ZOOM == 1'b1)) || ((W_SPLISTUPY[7:5] == 3'b000) && (REG_R1_SP_SIZE == 1'b1) && (REG_R1_SP_ZOOM == 1'b1))) ? 1'b1 : 1'b0) : 1'bx;
 
   // [Y_TEST]これ以降のスプライトは表示禁止かどうかの信号
   // (Signal indicating whether the following sprites are prohibited from being displayed)
-  assign W_SP_OFF = (PRAMDAT == ({4'b1101, SPMODE2, 3'b000})) ? 1'b1 : 1'b0;
+  assign W_SP_OFF = (DOTSTATE == 2'b01) ? ((PRAMDAT == ({4'b1101, SPMODE2, 3'b000})) ? 1'b1 : 1'b0) : 1'bx;
 
   // [Y_TEST]４つ（８つ）のスプライトが並んでいるかどうかの信号
   // (Signal indicating whether four (eight) sprites are lined up)
