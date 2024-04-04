@@ -110,8 +110,8 @@ module v9958_top (
   bit v9958_read;
   bit v9958_write;
   bit memory_refresh;
-  bit [16:0] super_res_vram_addr;
-  bit vdp_super;
+  bit [14:0] super_res_vram_addr;
+  bit  vdp_super;
 
   logic [15:0] audio_sample_word[1:0];
 

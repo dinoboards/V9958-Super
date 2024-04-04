@@ -222,7 +222,7 @@ module VDP (
 
   // GRAPHIC SUPER
   bit         super_res_drawing;
-  bit  [16:0] super_vram_addr;
+  bit  [14:0] super_vram_addr;
 
   // SPRITE
   wire        SPMODE2;

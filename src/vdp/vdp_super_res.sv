@@ -15,7 +15,7 @@ module VDP_SUPER_RES (
 
     input bit [31:0] vrm_32,
 
-    output logic [16:0] super_res_vram_addr,
+    output logic [14:0] super_res_vram_addr,
     output bit [7:0] high_res_red,
     output bit [7:0] high_res_green,
     output bit [7:0] high_res_blue,
@@ -73,7 +73,7 @@ module VDP_SUPER_RES (
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
-      super_res_vram_addr <= {17{1'b0}};
+      super_res_vram_addr <= {15{1'b0}};
       next_rgb <= '{default: 0};
       high_res_data <= '{default: 0};
       line_buffer_index <= 0;
@@ -96,7 +96,7 @@ module VDP_SUPER_RES (
 
         724: begin  //(DL)
           if (last_line) begin
-            super_res_vram_addr <= 4;
+            super_res_vram_addr <= 1;
           end
         end
 
@@ -128,7 +128,7 @@ module VDP_SUPER_RES (
                 line_buffer_index <= 8'(line_buffer_index + 1);
 
                 if (active_line) begin
-                  super_res_vram_addr <= 17'(super_res_vram_addr + 4);
+                  super_res_vram_addr <= 15'(super_res_vram_addr + 1);
                 end
 
               end

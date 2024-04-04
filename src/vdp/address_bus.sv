@@ -43,7 +43,7 @@ module ADDRESS_BUS #(
     input bit   [16:0] PRAMADRG123M,
     input bit   [16:0] PRAMADRG4567,
     input bit          VDPCMDVRAMREADINGA,
-    input logic [16:0] super_vram_addr,
+    input logic [14:0] super_vram_addr,
     input bit          vdp_super,
     input bit          super_color,
     input bit          super_mid,
@@ -234,7 +234,7 @@ module ADDRESS_BUS #(
         // VRAM READ FOR SCREEN DRAWING
 
         if (vdp_super) begin
-          IRAMADR <= super_vram_addr;
+          IRAMADR <= {super_vram_addr, 2'b00};
           PRAMDBO_8 <= 8'bZ;
           PRAMDBO_16 <= 8'bZ;
           PRAMDBO_32 <= 32'bZ;
