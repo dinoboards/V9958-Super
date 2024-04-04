@@ -77,5 +77,6 @@ set_option -replicate_resources 1
 # set_option -ireg_in_iob 0
 # set_option -oreg_in_iob 0
 # set_option -ioreg_in_iob 0
+set_option -replicate_resources 1
 
 run pnr

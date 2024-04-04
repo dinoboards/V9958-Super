@@ -91,3 +91,32 @@ set_option -route_option 0
 ```
 
   I do wonder if these settings had been the cause all along.
+
+## Further Observations (2023-04-04)
+
+The above issue was never resolved with changing optimisation strategies.  Some futher observations have been noted.
+
+Have enabled from of the reporting options in the tcl file.
+
+In the project.tr file, we get entries like:
+
+```
+2. Timing Summaries
+2.1 STA Tool Run Summary
+<Setup Delay Model>:Slow 0.95V 85C C8/I7
+<Hold Delay Model>:Fast 1.05V 0C C8/I7
+<Numbers of Paths Analyzed>:19282
+<Numbers of Endpoints Analyzed>:7809
+<Numbers of Falling Endpoints>:0
+<Numbers of Setup Violated Endpoints>:756
+<Numbers of Hold Violated Endpoints>:18
+```
+
+I noticed that the `hdmi_reset` signal seemed to be appearing a lot - its not a buffered signals, yet was required for a lot of always_ff blocks.  Removing the use of this signal - and just using `reset_w`, the number of Setup and Hold violations greatly reduced. And the problem seems to possibly happen a lot less.  (I dont think we need a specific `hdmi_reset` signal - seems to work fine just running off the main `reset_w` signal)
+
+I also changed sdram/memory_controller modules, to have separate FF for out32 and out16 registers.  Hoping that it enables better routing and avoid congestion/fanout issues.  This change also did seem to reduce the issue.
+
+Perhaps the other violations need to be 'resolved'
+
+Only conducted a limited set of testing (main video mode, super modes).  There may be issues with sprites, other graphic modes and other timing issues the intermittently cause issues.
+

@@ -179,7 +179,7 @@ module v9958_top (
 
   VDP u_v9958 (
       .CLK21M      (clk_w),
-      .RESET       (reset_w | ~ram_enabled),
+      .RESET       (reset_w),
       .REQ         (CpuReq),
       .ACK         (),
       .scanlin     (scanlin),
@@ -215,12 +215,9 @@ module v9958_top (
   // HDMI output
   //--------------------------------------------------------------
 
-  bit         hdmi_reset;
   logic [2:0] tmds;
 
   assign scanlin = 1'b0;
-
-  assign hdmi_reset = reset_w | ~ram_enabled;
 
   hdmi_selection #() hdmi (
       .include_audio(~exclude_audio),
@@ -228,7 +225,6 @@ module v9958_top (
       .clk_pixel(clk_w),
       .clk_audio(clk_audio_w),
       .rgb({dvi_r, dvi_g, dvi_b}),
-      .hdmi_reset(hdmi_reset),
       .reset(reset_w),
       .audio_sample_word(audio_sample_word),
       .pal_mode(pal_mode),
