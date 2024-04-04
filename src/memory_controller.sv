@@ -51,8 +51,7 @@ module MEM_CONTROLLER #(
     output bit [31:0] dout32,
     output bit [31:0] dout32B, //2nd channel of 32 bit data - to avoid congestion???
 
-    output bit busy,    // Signal indicating that an operation is in progress.
-    output bit enabled, // Signal indicating that the memory controller is enabled.
+    output bit enabled,  // Signal indicating that the memory controller is enabled.
 
     // debug interface
     output bit fail,  // Signal indicating a timing mistake or SDRAM malfunction
@@ -71,20 +70,22 @@ module MEM_CONTROLLER #(
 
 );
 
+  bit busy;
+
   bit [22:0] word_addr;  // The address to read from or write to in the SDRAM
   bit [22:0] requested_addr;  // address captured at time operation initiated
   bit [22:0] operation_addr;  // address captured at time operation initiated
   bit [31:0] operation_din32;
-  bit [ 1:0] __wdm;
-  bit [ 3:0] wdm;
+  bit [1:0] __wdm;
+  bit [3:0] wdm;
   bit [31:0] __dout32;
   bit [31:0] __dout32B;
   bit [15:0] __dout16;
   bit [31:0] __din32;
-  bit [ 1:0] requested_word_rd_size;  // The word size captured at time operation initiated
-  bit [ 1:0] requested_word_wr_size;  // The word size captured at time operation initiated
-  bit [ 1:0] operation_word_rd_size;
-  bit [ 1:0] operation_word_wr_size;
+  bit [1:0] requested_word_rd_size;  // The word size captured at time operation initiated
+  bit [1:0] requested_word_wr_size;  // The word size captured at time operation initiated
+  bit [1:0] operation_word_rd_size;
+  bit [1:0] operation_word_wr_size;
   bit [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
   logic [31:0] MemDout32;

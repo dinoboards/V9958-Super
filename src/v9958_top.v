@@ -116,9 +116,9 @@ module v9958_top (
   logic [15:0] audio_sample_word[1:0];
 
   // Memory Interface
-  assign v9958_read = (WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy);
-  assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk & ~ram_busy;
-  assign memory_refresh = ~VideoDLClk & ~VideoDHClk & ~ram_busy;
+  assign v9958_read = (WeVdp_n & VideoDLClk & VideoDHClk);
+  assign v9958_write = ~WeVdp_n & VideoDLClk & VideoDHClk;
+  assign memory_refresh = ~VideoDLClk & ~VideoDHClk;
 
   MEM_CONTROLLER #(
       .FREQ(108_000_000)
@@ -129,7 +129,6 @@ module v9958_top (
       .read(v9958_read),
       .write(v9958_write),
       .refresh(memory_refresh),
-      .busy(ram_busy),
       .fail(ram_fail),
       .enabled(ram_enabled),
       .addr({5'b0, VdpAdr}),
