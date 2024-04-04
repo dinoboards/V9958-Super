@@ -40,7 +40,6 @@ module MEM_CONTROLLER #(
     input bit        refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
     input bit [22:0] addr,       // The address to read from or write to in the SDRAM
 
-    input bit [1:0] word_rd_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
     input bit [1:0] word_wr_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
 
     input bit   [ 7:0] din8,   // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
@@ -82,9 +81,7 @@ module MEM_CONTROLLER #(
   bit [31:0] __dout32B;
   bit [15:0] __dout16;
   bit [31:0] __din32;
-  bit [1:0] requested_word_rd_size;  // The word size captured at time operation initiated
   bit [1:0] requested_word_wr_size;  // The word size captured at time operation initiated
-  bit [1:0] operation_word_rd_size;
   bit [1:0] operation_word_wr_size;
   bit [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
@@ -101,7 +98,6 @@ module MEM_CONTROLLER #(
   bit operation_write;
 
   assign __operation_initiated = read || write;
-  assign operation_word_rd_size = __operation_initiated ? word_rd_size : requested_word_rd_size;
   assign operation_word_wr_size = __operation_initiated ? word_wr_size : requested_word_wr_size;
   assign operation_addr = __operation_initiated ? addr : requested_addr;
 
@@ -113,15 +109,10 @@ module MEM_CONTROLLER #(
 
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
-      requested_word_rd_size <= `MEMORY_WIDTH_16;
       requested_word_wr_size <= `MEMORY_WIDTH_16;
       requested_addr <= 23'b0;
 
     end else begin
-      if (read) begin
-        requested_word_rd_size <= word_rd_size;
-      end
-
       if (write) begin
         requested_word_wr_size <= word_wr_size;
       end
@@ -133,23 +124,9 @@ module MEM_CONTROLLER #(
   end
 
   always_comb begin
-    dout16  = {16{1'bx}};
-    dout32  = {32{1'bx}};
-    dout32B = {32{1'bx}};
-
-    case (operation_word_rd_size)
-      `MEMORY_WIDTH_8: begin
-      end
-
-      `MEMORY_WIDTH_16: begin
-        dout16 = __dout16;
-      end
-
-      `MEMORY_WIDTH_32: begin
-        dout32  = __dout32;
-        dout32B = __dout32B;
-      end
-    endcase
+    dout16  = __dout16;
+    dout32  = __dout32;
+    dout32B = __dout32B;
   end
 
   always_comb begin

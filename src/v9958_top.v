@@ -91,7 +91,6 @@ module v9958_top (
   bit          VideoDLClk;
   bit          VideoDHClk;
   bit          WeVdp_n;
-  bit   [ 1:0] VdpDb_Rd_size;
   bit   [ 1:0] VdpDb_Wr_size;
   bit   [17:0] VdpAdr;
   bit   [ 7:0] VrmDbo_8;
@@ -138,7 +137,6 @@ module v9958_top (
       .dout32(VrmDbi_32),
       .dout32B(VrmDbi_32_B),
       .dout16(VrmDbi_16),
-      .word_rd_size(VdpDb_Rd_size),
       .word_wr_size(VdpDb_Wr_size),
       .IO_sdram_dq(IO_sdram_dq),
       .O_sdram_addr(O_sdram_addr),
@@ -188,7 +186,6 @@ module v9958_top (
       .DBO         (CpuDbo),
       .INT_N       (int_n),
       .PRAMWE_N    (WeVdp_n),
-      .PRAM_RD_SIZE(VdpDb_Rd_size),
       .PRAM_WR_SIZE(VdpDb_Wr_size),
       .PRAMADR     (VdpAdr),
       .PRAMDBI_32  (VrmDbi_32),
