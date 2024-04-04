@@ -25,7 +25,7 @@ module ADDRESS_BUS #(
     input bit          VDPMODEISHIGHRES,        // TRUE WHEN MODE GRAPHIC5, 6
     input bit   [ 7:0] VDPVRAMACCESSDATA,
     input bit          VDPVRAMADDRSETREQ,
-    input bit   [16:0] VDPVRAMACCESSADDRTMP,
+    input bit   [17:0] VDPVRAMACCESSADDRTMP,
     input bit          VDPVRAMWRREQ,
     input bit          VDPVRAMRDREQ,
     input bit          VDP_COMMAND_ACTIVE,
@@ -34,16 +34,16 @@ module ADDRESS_BUS #(
     input bit          VDPCMDVRAMRDREQ,
     input bit          VDPVRAMREADINGA,
     input bit          VDPCMDVRAMRDACK,
-    input bit   [16:0] VDPCMDVRAMACCESSADDR,
+    input bit   [17:0] VDPCMDVRAMACCESSADDR,
     input bit   [ 7:0] VDP_CMD_VRAM_WR_DATA_8,
-    input bit   [16:0] PRAMADRT12,
+    input bit   [17:0] PRAMADRT12,
     input bit   [31:0] VDPCMDVRAMWRDATA_32,
     input bit   [15:0] VDPCMDVRAMWRDATA_16,
-    input bit   [16:0] PRAMADRSPRITE,
-    input bit   [16:0] PRAMADRG123M,
-    input bit   [16:0] PRAMADRG4567,
+    input bit   [17:0] PRAMADRSPRITE,
+    input bit   [17:0] PRAMADRG123M,
+    input bit   [17:0] PRAMADRG4567,
     input bit          VDPCMDVRAMREADINGA,
-    input logic [14:0] super_vram_addr,
+    input logic [15:0] super_vram_addr,
     input bit          vdp_super,
     input bit          super_color,
     input bit          super_mid,
@@ -53,7 +53,7 @@ module ADDRESS_BUS #(
     output bit        vdp_cmd_vram_wr_ack,
     output bit        VDPCMDVRAMREADINGR,
     output bit        VDP_COMMAND_DRIVE,
-    output bit [16:0] IRAMADR,
+    output bit [17:0] IRAMADR,
     output bit [ 7:0] PRAMDBO_8,
     output bit        PRAMWE_N,
     output bit [ 1:0] PRAM_RD_SIZE,
@@ -76,14 +76,25 @@ module ADDRESS_BUS #(
   localparam VRAM_ACCESS_VDPR = 6;
   localparam VRAM_ACCESS_VDPS = 7;
 
-  bit [16:0] VDPVRAMACCESSADDR;
+  bit [17:0] VDPVRAMACCESSADDR;
+
+  bit [15:0] __super_vram_addr;
+
+  always_ff @(posedge RESET, posedge CLK21M) begin
+
+    if ((RESET == 1'b1)) begin
+      __super_vram_addr <= 0;
+    end else begin
+      __super_vram_addr <= super_vram_addr;
+    end
+  end
 
   always_ff @(posedge RESET, posedge CLK21M) begin : P1
-    bit [16:0] VDPVRAMACCESSADDRV;
+    bit [17:0] VDPVRAMACCESSADDRV;
     bit [31:0] VRAMACCESSSWITCH;
 
     if ((RESET == 1'b1)) begin
-      IRAMADR <= {17{1'b1}};
+      IRAMADR <= {18{1'b1}};
       PRAMDBO_8 <= {8{1'bZ}};
       PRAMWE_N <= 1'b1;
       PRAM_RD_SIZE <= `MEMORY_WIDTH_16;
@@ -234,14 +245,14 @@ module ADDRESS_BUS #(
         // VRAM READ FOR SCREEN DRAWING
 
         if (vdp_super) begin
-          IRAMADR <= {super_vram_addr, 2'b00};
+          IRAMADR <= {__super_vram_addr, 2'b00};
           PRAMDBO_8 <= 8'bZ;
           PRAMDBO_16 <= 8'bZ;
           PRAMDBO_32 <= 32'bZ;
           PRAMWE_N <= 1'b1;
 
           // if (super_color) begin
-            PRAM_RD_SIZE <= `MEMORY_WIDTH_32;
+          PRAM_RD_SIZE <= `MEMORY_WIDTH_32;
           // end else begin
           //   PRAM_RD_SIZE <= `MEMORY_WIDTH_16;
           // end

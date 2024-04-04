@@ -93,7 +93,7 @@ module v9958_top (
   bit          WeVdp_n;
   bit   [ 1:0] VdpDb_Rd_size;
   bit   [ 1:0] VdpDb_Wr_size;
-  bit   [16:0] VdpAdr;
+  bit   [17:0] VdpAdr;
   bit   [ 7:0] VrmDbo_8;
   bit   [31:0] VrmDbo_32;
   bit   [15:0] VrmDbo_16;
@@ -110,8 +110,8 @@ module v9958_top (
   bit v9958_read;
   bit v9958_write;
   bit memory_refresh;
-  bit [14:0] super_res_vram_addr;
-  bit  vdp_super;
+  bit [15:0] super_res_vram_addr;
+  bit vdp_super;
 
   logic [15:0] audio_sample_word[1:0];
 
@@ -132,7 +132,7 @@ module v9958_top (
       .busy(ram_busy),
       .fail(ram_fail),
       .enabled(ram_enabled),
-      .addr({6'b0, VdpAdr}),
+      .addr({5'b0, VdpAdr}),
       .din8(VrmDbo_8),
       .din32(VrmDbo_32),
       .din16(VrmDbo_16),
@@ -198,7 +198,7 @@ module v9958_top (
       .PRAMDBO_8   (VrmDbo_8),
       .PRAMDBO_16  (VrmDbo_16),
       .PRAMDBO_32  (VrmDbo_32),
-      .VDPSPEEDMODE(1'b1),                    // for V9958 MSX2+/tR VDP
+      .VDPSPEEDMODE(1'b1),           // for V9958 MSX2+/tR VDP
       .PVIDEODHCLK (VideoDHClk),
       .PVIDEODLCLK (VideoDLClk),
       .PAL_MODE    (pal_mode),

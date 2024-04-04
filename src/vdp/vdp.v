@@ -73,7 +73,7 @@ module VDP (
     output reg          PRAMWE_N,
     output bit   [ 1:0] PRAM_RD_SIZE,
     output bit   [ 1:0] PRAM_WR_SIZE,
-    output wire  [16:0] PRAMADR,
+    output bit   [17:0] PRAMADR,
     input  bit   [31:0] PRAMDBI_32,
     input  bit   [31:0] PRAMDBI_32_B,
     input  bit   [15:0] PRAMDBI_16,
@@ -93,7 +93,7 @@ module VDP (
     output bit [7:0] green,
     output bit [7:0] blue,
 
-    output bit       vdp_super
+    output bit vdp_super
 );
 
   import custom_timings::*;
@@ -149,7 +149,7 @@ module VDP (
   reg         VDPVRAMREADINGA;
   wire [ 3:1] VDPR0DISPNUM;
   wire [ 7:0] VDPVRAMACCESSDATA;
-  wire [16:0] VDPVRAMACCESSADDRTMP;
+  wire [17:0] VDPVRAMACCESSADDRTMP;
   wire        VDPVRAMADDRSETREQ;
   reg         VDPVRAMADDRSETACK;
   wire        VDPVRAMWRREQ;
@@ -204,16 +204,16 @@ module VDP (
   wire        VDPMODEISHIGHRES;  // TRUE WHEN MODE GRAPHIC5, 6
 
   // FOR TEXT 1 AND 2
-  wire [16:0] PRAMADRT12;
+  wire [17:0] PRAMADRT12;
   wire [ 3:0] COLORCODET12;
   wire        TXVRAMREADEN;
 
   // FOR GRAPHIC 1,2,3 AND MULTI COLOR
-  wire [16:0] PRAMADRG123M;
+  wire [17:0] PRAMADRG123M;
   wire [ 3:0] COLORCODEG123M;
 
   // FOR GRAPHIC 4,5,6,7
-  wire [16:0] PRAMADRG4567;
+  wire [17:0] PRAMADRG4567;
   wire [ 7:0] COLORCODEG4567;
   wire [ 5:0] YJK_R;
   wire [ 5:0] YJK_G;
@@ -222,12 +222,12 @@ module VDP (
 
   // GRAPHIC SUPER
   bit         super_res_drawing;
-  bit  [14:0] super_vram_addr;
+  bit  [15:0] super_vram_addr;
 
   // SPRITE
   wire        SPMODE2;
   wire        SPVRAMACCESSING;
-  wire [16:0] PRAMADRSPRITE;
+  wire [17:0] PRAMADRSPRITE;
   wire        SPRITECOLOROUT;
   wire [ 3:0] COLORCODESPRITE;
   wire        VDPS0SPCOLLISIONINCIDENCE;
@@ -270,7 +270,7 @@ module VDP (
   wire        vdp_cmd_vram_wr_req;
   bit  [ 1:0] vdp_cmd_vram_wr_size;
   wire        VDPCMDVRAMRDREQ;
-  wire [16:0] VDPCMDVRAMACCESSADDR;
+  wire [17:0] VDPCMDVRAMACCESSADDR;
   wire [ 7:0] VDP_CMD_VRAM_WR_DATA_8;
   bit  [31:0] VDPCMDVRAMWRDATA_32;
   bit  [15:0] VDPCMDVRAMWRDATA_16;
@@ -293,7 +293,7 @@ module VDP (
   wire [ 5:0] IVIDEOG_VGA;
   wire [ 5:0] IVIDEOB_VGA;
 
-  reg  [16:0] IRAMADR;
+  bit  [17:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
   bit  [31:0] PRAMDAT_32;
   bit  [31:0] PRAMDAT_32_B;

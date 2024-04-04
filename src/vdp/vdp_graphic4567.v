@@ -79,7 +79,7 @@ module VDP_GRAPHIC4567 (
     input wire REG_R25_SP2,
     input wire [7:0] PRAMDAT,
     input wire [7:0] PRAMDATPAIR,
-    output reg [16:0] PRAMADR,
+    output bit [17:0] PRAMADR,
     output reg [7:0] PCOLORCODE,
     output reg [5:0] P_YJK_R,
     output reg [5:0] P_YJK_G,

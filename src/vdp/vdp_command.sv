@@ -83,7 +83,7 @@ module VDP_COMMAND (
     output bit vram_wr_req,
     output bit [1:0] vram_wr_size,
     output bit p_vram_rd_req,
-    output bit [16:0] p_vram_access_addr,
+    output bit [17:0] p_vram_access_addr,
     output bit [7:0] p_vram_wr_data_8,
     output bit [31:0] p_vram_wr_data_32,
     output bit [15:0] p_vram_wr_data_16,
