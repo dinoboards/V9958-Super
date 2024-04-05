@@ -51,7 +51,32 @@ module VDP_SUPER_RES (
   assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0);
   assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
 
-  assign super_res_drawing = last_line || (super_res_visible && active_line);
+  // cx > 720 and cx < 840 - turn on @700, off @ 180
+  // cy > 620 and cy < 576
+
+  bit super_res_drawing_x;
+
+  always_ff @(posedge reset or posedge clk) begin
+    if (reset | ~vdp_super) begin
+      super_res_drawing_x <= 0;
+    end else begin
+      if (cx == 840) super_res_drawing_x <= 1;
+      else if (cx == 720) super_res_drawing_x <= 0;
+    end
+  end
+
+  bit super_res_drawing_y;
+
+  always_ff @(posedge reset or posedge clk) begin
+    if (reset | ~vdp_super) begin
+      super_res_drawing_y <= 0;
+    end else begin
+      if (cy == 620) super_res_drawing_y <= 1;
+      else if (cy == 576) super_res_drawing_y <= 0;
+    end
+  end
+
+  assign super_res_drawing = (super_res_drawing_x & super_res_drawing_y && active_line);
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin

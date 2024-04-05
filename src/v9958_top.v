@@ -3,6 +3,13 @@
 `include "vdp_constants.vh"
 
 module v9958_top (
+    output bit led1_n,
+    output bit led2_n,
+    output bit led3_n,
+    output bit led4_n,
+    output bit led5_n,
+    output bit led_ws2812,
+
     //high => send a HDMI single without any audio encoded
     //low => send HDMI single with audio encoded
     input exclude_audio,
@@ -45,6 +52,21 @@ module v9958_top (
 );
 
   import custom_timings::*;
+
+  // leds
+  assign led1_n = cs_n;
+  assign led2_n = cs_n;
+  assign led3_n = cs_n;
+  assign led4_n = cs_n;
+  assign led5_n = cs_n;
+
+  WS2812 #(
+      .WS2812_NUM(1)
+  ) ws2812 (
+      .clk(clk),
+      .reset_n(reset_n),
+      .WS2812(led_ws2812)
+  );
 
   // ----------------------------------------
   // All Clocks
