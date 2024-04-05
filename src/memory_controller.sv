@@ -134,7 +134,7 @@ module MEM_CONTROLLER #(
       end
 
       `MEMORY_WIDTH_16: begin
-        __din32 = {din16, din16};  //writing a single 16 bit value is not supported yet
+        __din32 = {din16, din16};
         wdm = word_addr[0] == 1'd0 ? {4'b1100} : {2'b0011};  // only write the correct word
       end
 
@@ -158,7 +158,7 @@ module MEM_CONTROLLER #(
       .rd(operation_read),
       .wr(operation_write),
       .refresh(busy ? MemRefresh : refresh),
-      .din32(busy ? requested_din32 : __din32),
+      .din32(requested_din32),
       .wdm(wdm),
       .dout32(MemDout32),
       .busy(MemBusy),
