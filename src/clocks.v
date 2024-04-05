@@ -17,6 +17,7 @@ module clocks (
 
     // generated 900khz clock for the ADC clock out pin (measured at approx 850khz)
     output clk_900k_w,
+
     // generated 44.1khz clock for the HDMI audio stream
     output clk_audio_w,
 
