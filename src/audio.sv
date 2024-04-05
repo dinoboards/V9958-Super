@@ -9,11 +9,10 @@ module AUDIO #(
     output logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word[1:0],
 
     // ADC SPI interface
-    input  adc_miso,
-    output adc_clk,
-    output adc_cs,
-    output adc_mosi
-
+    input  bit adc_miso,
+    output bit adc_clk,
+    output bit adc_cs,
+    output bit adc_mosi
 );
 
   bit [15:0] sample_w;
@@ -46,7 +45,7 @@ module AUDIO #(
 
   assign adc_clk = clk_900k & sck_enable;
 
-  always @(posedge clk_135) begin
+  always_ff @(posedge clk_135) begin
     if (sample_valid) adc_sample <= {audio_sample[11:0], 4'b0};
   end
 

@@ -16,11 +16,11 @@ IO_PORT "clk" PULL_MODE=UP;
 
 IO_LOC "adc_mosi" 52;
 IO_PORT "adc_mosi" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=16;
-IO_LOC "adc_cs" 71;
+IO_LOC "adc_cs" 53;
 IO_PORT "adc_cs" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=16;
-IO_LOC "adc_clk" 72;
+IO_LOC "adc_clk" 71;
 IO_PORT "adc_clk" IO_TYPE=LVCMOS33 PULL_MODE=DOWN DRIVE=16;
-IO_LOC "adc_miso" 53;
+IO_LOC "adc_miso" 72;
 IO_PORT "adc_miso" IO_TYPE=LVCMOS33 PULL_MODE=DOWN;
 
 IO_LOC "cs_n" 15;
