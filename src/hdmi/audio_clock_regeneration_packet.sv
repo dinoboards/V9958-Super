@@ -2,7 +2,7 @@
 // By Sameer Puri https://github.com/sameer
 
 // See HDMI 1.4b Section 5.3.3
-module audio_clock_regeneration_packet #(
+module AUDIO_CLOCK_REGENERATION_PACKET #(
     parameter longint VIDEO_RATE = 25.2E6,
     parameter int AUDIO_RATE = 48e3
 ) (

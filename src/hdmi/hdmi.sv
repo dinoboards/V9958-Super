@@ -211,7 +211,7 @@ module hdmi #(
   logic video_field_end;
   assign video_field_end = cx == screen_width - 1'b1 && cy == screen_height - 1'b1;
   logic [4:0] packet_pixel_counter;
-  packet_picker #(
+  PACKET_PICKER #(
       .VIDEO_ID_CODE(VIDEO_ID_CODE),
       .VIDEO_RATE(VIDEO_RATE),
       .IT_CONTENT(IT_CONTENT),

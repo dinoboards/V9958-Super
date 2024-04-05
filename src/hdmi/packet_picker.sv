@@ -1,7 +1,7 @@
 // Implementation of HDMI packet choice logic.
 // By Sameer Puri https://github.com/sameer
 
-module packet_picker #(
+module PACKET_PICKER #(
     parameter int VIDEO_ID_CODE = 4,
     parameter longint VIDEO_RATE = 0,
     parameter bit IT_CONTENT = 1'b0,
@@ -22,37 +22,72 @@ module packet_picker #(
     output logic [55:0] sub[3:0]
 );
 
-  // Connect the current packet type's data to the output.
-  logic [7:0] packet_type = 8'd0;
+  typedef enum logic [2:0] {
+    /* 0x00 */ NULL_PACKET,
+    /* 0x01 */ AUDIO_CLOCK_REGENERATION_PACKET,
+    /* 0x02 */ AUDIO_SAMPLE_PACKET,
+    /* 0x82 */ AVI_INFO_FRAME,
+    /* 0x83 */ SOURCE_PRODUCT_DESCRIPTION_INFO_FRAME,
+    /* 0x84 */ AUDIO_INFO_FRAME
+  } PACKET_TYPES;
 
-  //TODO: investigate, do we need headers and sub to be such large arrays
-  logic [23:0] headers[255:0];
-  logic [55:0] subs[255:0][3:0];
-  assign header = headers[packet_type];
-  assign sub[0] = subs[packet_type][0];
-  assign sub[1] = subs[packet_type][1];
-  assign sub[2] = subs[packet_type][2];
-  assign sub[3] = subs[packet_type][3];
+  PACKET_TYPES packet_type;
 
-  // NULL packet
+  logic [23:0] null_header;
+  logic [23:0] audio_clock_regeneration_header;
+  logic [23:0] audio_sample_header;
+  logic [23:0] avi_info_frame_header;
+  logic [23:0] source_product_description_info_frame_header;
+  logic [23:0] audio_info_frame_header;
+
+  logic [55:0] null_sub[3:0];
+  logic [55:0] audio_clock_regeneration_sub[3:0];
+  logic [55:0] audio_sample_sub[3:0];
+  logic [55:0] avi_info_frame_sub[3:0];
+  logic [55:0] source_product_description_info_frame_sub[3:0];
+  logic [55:0] audio_info_frame_sub[3:0];
+
+  always_comb begin
+    case (packet_type)
+      NULL_PACKET: header = null_header;
+      AUDIO_CLOCK_REGENERATION_PACKET: header = audio_clock_regeneration_header;
+      AUDIO_SAMPLE_PACKET: header = audio_sample_header;
+      AVI_INFO_FRAME: header = avi_info_frame_header;
+      SOURCE_PRODUCT_DESCRIPTION_INFO_FRAME: header = source_product_description_info_frame_header;
+      AUDIO_INFO_FRAME: header = audio_info_frame_header;
+      default: header = null_header;
+    endcase
+  end
+
+  always_comb begin
+    case (packet_type)
+      NULL_PACKET: sub = null_sub;
+      AUDIO_CLOCK_REGENERATION_PACKET: sub = audio_clock_regeneration_sub;
+      AUDIO_SAMPLE_PACKET: sub = audio_sample_sub;
+      AVI_INFO_FRAME: sub = avi_info_frame_sub;
+      SOURCE_PRODUCT_DESCRIPTION_INFO_FRAME: sub = source_product_description_info_frame_sub;
+      AUDIO_INFO_FRAME: sub = audio_info_frame_sub;
+      default: sub = null_sub;
+    endcase
+  end
+
   // "An HDMI Sink shall ignore bytes HB1 and HB2 of the Null Packet Header and all bytes of the Null Packet Body."
-  assign headers[0] = {8'dX, 8'dX, 8'd0};
-  assign subs[0][0] = 56'dX;
-  assign subs[0][1] = 56'dX;
-  assign subs[0][2] = 56'dX;
-  assign subs[0][3] = 56'dX;
+  assign null_header = {8'dX, 8'dX, 8'd0};
+  assign null_sub[0] = 56'dX;
+  assign null_sub[1] = 56'dX;
+  assign null_sub[2] = 56'dX;
+  assign null_sub[3] = 56'dX;
 
-  // Audio Clock Regeneration Packet
   logic clk_audio_counter_wrap;
-  audio_clock_regeneration_packet #(
+  AUDIO_CLOCK_REGENERATION_PACKET #(
       .VIDEO_RATE(VIDEO_RATE),
       .AUDIO_RATE(AUDIO_RATE)
   ) audio_clock_regeneration_packet (
       .clk_pixel(clk_pixel),
       .clk_audio(clk_audio),
       .clk_audio_counter_wrap(clk_audio_counter_wrap),
-      .header(headers[1]),
-      .sub(subs[1])
+      .header(audio_clock_regeneration_header),
+      .sub(audio_clock_regeneration_sub)
   );
 
   // Audio Sample packet
@@ -121,13 +156,14 @@ module packet_picker #(
     if (reset) begin
       frame_counter <= 8'd0;
     end
-    else if (packet_pixel_counter == 5'd31 && packet_type == 8'h02) // Keep track of current IEC 60958 frame
+    else if (packet_pixel_counter == 5'd31 && packet_type == AUDIO_SAMPLE_PACKET) // Keep track of current IEC 60958 frame
     begin
       frame_counter = frame_counter + 8'd4;
       if (frame_counter >= 8'd192) frame_counter = frame_counter - 8'd192;
     end
   end
-  audio_sample_packet #(
+
+  AUDIO_SAMPLE_PACKET #(
       .SAMPLING_FREQUENCY(SAMPLING_FREQUENCY),
       .WORD_LENGTH({{WORD_LENGTH[0], WORD_LENGTH[1], WORD_LENGTH[2]}, WORD_LENGTH_LIMIT})
   ) audio_sample_packet (
@@ -136,39 +172,38 @@ module packet_picker #(
       .user_data_bit('{2'b00, 2'b00, 2'b00, 2'b00}),
       .audio_sample_word(audio_sample_word_packet),
       .audio_sample_word_present(audio_sample_word_present_packet),
-      .header(headers[2]),
-      .sub(subs[2])
+      .header(audio_sample_header),
+      .sub(audio_sample_sub)
   );
 
-  auxiliary_video_information_info_frame #(
+  AUXILIARY_VIDEO_INFORMATION_INFO_FRAME #(
       .VIDEO_ID_CODE(7'(VIDEO_ID_CODE)),
       .IT_CONTENT(IT_CONTENT)
   ) auxiliary_video_information_info_frame (
-      .header(headers[130]),
-      .sub(subs[130])
+      .header(avi_info_frame_header),
+      .sub(avi_info_frame_sub)
   );
 
-
-  source_product_description_info_frame #(
+  SOURCE_PRODUCT_DESCRIPTION_INFO_FRAME #(
       .VENDOR_NAME(VENDOR_NAME),
       .PRODUCT_DESCRIPTION(PRODUCT_DESCRIPTION),
       .SOURCE_DEVICE_INFORMATION(SOURCE_DEVICE_INFORMATION)
   ) source_product_description_info_frame (
-      .header(headers[131]),
-      .sub(subs[131])
+      .header(source_product_description_info_frame_header),
+      .sub(source_product_description_info_frame_sub)
   );
 
-  audio_info_frame audio_info_frame (
-      .header(headers[132]),
-      .sub(subs[132])
+  AUDIO_INFO_FRAME audio_info_frame (
+      .header(audio_info_frame_header),
+      .sub(audio_info_frame_sub)
   );
-
 
   // "A Source shall always transmit... [an InfoFrame] at least once per two Video Fields"
   logic audio_info_frame_sent = 1'b0;
   logic auxiliary_video_information_info_frame_sent = 1'b0;
   logic source_product_description_info_frame_sent = 1'b0;
   logic last_clk_audio_counter_wrap = 1'b0;
+
   always_ff @(posedge clk_pixel) begin
     if (sample_buffer_used) sample_buffer_used <= 1'b0;
 
@@ -176,26 +211,26 @@ module packet_picker #(
       audio_info_frame_sent <= 1'b0;
       auxiliary_video_information_info_frame_sent <= 1'b0;
       source_product_description_info_frame_sent <= 1'b0;
-      packet_type <= 8'dx;
+      packet_type <= NULL_PACKET;
     end else if (packet_enable) begin
       if (last_clk_audio_counter_wrap ^ clk_audio_counter_wrap) begin
-        packet_type <= 8'd1;
+        packet_type <= AUDIO_CLOCK_REGENERATION_PACKET;
         last_clk_audio_counter_wrap <= clk_audio_counter_wrap;
       end else if (sample_buffer_ready) begin
-        packet_type <= 8'd2;
+        packet_type <= AUDIO_SAMPLE_PACKET;
         audio_sample_word_packet <= audio_sample_word_buffer[!sample_buffer_current];
         audio_sample_word_present_packet <= 4'b1111;
         sample_buffer_used <= 1'b1;
       end else if (!audio_info_frame_sent) begin
-        packet_type <= 8'h84;
+        packet_type <= AUDIO_INFO_FRAME;
         audio_info_frame_sent <= 1'b1;
       end else if (!auxiliary_video_information_info_frame_sent) begin
-        packet_type <= 8'h82;
+        packet_type <= AVI_INFO_FRAME;
         auxiliary_video_information_info_frame_sent <= 1'b1;
       end else if (!source_product_description_info_frame_sent) begin
-        packet_type <= 8'h83;
+        packet_type <= SOURCE_PRODUCT_DESCRIPTION_INFO_FRAME;
         source_product_description_info_frame_sent <= 1'b1;
-      end else packet_type <= 8'd0;
+      end else packet_type <= NULL_PACKET;
     end
   end
 

@@ -5,7 +5,7 @@
 
 // See Section 5.3.4
 // 2-channel L-PCM or IEC 61937 audio in IEC 60958 frames with consumer grade IEC 60958-3.
-module audio_sample_packet #(
+module AUDIO_SAMPLE_PACKET #(
     // A thorough explanation of the below parameters can be found in IEC 60958-3 5.2, 5.3.
 
     // 0 = Consumer, 1 = Professional
