@@ -73,7 +73,6 @@ module MEM_CONTROLLER #(
 
   bit [22:0] word_addr;  // The address to read from or write to in the SDRAM
   bit [22:0] requested_addr;  // address captured at time operation initiated
-  bit [22:0] operation_addr;  // address captured at time operation initiated
   bit [31:0] operation_din32;
   bit [1:0] __wdm;
   bit [3:0] wdm;
@@ -94,9 +93,8 @@ module MEM_CONTROLLER #(
   bit operation_write;
 
   assign __operation_initiated = read || write;
-  assign operation_addr = __operation_initiated ? addr : requested_addr;
 
-  assign word_addr = {1'b0, operation_addr[22:1]};
+  assign word_addr = {1'b0, addr[22:1]};
 
   assign dout32 = data32;
   assign dout32B = data32B;
@@ -105,15 +103,10 @@ module MEM_CONTROLLER #(
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
       requested_word_wr_size <= `MEMORY_WIDTH_16;
-      requested_addr <= 23'b0;
 
     end else begin
       if (write) begin
         requested_word_wr_size <= word_wr_size;
-      end
-
-      if (read || write) begin
-        requested_addr <= addr;
       end
     end
   end
