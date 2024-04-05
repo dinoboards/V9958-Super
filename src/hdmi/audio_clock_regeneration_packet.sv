@@ -4,7 +4,7 @@
 // See HDMI 1.4b Section 5.3.3
 module audio_clock_regeneration_packet #(
     parameter longint VIDEO_RATE = 25.2E6,
-    parameter int  AUDIO_RATE = 48e3
+    parameter int AUDIO_RATE = 48e3
 ) (
     input logic clk_pixel,
     input logic clk_audio,
@@ -46,11 +46,7 @@ module audio_clock_regeneration_packet #(
   end
 
   // "An HDMI Sink shall ignore bytes HB1 and HB2 of the Audio Clock Regeneration Packet header."
-`ifdef MODEL_TECH
-  assign header = {8'd0, 8'd0, 8'd1};
-`else
   assign header = {8'dX, 8'dX, 8'd1};
-`endif
 
   // "The four Subpackets each contain the same Audio Clock regeneration Subpacket."
   genvar i;

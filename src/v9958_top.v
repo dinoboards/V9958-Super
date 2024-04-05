@@ -1,5 +1,3 @@
-`define GW_IDE
-
 `include "vdp_constants.vh"
 
 module v9958_top (

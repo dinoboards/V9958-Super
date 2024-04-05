@@ -69,7 +69,7 @@ module hdmi_selection #(
 
   // Select the tmds_channels based on video mode (pal/ntsc)
   // encode it with the serializer
-  serializer_diplexer serializer_diplexer_inst (
+  SERIALIZER_DIPLEXER SERIALIZER_DIPLEXER_inst (
       .clk_pixel(clk_pixel),
       .clk_pixel_x5(clk_pixel_x5),
       .reset(reset),
