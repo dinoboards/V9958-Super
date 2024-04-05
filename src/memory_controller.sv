@@ -79,7 +79,6 @@ module MEM_CONTROLLER #(
   bit [3:0] wdm;
   bit [31:0] __din32;
   bit [1:0] requested_word_wr_size;  // The word size captured at time operation initiated
-  bit [1:0] operation_word_wr_size;
   bit [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
   logic [31:0] MemDout32;
@@ -95,7 +94,6 @@ module MEM_CONTROLLER #(
   bit operation_write;
 
   assign __operation_initiated = read || write;
-  assign operation_word_wr_size = __operation_initiated ? word_wr_size : requested_word_wr_size;
   assign operation_addr = __operation_initiated ? addr : requested_addr;
 
   assign word_addr = {1'b0, operation_addr[22:1]};
@@ -125,7 +123,7 @@ module MEM_CONTROLLER #(
     __wdm = 2'bxx;
     wdm = 4'bxxxx;
 
-    case (operation_word_wr_size)
+    case (requested_word_wr_size)
       `MEMORY_WIDTH_8: begin
         __din32 = {din8, din8, din8, din8};
 
