@@ -180,7 +180,7 @@ module MEM_CONTROLLER #(
       MemWR <= 1'b0;
       MemRD <= 1'b0;
       MemRefresh <= 1'b0;
-      cycles <= cycles ? cycles - 1 : 0;
+      cycles <= cycles ? 3'(cycles - 1) : 0;
 
       // Initiate read or write
       if (!busy) begin
