@@ -72,7 +72,6 @@ module v9958_top (
   bit clk_w;
   bit clk_135_w;
   bit clk_135_lock_w;
-  bit clk_900k_w;
   bit clk_audio_w;
   bit clk_sdram_w;
   bit clk_sdramp_w;
@@ -84,7 +83,6 @@ module v9958_top (
       .clk_w(clk_w),
       .clk_135_w(clk_135_w),
       .clk_135_lock_w(clk_135_lock_w),
-      .clk_900k_w(clk_900k_w),
       .clk_audio_w(clk_audio_w),
       .clk_sdram_w(clk_sdram_w),
       .clk_sdramp_w(clk_sdramp_w),
@@ -261,7 +259,6 @@ module v9958_top (
   AUDIO #() audio (
       .clk(clk_w),
       .clk_135(clk_135_w),
-      .clk_900k(clk_900k_w),
       .reset_n(reset_n_w),
       .audio_sample_word(audio_sample_word),
       .adc_miso(adc_miso),

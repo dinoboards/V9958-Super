@@ -103,17 +103,9 @@ module PACKET_PICKER #(
   localparam bit [2:0] WORD_LENGTH = 3'(AUDIO_BIT_WIDTH_COMPARATOR - AUDIO_BIT_WIDTH);
   localparam bit WORD_LENGTH_LIMIT = AUDIO_BIT_WIDTH <= 20 ? 1'b0 : 1'b1;
 
-  logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word_transfer[1:0];
   logic audio_sample_word_transfer_control = 1'd0;
-  logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word_transfer_sync1[1:0], audio_sample_word_transfer_sync2[1:0];
-
-  always_ff @(posedge clk_pixel) begin
-    audio_sample_word_transfer_sync1 <= audio_sample_word;
-    audio_sample_word_transfer_sync2 <= audio_sample_word_transfer_sync1;
-  end
 
   always_ff @(posedge clk_audio) begin
-    audio_sample_word_transfer <= audio_sample_word_transfer_sync2;
     audio_sample_word_transfer_control <= !audio_sample_word_transfer_control;
   end
 
@@ -128,8 +120,7 @@ module PACKET_PICKER #(
   logic [23:0] audio_sample_word_buffer[1:0][3:0][1:0];
   logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word_transfer_mux[1:0];
   always_comb begin
-    if (audio_sample_word_transfer_control_synchronizer_chain[0] ^ audio_sample_word_transfer_control_synchronizer_chain[1])
-      audio_sample_word_transfer_mux = audio_sample_word_transfer;
+    if (audio_sample_word_transfer_control_synchronizer_chain[0] ^ audio_sample_word_transfer_control_synchronizer_chain[1]) audio_sample_word_transfer_mux = audio_sample_word;
     else
       audio_sample_word_transfer_mux = '{
           audio_sample_word_buffer[sample_buffer_current][samples_remaining][1][23:(24-AUDIO_BIT_WIDTH)],
