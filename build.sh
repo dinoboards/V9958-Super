@@ -1,14 +1,57 @@
+#!/bin/bash
+
 rm -rf impl/pnr
 rm -rf impl/tmp
 rm -rf impl/gwsynthesis
 
-stdbuf -o0 /mnt/c/Gowin64/Gowin_V1.9.9.01_x64/IDE/bin/gw_sh.exe tn_vdp.tcl | \
-stdbuf -o0 grep --color=always -e "Bitstream generation completed" -e ERROR -e completed -e WARN -e "Undeclared symbol" | \
-stdbuf -o0 grep --color=always -v "PA1001" | \
-stdbuf -o0 grep --color=always -v "NL0002" | \
-stdbuf -o0 grep --color=always -v "Generic routing resource will be used to clock signal 'clk_d'" | \
-stdbuf -o0 grep --color=always -v "Can't calculate clocks' relationship between: \"clk_audio\" and \"clk_w\""
+attempt_build() {
+  stdbuf -o0 /mnt/c/Gowin64/Gowin_V1.9.9.01_x64/IDE/bin/gw_sh.exe tn_vdp.tcl | \
+  stdbuf -o0 grep --color=always -e "Bitstream generation completed" -e ERROR -e completed -e WARN -e "Undeclared symbol" | \
+  stdbuf -o0 grep --color=always -v "PA1001" | \
+  stdbuf -o0 grep --color=always -v "NL0002" | \
+  stdbuf -o0 grep --color=always -v "Generic routing resource will be used to clock signal 'clk_d'" | \
+  stdbuf -o0 grep --color=always -v "Can't calculate clocks' relationship between: \"clk_audio\" and \"clk_w\""
+}
 
+counter=0
+while [[ $counter -lt 4 ]]
+do
+  counter=$((counter+1))
+
+  attempt_build
+
+  if [ ! -f impl/gwsynthesis/project.log ]; then
+    echo "impl/gwsynthesis/project.log does not exists, retrying..."
+    continue
+  fi
+
+  if grep -q ERROR impl/gwsynthesis/project.log; then
+    exit 1
+  fi
+
+  if [ ! -f impl/pnr/project.log ]; then
+    echo "impl/pnr/project.log does not exists, retrying..."
+    continue
+  fi
+
+  if grep -q ERROR impl/pnr/project.log; then
+    exit 1
+  fi
+
+  if [ ! -f impl/pnr/project.tr ]; then
+    echo "project.tr does not exists, retrying..."
+    continue
+  fi
+
+  break
+
+done
+
+if [[ $counter -eq 4 ]]
+then
+  echo "Build tool has crashed after 3 attempts. Exiting..."
+  exit 1
+fi
 
 echo ""
 echo "Timing Viloations:"

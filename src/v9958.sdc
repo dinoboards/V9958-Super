@@ -18,9 +18,21 @@ create_generated_clock -name clk_audio -source [get_ports {clk}] -master_clock c
 # Report the top 10 fanout nets: report_high_fanout_Nets -max_nets
 # report_route_congestion -max_grids 5 -min_route_congestion 0 -max_route_congestion 0.5
 
-#
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/*}]
+# ignore some paths between sdram and the v9958 units.  At the video circuits limit their rate of read/writes
+# I dont think any meatastability will occur
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nRAS*}]
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nCAS*}]
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/cycle*}]
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nRAS*}]
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nCAS*}]
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/cycle*}]
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
+
+set_false_path -from [get_regs {u_v9958/address_bus/IRAMADR*}] -to [get_regs {vram/u_sdram/FF_SDRAM_DQM*}]
+set_false_path -from [get_regs {u_v9958/address_bus/PRAMWE_N*}] -to [get_regs {vram/u_sdram/stat*}]
+set_false_path -from [get_regs {u_v9958/address_bus/*}] -to [get_regs {vram/requested_din32*}]
+
 set_false_path -from [get_regs {vram/data16*}] -to [get_regs {u_v9958/U_SPRITE/*}]
 
 # as audio only changes at maximum rate of upto 50khz, we can safely
