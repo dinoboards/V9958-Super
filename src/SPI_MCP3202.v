@@ -20,14 +20,14 @@ module SPI_MCP3202_2 #(  // set up bits for MOSI (DIN on datasheet)
     parameter SGL = 1,  // sets ADC to single ended mode
     parameter ODD = 0   // sets sample input to channel 0
 ) (
-    input         clk,        // 135 MHz, each clock cycle is ~7.4074074074074ns
-    input         EN,         // Enable the SPI core (ACTIVE HIGH)
-    input         MISO,       // data out of ADC (Dout pin)
-    output        MOSI,       // Data into ADC (Din pin)
-    output        SCK,        // SPI clock
-    output [11:0] o_DATA,     // 12 bit word (for other modules)
-    output        CS,         // Chip Select
-    output        DATA_VALID  // is high when there is a full 12 bit word.
+    input  bit        clk,        // 135 MHz, each clock cycle is ~7.4074074074074ns
+    input  bit        EN,         // Enable the SPI core (ACTIVE HIGH)
+    input  bit        MISO,       // data out of ADC (Dout pin)
+    output bit        MOSI,       // Data into ADC (Din pin)
+    output bit        SCK,        // SPI clock
+    output bit [11:0] o_DATA,     // 12 bit word (for other modules)
+    output bit        CS,         // Chip Select
+    output bit        DATA_VALID  // is high when there is a full 12 bit word.
 );
 
   // additional MOSI data
@@ -41,23 +41,41 @@ module SPI_MCP3202_2 #(  // set up bits for MOSI (DIN on datasheet)
 
   integer        i = 0;  // for the for loop in the TRANSMITTING state (used to condense code)
 
-  reg     [ 7:0] SCK_counter = 0;  // for the output SPI clock
-  reg            r_MOSI = 0;
-  reg     [11:0] r_DATA;
-  reg     [ 1:0] r_STATE = DISABLE;  // state machine (init to disable state)
-  reg            r_CS = 1;  // disable CS to start
-  reg            r_SCK_enable = 0;  // enable for SCK
-  reg            r_DV = 0;  // DATA_VALID register
-  reg     [11:0] sample_counter = 1;  // this counter flips over after one sample period
+  bit     [ 7:0] SCK_counter = 0;  // for the output SPI clock
+  bit            r_MOSI = 0;
+  bit     [11:0] r_DATA;
+  bit     [ 1:0] r_STATE = DISABLE;  // state machine (init to disable state)
+  bit            r_CS = 1;  // disable CS to start
+  bit            r_SCK_enable = 0;  // enable for SCK
+  bit            r_DV = 0;  // DATA_VALID register
+  bit     [11:0] sample_counter = 1;  // this counter flips over after one sample period
   // it starts at one so INITIALIZE waits one sampling period to begin DISABLE
 
   always @(posedge clk) begin
     if (EN) begin
-      if (sample_counter <= 2698)  /* this number is the amount of system clock cycles to finish one sampling period:
-                                      2700 counts (0-2699) @ 7.407...ns system clock period = 20us or 50 KHz */
+      // For a target sample rate of 50khz (max), count needs to be 2700(-2)
+      //50khz is 20000ns per cycle
+      //20000ns/7.407...ns = 2700 counts
 
-        sample_counter <= 12'(sample_counter + 1);  // sample counter only counts if enable is high
-      else sample_counter <= 0;
+      //For a target sample rate of 44.1khz, count needs to be 3062(-2)
+      //44.1Khz is 22675.736961451ns per cycle
+      //22675.736961451ns/7.407...ns = 3061.224489795888
+
+      //For a target sampling rate of 40khz, count needs to be 3375(-2)
+      //40khz is 25000ns per cycle
+      //25000ns/7.407...ns = 3375 counts
+
+      //For a target sampling rate of 30khz, count needs to be 4500(-2)
+      //30khz is 33333.333333333ns per cycle
+      //33333.333333333ns/7.407...ns = 4500 counts
+
+      if (sample_counter <= 4498)  /* this number is the amount of system clock cycles to finish one sampling period */
+        sample_counter <= 12'(sample_counter + 1);
+
+      else begin
+        sample_counter <= 0;
+      end
+
     end else begin
       sample_counter <= 0;
     end
