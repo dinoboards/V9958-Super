@@ -14,21 +14,14 @@ module AUDIO #(
     output bit adc_mosi
 );
 
-  bit [15:0] sample_w;
-  bit [15:0] audio_sample_word0[1:0];
+  bit [15:0] audio_sample_word_sync[1:0];
+  logic [AUDIO_BIT_WIDTH-1:0] ff_audio_sample_word[1:0];
   bit [15:0] adc_sample;
   bit sck_enable;
   bit [11:0] audio_sample;
   bit sample_valid;
 
-  always @(posedge clk) begin
-    audio_sample_word0[0] <= sample_w;
-    audio_sample_word[0]  <= audio_sample_word0[0];
-    audio_sample_word0[1] <= sample_w;
-    audio_sample_word[1]  <= audio_sample_word0[1];
-  end
-
-  SPI_MCP3202_2 #(
+  SPI_MCP3202 #(
       .SGL(1),  // sets ADC to single ended mode
       .ODD(0)   // sets sample input to channel 0
   ) SPI_MCP3202 (
@@ -46,6 +39,16 @@ module AUDIO #(
     if (sample_valid) adc_sample <= {audio_sample[11:0], 4'b0};
   end
 
-  assign sample_w = adc_sample;
+  always @(posedge clk) begin
+    audio_sample_word_sync[0] <= adc_sample;
+    ff_audio_sample_word[0]  <= audio_sample_word_sync[0];
+  end
+
+  always @(posedge clk) begin
+    audio_sample_word_sync[1] <= adc_sample;
+    ff_audio_sample_word[1]  <= audio_sample_word_sync[1];
+  end
+
+  assign audio_sample_word = ff_audio_sample_word;
 
 endmodule

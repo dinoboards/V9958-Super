@@ -41,14 +41,14 @@ module CLOCK_DIV #(
   logic [C_DEV_PRECISION_BITS_MSB:0] cdiv = 1;
   logic [PRECISION_BITS:0] sdiff = 0;
   logic clk_skew = 0;
-  logic clkd;
+  logic ff_clk_desired;
 
   always_ff @(posedge clk_src) begin
 
     if (sdiff[PRECISION_BITS-1] == 0)
       if (cdiv != CLK_HALF - 1 && cdiv != CLK_END - 1) cdiv++;
       else begin
-        clkd <= ~clkd;
+        ff_clk_desired <= ~ff_clk_desired;
         if (cdiv == CLK_END - 1) begin
           sdiff = PRECISION_BITS'(sdiff + SKW_TICKS);
           cdiv  = 0;
@@ -59,6 +59,6 @@ module CLOCK_DIV #(
 
   end
 
-  assign clk_desired = clkd;
+  assign clk_desired = ff_clk_desired;
 
 endmodule

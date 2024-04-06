@@ -53,7 +53,7 @@ module clocks (
       .CLK_SRC(27),
       .CLK_DESIRED(0.044100),
       .PRECISION_BITS(16)
-  ) audioclkd (
+  ) audio_clk (
       .clk_src(clk_w),
       .clk_desired(clk_audio)
   );

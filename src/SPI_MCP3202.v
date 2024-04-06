@@ -16,7 +16,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////
 
-module SPI_MCP3202_2 #(  // set up bits for MOSI (DIN on datasheet)
+module SPI_MCP3202 #(  // set up bits for MOSI (DIN on datasheet)
     parameter SGL = 1,  // sets ADC to single ended mode
     parameter ODD = 0   // sets sample input to channel 0
 ) (

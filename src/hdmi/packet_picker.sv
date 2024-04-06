@@ -104,16 +104,21 @@ module PACKET_PICKER #(
   localparam bit WORD_LENGTH_LIMIT = AUDIO_BIT_WIDTH <= 20 ? 1'b0 : 1'b1;
 
   logic audio_sample_word_transfer_control = 1'd0;
+  logic audio_sample_word_transfer_control_sync1, audio_sample_word_transfer_control_sync2;
 
   always_ff @(posedge clk_audio) begin
     audio_sample_word_transfer_control <= !audio_sample_word_transfer_control;
   end
 
+  always_ff @(posedge clk_pixel) begin
+    audio_sample_word_transfer_control_sync1 <= audio_sample_word_transfer_control;
+    audio_sample_word_transfer_control_sync2 <= audio_sample_word_transfer_control_sync1;
+  end
+
   logic [1:0] audio_sample_word_transfer_control_synchronizer_chain = 2'd0;
-  always_ff @(posedge clk_pixel)
-    audio_sample_word_transfer_control_synchronizer_chain <= {
-      audio_sample_word_transfer_control, audio_sample_word_transfer_control_synchronizer_chain[1]
-    };
+  always_ff @(posedge clk_pixel) begin
+    audio_sample_word_transfer_control_synchronizer_chain <= {audio_sample_word_transfer_control_sync2, audio_sample_word_transfer_control_synchronizer_chain[1]};
+  end
 
   logic sample_buffer_current = 1'b0;
   logic [1:0] samples_remaining = 2'd0;

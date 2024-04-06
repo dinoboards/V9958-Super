@@ -2,6 +2,30 @@
 // By Sameer Puri https://github.com/sameer
 
 // See HDMI 1.4b Section 5.3.3
+
+/*
+The HDMI Audio Clock Regeneration (ACR) packet is a special type of data
+packet used in HDMI to ensure that the audio and video data are synchronized
+properly.
+
+The audio and video data are transmitted separately and can be clocked at
+different rates.  The ACR packet is used to convey informationabout the audio
+clock frequency to the receiver, so that it can regenerate the audio clock
+accurately and keep the audio and video in sync.
+
+The ACR packet contains two main pieces of information:
+
+N: This is the number of audio clock periods per video line. It's used to
+calculate the frequency of the audio clock.
+
+CTS (cycle_time_stamp): This is the number of video clock periods per audio
+clock period. It's used to calculate the frequency of the video clock.
+
+By transmitting the ACR packet periodically, the HDMI transmitter can inform
+the receiver about any changes in the audio or video clock frequencies,
+allowing the receiver to adjust its clock regeneration accordingly.
+*/
+
 module AUDIO_CLOCK_REGENERATION_PACKET #(
     parameter longint VIDEO_RATE = 25.2E6,
     parameter int AUDIO_RATE = 48e3
@@ -22,15 +46,27 @@ module AUDIO_CLOCK_REGENERATION_PACKET #(
   localparam bit [CLK_AUDIO_COUNTER_WIDTH-1:0] CLK_AUDIO_COUNTER_END = CLK_AUDIO_COUNTER_WIDTH'(N / 128 - 1);
   logic [CLK_AUDIO_COUNTER_WIDTH-1:0] clk_audio_counter = CLK_AUDIO_COUNTER_WIDTH'(0);
   logic internal_clk_audio_counter_wrap = 1'd0;
+
+  logic internal_clk_audio_counter_wrap_sync1, internal_clk_audio_counter_wrap_sync2;
+
   always_ff @(posedge clk_audio) begin
     if (clk_audio_counter == CLK_AUDIO_COUNTER_END) begin
       clk_audio_counter <= CLK_AUDIO_COUNTER_WIDTH'(0);
       internal_clk_audio_counter_wrap <= !internal_clk_audio_counter_wrap;
-    end else clk_audio_counter <= clk_audio_counter + 1'd1;
+    end else begin
+      clk_audio_counter <= clk_audio_counter + 1'd1;
+    end
+  end
+
+  always_ff @(posedge clk_pixel) begin
+    internal_clk_audio_counter_wrap_sync1 <= internal_clk_audio_counter_wrap;
+    internal_clk_audio_counter_wrap_sync2 <= internal_clk_audio_counter_wrap_sync1;
   end
 
   logic [1:0] clk_audio_counter_wrap_synchronizer_chain = 2'd0;
-  always_ff @(posedge clk_pixel) clk_audio_counter_wrap_synchronizer_chain <= {internal_clk_audio_counter_wrap, clk_audio_counter_wrap_synchronizer_chain[1]};
+  always_ff @(posedge clk_pixel) begin
+    clk_audio_counter_wrap_synchronizer_chain <= {internal_clk_audio_counter_wrap_sync2, clk_audio_counter_wrap_synchronizer_chain[1]};
+  end
 
   localparam bit [19:0] CYCLE_TIME_STAMP_COUNTER_IDEAL = 20'(int'(VIDEO_RATE * int'(N) / 128 / AUDIO_RATE));
   localparam int CYCLE_TIME_STAMP_COUNTER_WIDTH = $clog2(20'(int'(real'(CYCLE_TIME_STAMP_COUNTER_IDEAL) * 1.1)));  // Account for 10% deviation in audio clock

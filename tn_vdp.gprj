@@ -51,6 +51,7 @@
 <File path="src/vdp/vdp.v" type="file.verilog" enable="1"/>
 <File path="src/gowin/clk_108p.v" type="file.verilog" enable="1"/>
 <File path="src/gowin/clk_135.v" type="file.verilog" enable="1"/>
+<File path="src/ws2812.sv" type="file.verilog" enable="1"/>
 
         <File path="src/v9958.cst" type="file.cst" enable="1"/>
         <File path="src/v9958.sdc" type="file.sdc" enable="1"/>
