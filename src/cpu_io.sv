@@ -1,5 +1,5 @@
 
-module cpu_io (
+module CPU_IO (
     input bit clk,
     input bit reset_n,
     input bit [7:2] A,
@@ -15,8 +15,6 @@ module cpu_io (
     output bit cs_n
 );
 
-  bit       cswn_w;
-  bit       csrn_w;
   bit       io_state_r = 1'b0;
   bit [1:0] cs_latch;
   bit       addr;
@@ -30,48 +28,33 @@ module cpu_io (
 
   assign cd = csr_n == 0 ? CpuDbi : 8'bzzzzzzzz;
 
-  PINFILTER cswn_filter (
-      .clk(clk_sdram),
-      .reset_n(reset_n),
-      .din(csw_n),
-      .dout(cswn_w)
-  );
-
-  PINFILTER csrn_filter (
-      .clk(clk_sdram),
-      .reset_n(reset_n),
-      .din(csr_n),
-      .dout(csrn_w)
-  );
-
-  always @(posedge clk or negedge reset_n) begin
+  always_ff @(posedge clk or negedge reset_n) begin
     if (reset_n == 0) begin
-      io_state_r = 1'b0;
+      io_state_r <= 1'b0;
 
-      CpuDbo = 1'b0;
-      CpuWrt = 1'b0;
-      CpuReq = 1'b0;
+      CpuDbo <= 1'b0;
+      CpuWrt <= 1'b0;
+      CpuReq <= 1'b0;
 
     end else begin
       if (!io_state_r) begin
-        CpuDbo = cd;
-        CpuReq = (csrn_w ^ cswn_w);
-        CpuWrt = ~cswn_w;
+        CpuDbo <= cd;
+        CpuReq <= (csr_n ^ csw_n);
+        CpuWrt <= ~csw_n;
 
-        cs_latch = {csrn_w, cswn_w};
-        io_state_r = 1'b1;
+        cs_latch <= {csr_n, csw_n};
+        io_state_r <= 1'b1;
 
       end else begin
-        CpuWrt = 1'b0;
-        CpuReq = 1'b0;
+        CpuWrt <= 1'b0;
+        CpuReq <= 1'b0;
 
-        if (cs_latch != {csrn_w, cswn_w}) begin
-          io_state_r = 1'b0;
+        if (cs_latch != {csr_n, csw_n}) begin
+          io_state_r <= 1'b0;
         end
 
       end
     end
   end
-
 
 endmodule

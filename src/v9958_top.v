@@ -169,7 +169,7 @@ module v9958_top (
   );
 
 
-  cpu_io cpu_io (
+  CPU_IO cpu_io (
       .clk(clk_w),
       .reset_n(reset_n_w),
       .A(A),
