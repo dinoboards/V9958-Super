@@ -180,7 +180,7 @@ module MEM_CONTROLLER #(
       MemWR <= 1'b0;
       MemRD <= 1'b0;
       MemRefresh <= 1'b0;
-      cycles <= cycles == 3'd7 ? 3'd7 : cycles + 3'd1;
+      cycles <= cycles ? cycles - 1 : 0;
 
       // Initiate read or write
       if (!busy) begin
@@ -190,7 +190,7 @@ module MEM_CONTROLLER #(
           MemRefresh <= refresh;
           busy <= 1'b1;
           requested_din32 <= __din32;
-          cycles <= 3'd1;
+          cycles <= 4;
           r_read <= read;
         end
 
@@ -203,7 +203,7 @@ module MEM_CONTROLLER #(
 
       end else begin
         // Wait for operation to finish and latch incoming data on read.
-        if (cycles == 3'd4) begin
+        if (cycles == 1) begin
           busy <= 0;
           if (r_read) begin
             if (~MemDataReady)  // assert data ready
