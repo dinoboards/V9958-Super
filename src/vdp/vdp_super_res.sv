@@ -35,6 +35,10 @@ module VDP_SUPER_RES (
   bit [7:0] line_buffer_index;
 
   // pixel format for super_mid: RRRR RGGG GGGB BBBB
+  // all red would be            1111 1000 0000 0000 -> 0xF800 (248, 0)
+  // all green would be          0000 0111 1110 0000 -> 0x07E0 (7, 224)
+  // all blue would be           0000 0000 0001 1111 -> 0x001F (0, 31)
+
   bit [4:0] high_mid_pixel_red;
   bit [5:0] high_mid_pixel_green;
   bit [4:0] high_mid_pixel_blue;
@@ -165,7 +169,9 @@ module VDP_SUPER_RES (
               end
 
               2: begin  // (AP)
-
+                if (super_mid) begin
+                  high_res_data <= {16'b0, high_res_data[31:16]};
+                end
               end
 
               3: begin  // (FS)
