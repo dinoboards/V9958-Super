@@ -94,9 +94,9 @@ set_option -route_option 0
 
 ## Further Observations (2023-04-04)
 
-The above issue was never resolved with changing optimisation strategies.  Some futher observations have been noted.
+The above issue was never resolved with changing optimisation strategies.  Some further observations have been noted.
 
-Have enabled from of the reporting options in the tcl file.
+Have enabled the reporting options in the tcl file.
 
 In the project.tr file, we get entries like:
 
@@ -112,7 +112,7 @@ In the project.tr file, we get entries like:
 <Numbers of Hold Violated Endpoints>:18
 ```
 
-I noticed that the `hdmi_reset` signal seemed to be appearing a lot - its not a buffered signals, yet was required for a lot of always_ff blocks.  Removing the use of this signal - and just using `reset_w`, the number of Setup and Hold violations greatly reduced. And the problem seems to possibly happen a lot less.  (I dont think we need a specific `hdmi_reset` signal - seems to work fine just running off the main `reset_w` signal)
+I noticed that the `hdmi_reset` signal seemed to be appearing a lot - its not a buffered signals, yet was required for a lot of always_ff blocks.  Removing the use of this signal - and just using `reset_w`, the number of Setup and Hold violations greatly reduced. And the problem seems to possibly happen a lot less.  (I don't think we need a specific `hdmi_reset` signal - seems to work fine just running off the main `reset_w` signal)
 
 I also changed sdram/memory_controller modules, to have separate FF for out32 and out16 registers.  Hoping that it enables better routing and avoid congestion/fanout issues.  This change also did seem to reduce the issue.
 
@@ -120,3 +120,10 @@ Perhaps the other violations need to be 'resolved'
 
 Only conducted a limited set of testing (main video mode, super modes).  There may be issues with sprites, other graphic modes and other timing issues the intermittently cause issues.
 
+## Further Observations (2023-04-07)
+
+Resolved a lot of hold/setup timing violations.  Some between the `SSG` and `ADDRESS_BUS` to `SDRAM` have been 'ignored'. All others have been 'fixed.
+
+The `SDRAM` signals are all cross clock domains (the main 27Mhz clk signal and the 108Mhz sdram clocks).
+
+> I think the reported issues the `SDRAM` timing are effectively avoided, as the read/write operations are controlled by the `DOTSTATE`.  This will cause the read and writes to be synchronised with double flip-flop operations.  And I can only guess the analyser is not able to take this in to consideration when reporting.  It perhaps might be required to have the data flowing from and into the SDRAM implemented more clearly with the double flip-flops.
