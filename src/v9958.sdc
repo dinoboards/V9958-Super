@@ -24,6 +24,8 @@ set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {
 set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nCAS*}]
 set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/cycle*}]
 set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
+set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/state*}]
+
 set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nRAS*}]
 set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nCAS*}]
 set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/cycle*}]
