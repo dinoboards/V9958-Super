@@ -13,6 +13,29 @@ There are 3 modes.  The specific super mode is determined by bits 2:1 or REG31
 
 \** Not implemented yet.
 
+## New Registers
+
+### S#1 - VDP ID CHANGED
+
+BIT 5:1 - VDP ID
+
+  10010 -> BIT 2 indicate V9958 and BIT 5 set indicates extra SUPER FEATURES
+
+### R#31
+
+BIT 0: When in GRAPHICS MODE 7 (SCREEN 8), and this bit set, then SUPER MODE active
+
+BIT 2:1: SUPER MODE TYPE:
+  00 -> SUPER_COLOR: 4 bytes per pixel (RGB, the 4th byte is not used) - 8 bit RGB colours - - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
+  01 -> SUPER_MID:   2 bytes per pixel - gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
+  02 -> SUPER_RES:   1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+
+### R#30
+
+BIT 6: active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
+BIT 7: active when RGBs are being loaded into R#30
+
+
 ## Video Timing
 
 The main clock aligns with the pixel clock. That is each clock tick is a pixel tick.
