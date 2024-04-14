@@ -338,7 +338,13 @@ module VDP_COMMAND (
     // DETERMINE IF X-LOOP IS FINISHED
     case (CMR[7:4])
       HMMV, HMMC, LMMV, LMMC: begin
-        nx_loop_end = (nx_tmp == 0) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
+        if (mode_graphic_super_colour) begin
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == 180;
+        end else if (mode_graphic_super_mid) begin
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == 360;
+        end else begin
+          nx_loop_end = (nx_tmp == 0) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
+        end
       end
       YMMM: begin
         nx_loop_end = (dx_tmp[9:8] & MAXXMASK) == MAXXMASK;
@@ -407,6 +413,32 @@ module VDP_COMMAND (
 
     end else begin
       vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};
+    end
+  end
+
+  bit [31:0] CLR32;
+  bit [15:0] CLR16;
+
+  always_comb begin
+    CLR32 = {32{1'bx}};
+    CLR16 = {16{1'bx}};
+
+    if (super_rgb_colour_reg_applied) begin
+      if (mode_graphic_super_colour) begin
+        CLR32 = super_rgb_colour_reg;
+      end else if (mode_graphic_super_mid) begin
+        // translate 24 bit RGB to R(5), G(6), B(5)
+        //super_mid: RRRR RGGG GGGB BBBB
+        CLR16 = {super_rgb_colour_reg[23:19], super_rgb_colour_reg[15:10], super_rgb_colour_reg[7:3]};
+      end
+
+    end else begin
+      if (mode_graphic_super_colour) begin
+        CLR32 = {8'b0, CLR[4:2], 5'b0, CLR[7:5], 5'b0, CLR[1:0], 6'b0};
+      end else if (mode_graphic_super_mid) begin
+        //super_mid: RRRR RGGG GGGB BBBB
+        CLR16 = {CLR[4:2], 2'b0, CLR[7:5], 3'b0, CLR[1:0], 3'b0};
+      end
     end
   end
 
@@ -763,6 +795,8 @@ module VDP_COMMAND (
                 end
                 HMMV: begin
                   vram_wr_data_8 <= CLR;
+                  vram_wr_data_32 <= CLR32;
+                  vram_wr_data_16 <= CLR16;
                   state <= WR_VRAM;
                 end
                 LMMC: begin
@@ -776,33 +810,8 @@ module VDP_COMMAND (
                 end
                 LMMV, LINE, PSET: begin
                   vram_wr_data_8 <= CLR;
-
-                  if (super_rgb_colour_reg_applied) begin
-                    if (mode_graphic_super_colour) begin
-                      vram_wr_data_32 <= super_rgb_colour_reg;
-                    end else if (mode_graphic_super_mid) begin
-                      // translate 24 bit RGB to R(5), G(6), B(5)
-                      //super_mid: RRRR RGGG GGGB BBBB
-                      vram_wr_data_16 <= {super_rgb_colour_reg[23:19], super_rgb_colour_reg[15:10], super_rgb_colour_reg[7:3]};
-                    end else begin
-                      //should not get here
-                      vram_wr_data_32 <= 0;
-                      vram_wr_data_16 <= 0;
-                    end
-
-                  end else begin
-                    if (mode_graphic_super_colour) begin
-                      vram_wr_data_32 <= {8'b0, CLR[7:5], 5'b0, CLR[4:2], 5'b0, CLR[1:0], 6'b0};  //<< this is wrong - convert G(3), R(3), B(2) to R(8), G(8), B(8)
-                    end else if (mode_graphic_super_mid) begin
-                      //super_mid: RRRR RGGG GGGB BBBB
-                      vram_wr_data_16 <= {CLR[4:2], 3'b0, CLR[7:5], 2'b0, CLR[1:0], 2'b0};
-                    end else begin
-                      //should not get here
-                      vram_wr_data_32 <= 0;
-                      vram_wr_data_16 <= 0;
-                    end
-                  end
-
+                  vram_wr_data_32 <= CLR32;
+                  vram_wr_data_16 <= CLR16;
                   state <= PRE_RD_VRAM;
                 end
                 SRCH: begin

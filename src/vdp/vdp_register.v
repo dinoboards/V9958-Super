@@ -761,6 +761,7 @@ module VDP_REGISTER (
             end
 
             5'b11111: begin  //#31 - special! - super res modes
+              FF_REG_R30 <= 0;
               FF_REG_R31 <= VDPP1DATA;
             end
           endcase
