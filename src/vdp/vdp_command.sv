@@ -334,9 +334,21 @@ module VDP_COMMAND (
   end
 
   bit nx_loop_end;
+
   always_comb begin
     // DETERMINE IF X-LOOP IS FINISHED
     case (CMR[7:4])
+      LINE: begin
+        if (mode_graphic_super_colour) begin
+          nx_loop_end = (nx_tmp == NX) || dx_tmp == 180;
+        end else if (mode_graphic_super_mid) begin
+          nx_loop_end = (nx_tmp == NX) || dx_tmp == 360;
+        end else begin
+          nx_loop_end = (nx_tmp == NX) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
+        end
+
+      end
+
       HMMV, HMMC, LMMV, LMMC: begin
         if (mode_graphic_super_colour) begin
           nx_loop_end = (nx_tmp == 0) || dx_tmp == 180;
@@ -346,18 +358,23 @@ module VDP_COMMAND (
           nx_loop_end = (nx_tmp == 0) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
         end
       end
+
       YMMM: begin
         nx_loop_end = (dx_tmp[9:8] & MAXXMASK) == MAXXMASK;
       end
+
       HMMM, LMMM: begin
         nx_loop_end = ((nx_tmp == 0) || ((sx_tmp[9:8] & MAXXMASK) == MAXXMASK) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK));
       end
+
       LMCM: begin
         nx_loop_end = ((nx_tmp == 0) || ((sx_tmp[9:8] & MAXXMASK) == MAXXMASK));
       end
+
       SRCH: begin
         nx_loop_end = ((sx_tmp[9:8] & MAXXMASK) == MAXXMASK);
       end
+
       default: begin
         nx_loop_end = 1'b1;
       end
@@ -733,7 +750,7 @@ module VDP_COMMAND (
 
           LINE_CHK_LOOP: begin
             // APPLICABLE TO LINE
-            if (((nx_tmp == NX) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK))) begin
+            if (nx_loop_end) begin
               state <= EXEC_END;
             end else begin
               vram_wr_data_8 <= CLR;
@@ -746,7 +763,7 @@ module VDP_COMMAND (
 
           SRCH_CHK_LOOP: begin
             // APPLICABLE TO SRCH
-            if ((nx_loop_end == 1'b1)) begin
+            if (nx_loop_end) begin
               state <= EXEC_END;
             end else begin
               // COLOR MUST BE RE-MASKED, JUST IN CASE THAT SCREENMODE WAS CHANGED
@@ -777,7 +794,7 @@ module VDP_COMMAND (
             end else begin
               ny_loop_end = 1'b0;
             end
-            if (((initializing == 1'b0) && (nx_loop_end == 1'b1) && (ny_loop_end == 1'b1))) begin
+            if ((initializing == 1'b0) && nx_loop_end && ny_loop_end) begin
               state <= EXEC_END;
             end else begin
               // COMMAND NOT YET FINISHED OR COMMAND initializing. DETERMINE NEXT/FIRST STEP
@@ -825,7 +842,7 @@ module VDP_COMMAND (
                 end
               endcase
             end
-            if (((initializing == 1'b0) && (nx_loop_end == 1'b1))) begin
+            if ((initializing == 1'b0) && nx_loop_end) begin
               nx_tmp <= NXCOUNT;
               if (CMR[7:4] == YMMM) begin
                 sx_tmp <= {2'b00, DX};
