@@ -69,7 +69,6 @@ module VDP_COMMAND (
     input bit vram_rd_ack,
     input bit [7:0] vram_rd_data,
     input bit [31:0] vram_rd_data_32,
-    input bit [15:0] vram_rd_data_16,
     input bit reg_wr_req,
     input bit tr_clr_req,
     input bit [3:0] reg_num,
@@ -216,12 +215,13 @@ module VDP_COMMAND (
   bit [1:0] MAXXMASK;
   assign MAXXMASK = mode_high_res ? 2'b10 : 2'b01;  // GRAPHIC 5,6
 
+  bit [15:0] rd_point_16;
+  assign rd_point_16 = vram_access_addr[1] ? vram_rd_data_32[31:16] : vram_rd_data_32[15:0];
+
   bit [ 7:0] RDPOINT;
   bit [31:0] rd_point_32;
-  bit [15:0] rd_point_16;
   always_comb begin
     rd_point_32 = vram_rd_data_32;
-    rd_point_16 = vram_rd_data_16;
 
     // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
     if (graphic_4_or_6) begin
@@ -242,10 +242,10 @@ module VDP_COMMAND (
       RDPOINT = {vram_rd_data_32[15:13], vram_rd_data_32[23:21], vram_rd_data_32[7:6]};
 
     end else if (mode_graphic_super_mid) begin
-      //vram_rd_data_16 has the 16 bit RGB (RRRR RGGG GGGB BBBB) colour codes 15:11 Red, 10:5 Green, 4:0 - blue
+      //rd_point_16 has the 16 bit RGB (RRRR RGGG GGGB BBBB) colour codes 15:11 Red, 10:5 Green, 4:0 - blue
       //RDPOINT has 8 bit RGB (GGGR RRBB)
       //need to convert from the 16 bit view to the 8 bit value
-      RDPOINT = {vram_rd_data_16[10:8], vram_rd_data_16[15:13], vram_rd_data_16[4:3]};
+      RDPOINT = {rd_point_16[10:8], rd_point_16[15:13], rd_point_16[4:3]};
 
     end else begin
       RDPOINT = vram_rd_data;
@@ -298,8 +298,6 @@ module VDP_COMMAND (
     // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
     // ON THE POINT TO BE WRITTEN.
 
-    //rd_point_32 = vram_rd_data_32
-    //enhanced 24 bit operations
     if ((CMR[3] == 1'b0) || (vram_wr_data_16 != 16'b00000000)) begin
       case (CMR[2:0])
         IMPB210: logical_operation_dest_colour_16 = vram_wr_data_16;
@@ -421,7 +419,7 @@ module VDP_COMMAND (
       //resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
       //x is 0 to 179, and y 0 to 143
       //addr = 180*2*y + x*2
-      vram_access_addr = 17'((vram_access_y * 180 * 4) + (vram_access_x * 4)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
+      vram_access_addr = 18'((vram_access_y * 180 * 4) + (vram_access_x * 4)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
 
     end else if (mode_graphic_super_mid) begin
       //2 bytes per pixel `GGGG GGRR RRRB BBBB` - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)

@@ -10,19 +10,19 @@ module ADDRESS_BUS #(
     input bit          PREWINDOW_X,
     input bit          PREWINDOW_Y_SP,
     input bit          SPVRAMACCESSING,
-    input bit          TEXT_MODE,               // TEXT MODE 1, 2 or 1Q
-    input bit          VDPMODETEXT1,            // TEXT MODE 1      (SCREEN0 WIDTH 40)
-    input bit          VDPMODETEXT1Q,           // TEXT MODE 1      (??)
-    input bit          VDPMODEMULTI,            // MULTICOLOR MODE  (SCREEN3)
-    input bit          VDPMODEMULTIQ,           // MULTICOLOR MODE  (??)
-    input bit          VDPMODEGRAPHIC1,         // GRAPHIC MODE 1   (SCREEN1)
-    input bit          VDPMODEGRAPHIC2,         // GRAPHIC MODE 2   (SCREEN2)
-    input bit          VDPMODEGRAPHIC3,         // GRAPHIC MODE 2   (SCREEN4)
-    input bit          VDPMODEGRAPHIC4,         // GRAPHIC MODE 4   (SCREEN5)
-    input bit          VDPMODEGRAPHIC5,         // GRAPHIC MODE 5   (SCREEN6)
-    input bit          VDPMODEGRAPHIC6,         // GRAPHIC MODE 6   (SCREEN7)
-    input bit          VDPMODEGRAPHIC7,         // GRAPHIC MODE 7   (SCREEN8,10,11,12)
-    input bit          VDPMODEISHIGHRES,        // TRUE WHEN MODE GRAPHIC5, 6
+    input bit          TEXT_MODE,                 // TEXT MODE 1, 2 or 1Q
+    input bit          VDPMODETEXT1,              // TEXT MODE 1      (SCREEN0 WIDTH 40)
+    input bit          VDPMODETEXT1Q,             // TEXT MODE 1      (??)
+    input bit          VDPMODEMULTI,              // MULTICOLOR MODE  (SCREEN3)
+    input bit          VDPMODEMULTIQ,             // MULTICOLOR MODE  (??)
+    input bit          VDPMODEGRAPHIC1,           // GRAPHIC MODE 1   (SCREEN1)
+    input bit          VDPMODEGRAPHIC2,           // GRAPHIC MODE 2   (SCREEN2)
+    input bit          VDPMODEGRAPHIC3,           // GRAPHIC MODE 2   (SCREEN4)
+    input bit          VDPMODEGRAPHIC4,           // GRAPHIC MODE 4   (SCREEN5)
+    input bit          VDPMODEGRAPHIC5,           // GRAPHIC MODE 5   (SCREEN6)
+    input bit          VDPMODEGRAPHIC6,           // GRAPHIC MODE 6   (SCREEN7)
+    input bit          VDPMODEGRAPHIC7,           // GRAPHIC MODE 7   (SCREEN8,10,11,12)
+    input bit          VDPMODEISHIGHRES,          // TRUE WHEN MODE GRAPHIC5, 6
     input bit   [ 7:0] VDPVRAMACCESSDATA,
     input bit          VDPVRAMADDRSETREQ,
     input bit   [17:0] VDPVRAMACCESSADDRTMP,
@@ -31,9 +31,9 @@ module ADDRESS_BUS #(
     input bit          VDP_COMMAND_ACTIVE,
     input bit          vdp_cmd_vram_wr_req,
     input bit   [ 1:0] vdp_cmd_vram_wr_size,
-    input bit          VDPCMDVRAMRDREQ,
+    input bit          vdp_cmd_vram_rd_req,
     input bit          VDPVRAMREADINGA,
-    input bit          VDPCMDVRAMRDACK,
+    input bit          vdp_cmd_vram_rd_ack,
     input bit   [17:0] VDPCMDVRAMACCESSADDR,
     input bit   [ 7:0] VDP_CMD_VRAM_WR_DATA_8,
     input bit   [17:0] PRAMADRT12,
@@ -42,7 +42,7 @@ module ADDRESS_BUS #(
     input bit   [17:0] PRAMADRSPRITE,
     input bit   [17:0] PRAMADRG123M,
     input bit   [17:0] PRAMADRG4567,
-    input bit          VDPCMDVRAMREADINGA,
+    input bit          vdp_cmd_vram_reading_ack,
     input logic [15:0] super_vram_addr,
     input bit          vdp_super,
     input bit          super_color,
@@ -51,7 +51,7 @@ module ADDRESS_BUS #(
     input bit super_res_drawing,
 
     output bit        vdp_cmd_vram_wr_ack,
-    output bit        VDPCMDVRAMREADINGR,
+    output bit        vdp_cmd_vram_reading_req,
     output bit        VDP_COMMAND_DRIVE,
     output bit [17:0] IRAMADR,
     output bit [ 7:0] PRAMDBO_8,
@@ -103,7 +103,7 @@ module ADDRESS_BUS #(
       VDPVRAMADDRSETACK <= 1'b0;
       VDPVRAMACCESSADDR <= {17{1'b0}};
       vdp_cmd_vram_wr_ack <= 1'b0;
-      VDPCMDVRAMREADINGR <= 1'b0;
+      vdp_cmd_vram_reading_req <= 1'b0;
       VDP_COMMAND_DRIVE <= 1'b0;
 
     end else begin
@@ -148,7 +148,7 @@ module ADDRESS_BUS #(
           if ((VDP_COMMAND_ACTIVE == 1'b1)) begin
             if ((vdp_cmd_vram_wr_req != vdp_cmd_vram_wr_ack)) begin
               VRAMACCESSSWITCH = VRAM_ACCESS_VDPW;
-            end else if ((VDPCMDVRAMRDREQ != VDPCMDVRAMRDACK)) begin
+            end else if ((vdp_cmd_vram_rd_req != vdp_cmd_vram_rd_ack)) begin
               VRAMACCESSSWITCH = VRAM_ACCESS_VDPR;
             end else begin
               VRAMACCESSSWITCH = VRAM_ACCESS_VDPS;
@@ -225,7 +225,7 @@ module ADDRESS_BUS #(
         PRAMDBO_32 <= 32'bZ;
         PRAMDBO_16 <= 16'bZ;
         PRAMWE_N <= 1'b1;
-        VDPCMDVRAMREADINGR <= ~VDPCMDVRAMREADINGA;
+        vdp_cmd_vram_reading_req <= ~vdp_cmd_vram_reading_ack;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_SPRT)) begin
         // VRAM READ BY SPRITE MODULE

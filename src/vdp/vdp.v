@@ -258,17 +258,16 @@ module VDP (
   wire        VDPCMDREGWRACK;
   wire        VDPCMDTRCLRACK;
   reg         vdp_cmd_vram_wr_ack;
-  reg         VDPCMDVRAMRDACK;
-  reg         VDPCMDVRAMREADINGR;
-  reg         VDPCMDVRAMREADINGA;
+  reg         vdp_cmd_vram_rd_ack;
+  reg         vdp_cmd_vram_reading_req;
+  reg         vdp_cmd_vram_reading_ack;
   reg  [ 7:0] VDPCMDVRAMRDDATA;
   reg  [31:0] VDPCMDVRAMRDDATA_32;
-  reg  [15:0] VDPCMDVRAMRDDATA_16;
   wire        VDPCMDREGWRREQ;
   wire        VDPCMDTRCLRREQ;
   wire        vdp_cmd_vram_wr_req;
   bit  [ 1:0] vdp_cmd_vram_wr_size;
-  wire        VDPCMDVRAMRDREQ;
+  wire        vdp_cmd_vram_rd_req;
   wire [17:0] VDPCMDVRAMACCESSADDR;
   wire [ 7:0] VDP_CMD_VRAM_WR_DATA_8;
   bit  [31:0] VDPCMDVRAMWRDATA_32;
@@ -296,7 +295,6 @@ module VDP (
   wire [ 7:0] PRAMDAT;
   bit  [31:0] PRAMDAT_32;
   bit  [31:0] PRAMDAT_32_B;
-  bit  [15:0] PRAMDAT_16;
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
 
@@ -329,7 +327,6 @@ module VDP (
   assign PRAMDAT_32 = PRAMDBI_32;
   assign PRAMDAT_32_B = PRAMDBI_32_B;
   assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
-  assign PRAMDAT_16 = PRAMDBI_16;
 
   //--------------------------------------------------------------
   // DISPLAY COMPONENTS
@@ -527,17 +524,15 @@ module VDP (
     if ((RESET == 1'b1)) begin
       VDPCMDVRAMRDDATA <= 8'b0;
       VDPCMDVRAMRDDATA_32 <= 32'b0;
-      VDPCMDVRAMRDDATA_16 <= 16'b0;
-      VDPCMDVRAMRDACK <= 1'b0;
-      VDPCMDVRAMREADINGA <= 1'b0;
+      vdp_cmd_vram_rd_ack <= 1'b0;
+      vdp_cmd_vram_reading_ack <= 1'b0;
     end else begin
-      if ((DOTSTATE == 2'b01)) begin
-        if ((VDPCMDVRAMREADINGR != VDPCMDVRAMREADINGA)) begin
+      if (DOTSTATE == 2'b01) begin
+        if (vdp_cmd_vram_reading_req != vdp_cmd_vram_reading_ack) begin
           VDPCMDVRAMRDDATA <= PRAMDAT;
           VDPCMDVRAMRDDATA_32 <= PRAMDAT_32;
-          VDPCMDVRAMRDDATA_16 <= PRAMDAT_16;
-          VDPCMDVRAMRDACK <= ~VDPCMDVRAMRDACK;
-          VDPCMDVRAMREADINGA <= ~VDPCMDVRAMREADINGA;
+          vdp_cmd_vram_rd_ack <= ~vdp_cmd_vram_rd_ack;
+          vdp_cmd_vram_reading_ack <= ~vdp_cmd_vram_reading_ack;
         end
       end
     end
@@ -546,69 +541,69 @@ module VDP (
   assign TEXT_MODE = VDPMODETEXT1 | VDPMODETEXT1Q | VDPMODETEXT2;
 
   ADDRESS_BUS address_bus (
-      .CLK21M                (CLK21M),
-      .RESET                 (RESET),
-      .DOTSTATE              (DOTSTATE),
-      .PREWINDOW             (PREWINDOW),
-      .REG_R1_DISP_ON        (REG_R1_DISP_ON),
-      .EIGHTDOTSTATE         (EIGHTDOTSTATE),
-      .TXVRAMREADEN          (TXVRAMREADEN),
-      .PREWINDOW_X           (PREWINDOW_X),
-      .PREWINDOW_Y_SP        (PREWINDOW_Y_SP),
-      .SPVRAMACCESSING       (SPVRAMACCESSING),
-      .TEXT_MODE             (TEXT_MODE),               // TEXT MODE 1, 2 or 1Q
-      .VDPMODETEXT1          (VDPMODETEXT1),            // TEXT MODE 1      (SCREEN0 WIDTH 40)
-      .VDPMODETEXT1Q         (VDPMODETEXT1Q),           // TEXT MODE 1      (??)
-      .VDPMODEMULTI          (VDPMODEMULTI),            // MULTICOLOR MODE  (SCREEN3)
-      .VDPMODEMULTIQ         (VDPMODEMULTIQ),           // MULTICOLOR MODE  (??)
-      .VDPMODEGRAPHIC1       (VDPMODEGRAPHIC1),         // GRAPHIC MODE 1   (SCREEN1)
-      .VDPMODEGRAPHIC2       (VDPMODEGRAPHIC2),         // GRAPHIC MODE 2   (SCREEN2)
-      .VDPMODEGRAPHIC3       (VDPMODEGRAPHIC3),         // GRAPHIC MODE 2   (SCREEN4)
-      .VDPMODEGRAPHIC4       (VDPMODEGRAPHIC4),         // GRAPHIC MODE 4   (SCREEN5)
-      .VDPMODEGRAPHIC5       (VDPMODEGRAPHIC5),         // GRAPHIC MODE 5   (SCREEN6)
-      .VDPMODEGRAPHIC6       (VDPMODEGRAPHIC6),         // GRAPHIC MODE 6   (SCREEN7)
-      .VDPMODEGRAPHIC7       (VDPMODEGRAPHIC7),         // GRAPHIC MODE 7   (SCREEN8,10,11,12)
-      .VDPMODEISHIGHRES      (VDPMODEISHIGHRES),        // TRUE WHEN MODE GRAPHIC5, 6
-      .VDPVRAMACCESSDATA     (VDPVRAMACCESSDATA),
-      .VDPVRAMADDRSETREQ     (VDPVRAMADDRSETREQ),
-      .VDPVRAMACCESSADDRTMP  (VDPVRAMACCESSADDRTMP),
-      .VDPVRAMWRREQ          (VDPVRAMWRREQ),
-      .VDPVRAMRDREQ          (VDPVRAMRDREQ),
-      .VDP_COMMAND_ACTIVE    (VDP_COMMAND_ACTIVE),
-      .vdp_cmd_vram_wr_req   (vdp_cmd_vram_wr_req),
-      .vdp_cmd_vram_wr_size  (vdp_cmd_vram_wr_size),
-      .VDPCMDVRAMRDREQ       (VDPCMDVRAMRDREQ),
-      .VDPVRAMREADINGA       (VDPVRAMREADINGA),
-      .VDPCMDVRAMRDACK       (VDPCMDVRAMRDACK),
-      .VDPCMDVRAMACCESSADDR  (VDPCMDVRAMACCESSADDR),
-      .VDP_CMD_VRAM_WR_DATA_8(VDP_CMD_VRAM_WR_DATA_8),
-      .PRAMADRT12            (PRAMADRT12),
-      .VDPCMDVRAMWRDATA_32   (VDPCMDVRAMWRDATA_32),
-      .VDPCMDVRAMWRDATA_16   (VDPCMDVRAMWRDATA_16),
-      .PRAMADRSPRITE         (PRAMADRSPRITE),
-      .PRAMADRG123M          (PRAMADRG123M),
-      .PRAMADRG4567          (PRAMADRG4567),
-      .VDPCMDVRAMREADINGA    (VDPCMDVRAMREADINGA),
-      .super_vram_addr       (super_vram_addr),
-      .vdp_super             (vdp_super),
-      .super_color           (super_color),
-      .super_mid             (super_mid),
+      .CLK21M                  (CLK21M),
+      .RESET                   (RESET),
+      .DOTSTATE                (DOTSTATE),
+      .PREWINDOW               (PREWINDOW),
+      .REG_R1_DISP_ON          (REG_R1_DISP_ON),
+      .EIGHTDOTSTATE           (EIGHTDOTSTATE),
+      .TXVRAMREADEN            (TXVRAMREADEN),
+      .PREWINDOW_X             (PREWINDOW_X),
+      .PREWINDOW_Y_SP          (PREWINDOW_Y_SP),
+      .SPVRAMACCESSING         (SPVRAMACCESSING),
+      .TEXT_MODE               (TEXT_MODE),                 // TEXT MODE 1, 2 or 1Q
+      .VDPMODETEXT1            (VDPMODETEXT1),              // TEXT MODE 1      (SCREEN0 WIDTH 40)
+      .VDPMODETEXT1Q           (VDPMODETEXT1Q),             // TEXT MODE 1      (??)
+      .VDPMODEMULTI            (VDPMODEMULTI),              // MULTICOLOR MODE  (SCREEN3)
+      .VDPMODEMULTIQ           (VDPMODEMULTIQ),             // MULTICOLOR MODE  (??)
+      .VDPMODEGRAPHIC1         (VDPMODEGRAPHIC1),           // GRAPHIC MODE 1   (SCREEN1)
+      .VDPMODEGRAPHIC2         (VDPMODEGRAPHIC2),           // GRAPHIC MODE 2   (SCREEN2)
+      .VDPMODEGRAPHIC3         (VDPMODEGRAPHIC3),           // GRAPHIC MODE 2   (SCREEN4)
+      .VDPMODEGRAPHIC4         (VDPMODEGRAPHIC4),           // GRAPHIC MODE 4   (SCREEN5)
+      .VDPMODEGRAPHIC5         (VDPMODEGRAPHIC5),           // GRAPHIC MODE 5   (SCREEN6)
+      .VDPMODEGRAPHIC6         (VDPMODEGRAPHIC6),           // GRAPHIC MODE 6   (SCREEN7)
+      .VDPMODEGRAPHIC7         (VDPMODEGRAPHIC7),           // GRAPHIC MODE 7   (SCREEN8,10,11,12)
+      .VDPMODEISHIGHRES        (VDPMODEISHIGHRES),          // TRUE WHEN MODE GRAPHIC5, 6
+      .VDPVRAMACCESSDATA       (VDPVRAMACCESSDATA),
+      .VDPVRAMADDRSETREQ       (VDPVRAMADDRSETREQ),
+      .VDPVRAMACCESSADDRTMP    (VDPVRAMACCESSADDRTMP),
+      .VDPVRAMWRREQ            (VDPVRAMWRREQ),
+      .VDPVRAMRDREQ            (VDPVRAMRDREQ),
+      .VDP_COMMAND_ACTIVE      (VDP_COMMAND_ACTIVE),
+      .vdp_cmd_vram_wr_req     (vdp_cmd_vram_wr_req),
+      .vdp_cmd_vram_wr_size    (vdp_cmd_vram_wr_size),
+      .vdp_cmd_vram_rd_req     (vdp_cmd_vram_rd_req),
+      .VDPVRAMREADINGA         (VDPVRAMREADINGA),
+      .vdp_cmd_vram_rd_ack     (vdp_cmd_vram_rd_ack),
+      .VDPCMDVRAMACCESSADDR    (VDPCMDVRAMACCESSADDR),
+      .VDP_CMD_VRAM_WR_DATA_8  (VDP_CMD_VRAM_WR_DATA_8),
+      .PRAMADRT12              (PRAMADRT12),
+      .VDPCMDVRAMWRDATA_32     (VDPCMDVRAMWRDATA_32),
+      .VDPCMDVRAMWRDATA_16     (VDPCMDVRAMWRDATA_16),
+      .PRAMADRSPRITE           (PRAMADRSPRITE),
+      .PRAMADRG123M            (PRAMADRG123M),
+      .PRAMADRG4567            (PRAMADRG4567),
+      .vdp_cmd_vram_reading_ack(vdp_cmd_vram_reading_ack),
+      .super_vram_addr         (super_vram_addr),
+      .vdp_super               (vdp_super),
+      .super_color             (super_color),
+      .super_mid               (super_mid),
 
       .super_res_drawing(super_res_drawing),
 
-      .vdp_cmd_vram_wr_ack(vdp_cmd_vram_wr_ack),
-      .VDPCMDVRAMREADINGR (VDPCMDVRAMREADINGR),
-      .VDP_COMMAND_DRIVE  (VDP_COMMAND_DRIVE),
-      .IRAMADR            (IRAMADR),
-      .PRAMDBO_8          (PRAMDBO_8),
-      .PRAMWE_N           (PRAMWE_N),
-      .PRAM_WR_SIZE       (PRAM_WR_SIZE),
-      .VDPVRAMREADINGR    (VDPVRAMREADINGR),
-      .VDPVRAMRDACK       (VDPVRAMRDACK),
-      .VDPVRAMWRACK       (VDPVRAMWRACK),
-      .VDPVRAMADDRSETACK  (VDPVRAMADDRSETACK),
-      .PRAMDBO_32         (PRAMDBO_32),
-      .PRAMDBO_16         (PRAMDBO_16)
+      .vdp_cmd_vram_wr_ack     (vdp_cmd_vram_wr_ack),
+      .vdp_cmd_vram_reading_req(vdp_cmd_vram_reading_req),
+      .VDP_COMMAND_DRIVE       (VDP_COMMAND_DRIVE),
+      .IRAMADR                 (IRAMADR),
+      .PRAMDBO_8               (PRAMDBO_8),
+      .PRAMWE_N                (PRAMWE_N),
+      .PRAM_WR_SIZE            (PRAM_WR_SIZE),
+      .VDPVRAMREADINGR         (VDPVRAMREADINGR),
+      .VDPVRAMRDACK            (VDPVRAMRDACK),
+      .VDPVRAMWRACK            (VDPVRAMWRACK),
+      .VDPVRAMADDRSETACK       (VDPVRAMADDRSETACK),
+      .PRAMDBO_32              (PRAMDBO_32),
+      .PRAMDBO_16              (PRAMDBO_16)
   );
 
 
@@ -887,10 +882,9 @@ module VDP (
       .mode_graphic_super_colour(super_color),
       .mode_graphic_super_mid(super_mid),
       .vram_wr_ack(vdp_cmd_vram_wr_ack),
-      .vram_rd_ack(VDPCMDVRAMRDACK),
+      .vram_rd_ack(vdp_cmd_vram_rd_ack),
       .vram_rd_data(VDPCMDVRAMRDDATA),
       .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
-      .vram_rd_data_16(VDPCMDVRAMRDDATA_16),
       .reg_wr_req(VDPCMDREGWRREQ),
       .tr_clr_req(VDPCMDTRCLRREQ),
       .reg_num(VDPCMDREGNUM),
@@ -899,7 +893,7 @@ module VDP (
       .p_tr_clr_ack(VDPCMDTRCLRACK),
       .vram_wr_req(vdp_cmd_vram_wr_req),
       .vram_wr_size(vdp_cmd_vram_wr_size),
-      .p_vram_rd_req(VDPCMDVRAMRDREQ),
+      .p_vram_rd_req(vdp_cmd_vram_rd_req),
       .p_vram_access_addr(VDPCMDVRAMACCESSADDR),
       .p_vram_wr_data_8(VDP_CMD_VRAM_WR_DATA_8),
       .p_vram_wr_data_32(VDPCMDVRAMWRDATA_32),
