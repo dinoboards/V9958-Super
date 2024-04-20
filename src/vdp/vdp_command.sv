@@ -237,13 +237,15 @@ module VDP_COMMAND (
 
     end else if (mode_graphic_super_colour) begin
       //vram_rd_data_32 has the 24 bit RGB colour codes
+      //RDPOINT has 8 bit RGB (GGGR RRBB)
       //need to convert that to the 8 bit colour code
-      RDPOINT = {vram_rd_data_32[23:21], vram_rd_data_32[15:13], vram_rd_data_32[7:6]};
+      RDPOINT = {vram_rd_data_32[15:13], vram_rd_data_32[23:21], vram_rd_data_32[7:6]};
 
     end else if (mode_graphic_super_mid) begin
-      //vram_rd_data_16 has the 16 bit RGB (GGGG GGRR RRRB BBBB) colour codes
-      //need to convert that to the 8 bit colour code
-      RDPOINT = {vram_rd_data_16[15:13], vram_rd_data_16[9:7], vram_rd_data_16[3:2]};
+      //vram_rd_data_16 has the 16 bit RGB (RRRR RGGG GGGB BBBB) colour codes 15:11 Red, 10:5 Green, 4:0 - blue
+      //RDPOINT has 8 bit RGB (GGGR RRBB)
+      //need to convert from the 16 bit view to the 8 bit value
+      RDPOINT = {vram_rd_data_16[10:8], vram_rd_data_16[15:13], vram_rd_data_16[4:3]};
 
     end else begin
       RDPOINT = vram_rd_data;
