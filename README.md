@@ -2,7 +2,9 @@
 
 This repo contains the Verilog code to emulate Yamaha's V9958 Video Display Processor.  Its was forked from the project [tn_vdp](https://github.com/lfantoniosi/tn_vdp) (derived from V3).
 
-Its designed specifically for a [Yellow MSX System](https://www.tindie.com/stores/dinotron/) kit, based on the Tang Nano 20K FPGA module.  (Board is still under development)
+Its designed specifically for the [Yellow MSX System](https://github.com/vipoo/yellow-msx-series-for-rc2014?tab=readme-ov-file#yellow-msx-series-for-rc2014) kit, based on the Tang Nano 20K FPGA module.  
+
+(Board is still under development)
 
 ## Objective
 
