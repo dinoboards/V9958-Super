@@ -17,6 +17,8 @@ Its designed specifically for a [Yellow MSX System](https://www.tindie.com/store
 * Extended Video modes (supported by a patched MSX-BASIC ROM for the Yellow MSX platform)
 * WS2812 RGB LEDs
 
+<img src="./docs/pcb-render.png" width="50%"/>
+
 ## Schematic
 
 The current version of the schematic can be found here
