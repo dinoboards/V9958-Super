@@ -28,6 +28,10 @@ The current version of the schematic can be found here
 * [Schematic](./docs/SCHEMATIC.pdf)
 * [PCB IMAGE](./docs/PCB-IMAGE.pdf)
 
+### Difference with [tn_vdp](https://github.com/lfantoniosi/tn_vdp)
+
+* See [derived-notes.md](./docs/derived-notes.md)
+
 ### New Graphics Modes
 
 New 'Super' Display modes -- New hardware registers available for applications to enable higher (super) resolution and colour modes.
