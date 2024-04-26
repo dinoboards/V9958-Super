@@ -168,6 +168,10 @@ module v9958_top (
       .O_sdram_dqm(O_sdram_dqm)
   );
 
+  bit ws2812_io_req;
+  bit ws2812_io_wr;
+  bit [7:0] ws2812_data_in;
+  bit [7:0] ws2812_data_out;
 
   CPU_IO cpu_io (
       .clk(clk_w),
@@ -182,9 +186,24 @@ module v9958_top (
       .vdp_io_wr(vdp_io_wr),
       .vdp_data_in(vdp_data_in),
       .vdp_data_out(vdp_data_out),
+
+      .ws2812_io_req(ws2812_io_req),
+      .ws2812_io_wr(ws2812_io_wr),
+      .ws2812_data_in(ws2812_data_in),
+      .ws2812_data_out(ws2812_data_out),
+
       .cs_n(cs_n)
   );
 
+  WS2812_REGISTERS #() ws2812_registers (
+      .clk(clk_w),
+      .reset_n(reset_n_w),
+      .addr(mode),
+      .ws2812_io_req(ws2812_io_req),
+      .ws2812_io_wr(ws2812_io_wr),
+      .ws2812_data_in(ws2812_data_in),
+      .ws2812_data_out(ws2812_data_out)
+  );
 
   bit       pal_mode;
   bit       scanlin;
