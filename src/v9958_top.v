@@ -58,7 +58,7 @@ module v9958_top (
   assign led4_n = cs_n;
   assign led5_n = cs_n;
 
-  WS2812 #(
+    WS2812 #(
       .WS2812_NUM(1)
   ) ws2812 (
       .clk(clk),
@@ -102,10 +102,10 @@ module v9958_top (
   // V5598 Video Generation
   // ----------------------------------------
 
-  bit          CpuReq;
-  bit          CpuWrt;
-  bit   [ 7:0] CpuDbo;
-  bit   [ 7:0] CpuDbi;
+  bit          vdp_io_req;
+  bit          vdp_io_wr;
+  bit   [ 7:0] vdp_data_in;
+  bit   [ 7:0] vdp_data_out;
   bit          VideoDLClk;
   bit          VideoDHClk;
   bit          WeVdp_n;
@@ -178,10 +178,10 @@ module v9958_top (
       .cd(cd),
       .clk_sdram(clk_sdram_w),
 
-      .CpuReq(CpuReq),
-      .CpuWrt(CpuWrt),
-      .CpuDbo(CpuDbo),
-      .CpuDbi(CpuDbi),
+      .vdp_io_req(vdp_io_req),
+      .vdp_io_wr(vdp_io_wr),
+      .vdp_data_in(vdp_data_in),
+      .vdp_data_out(vdp_data_out),
       .cs_n  (cs_n)
   );
 
@@ -195,13 +195,13 @@ module v9958_top (
   VDP u_v9958 (
       .CLK21M      (clk_w),
       .RESET       (reset_w),
-      .REQ         (CpuReq),
+      .REQ         (vdp_io_req),
       .ACK         (),
       .scanlin     (scanlin),
-      .WRT         (CpuWrt),
+      .WRT         (vdp_io_wr),
       .mode        (mode),
-      .DBI         (CpuDbi),
-      .DBO         (CpuDbo),
+      .DBI         (vdp_data_out),
+      .DBO         (vdp_data_in),
       .INT_N       (int_n),
       .PRAMWE_N    (WeVdp_n),
       .PRAM_WR_SIZE(VdpDb_Wr_size),
