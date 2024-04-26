@@ -58,14 +58,6 @@ module v9958_top (
   assign led4_n = cs_n;
   assign led5_n = cs_n;
 
-    WS2812 #(
-      .WS2812_NUM(1)
-  ) ws2812 (
-      .clk(clk),
-      .reset_n(reset_n),
-      .WS2812(led_ws2812)
-  );
-
   // ----------------------------------------
   // All Clocks
   // ----------------------------------------
@@ -87,6 +79,14 @@ module v9958_top (
       .clk_sdram_w(clk_sdram_w),
       .clk_sdramp_w(clk_sdramp_w),
       .clk_sdram_lock_w(clk_sdram_lock_w)
+  );
+
+  WS2812 #(
+      .WS2812_NUM(1)
+  ) ws2812 (
+      .clk(clk_w),
+      .reset_n(reset_n),
+      .WS2812(led_ws2812)
   );
 
   // ----------------------------------------
@@ -182,7 +182,7 @@ module v9958_top (
       .vdp_io_wr(vdp_io_wr),
       .vdp_data_in(vdp_data_in),
       .vdp_data_out(vdp_data_out),
-      .cs_n  (cs_n)
+      .cs_n(cs_n)
   );
 
 
