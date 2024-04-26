@@ -29,7 +29,7 @@
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-module RAM (
+module RAM8 (
     input wire [7:0] ADR,
     input wire CLK,
     input wire WE,
@@ -43,7 +43,31 @@ module RAM (
   reg [7:0] iadr;
 
   always @(posedge CLK) begin
-    if ((WE == 1'b1)) begin
+    if (WE) begin
+      blkram[ADR] <= DBO;
+    end
+    iadr <= ADR;
+  end
+
+  assign DBI = blkram[iadr];
+
+endmodule
+
+module RAM10 #(
+    parameter int MEM_SIZE = 1024
+) (
+    input wire [9:0] ADR,
+    input wire CLK,
+    input wire WE,
+    input wire [7:0] DBO,
+    output wire [7:0] DBI
+);
+
+  reg [7:0] blkram[MEM_SIZE:0];
+  reg [9:0] iadr;
+
+  always @(posedge CLK) begin
+    if (WE) begin
       blkram[ADR] <= DBO;
     end
     iadr <= ADR;

@@ -135,7 +135,7 @@ module VDP_GRAPHIC4567 (
   assign FIFOWE = (FIFOIN == 1'b1) ? 1'b1 : 1'b0;
   assign FIFODATA_IN = ((DOTSTATE == 2'b00) || (DOTSTATE == 2'b01)) ? PRAMDAT : PRAMDATPAIR;
 
-  RAM #(
+  RAM8 #(
       .MEM_SIZE(128)
   ) U_FIFOMEM (
       .ADR(FIFOADDR),

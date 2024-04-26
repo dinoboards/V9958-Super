@@ -1,5 +1,15 @@
 
-module WS2812_REGISTERS (
+// 30h to 32h
+// 0011 00XY
+// write LED number to 30H
+// write 3 bytes (RGB) to 31H
+// or read 3 bytes (RGB) from 31H
+// after three reads or writes, the LED number is incremented.
+// 32H - write the number of attached LEDs in strip (defaults to MAX_NUM_LEDS)
+
+module WS2812_REGISTERS #(
+    parameter MAX_NUM_LEDS = 4
+) (
     input bit clk,  // standard clock
     input bit reset_n,  //active low reset signal
 
@@ -12,23 +22,63 @@ module WS2812_REGISTERS (
     output bit [7:0] ws2812_data_out  // when (ws2812_io_req & ws2812_io_wr) this is the data to be written to CPU
 );
 
-  reg [7:0] registers[3:0];  // Declare 4 8-bit registers
+  bit pixel_we;
+  bit [7:0] pixel_dbo;
+  bit [7:0] pixel_dbi;
+  // 3 bytes per RGB - bytes 0, 1, 2 for first pixel, 3, 4, 5 for second pixel, etc.
+  reg [9:0] pixel_addr;  // Index into pixel
+  reg [7:0] number_of_pixel;
+
+  RAM10 #(
+      .MEM_SIZE(256 * 3)
+  ) pixel (
+      .CLK(clk),
+      .ADR(pixel_addr),
+      .WE (pixel_we),
+      .DBO(pixel_dbo),
+      .DBI(pixel_dbi)
+  );
 
   always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
-      registers[0] <= 8'b0;
-      registers[1] <= 8'b0;
-      registers[2] <= 8'b0;
-      registers[3] <= 8'b0;
+      pixel_addr <= 0;
+      number_of_pixel <= MAX_NUM_LEDS;
 
-    end else if (ws2812_io_req) begin
-      if (ws2812_io_wr) begin
-        // Write operation
-        registers[addr] <= ws2812_data_in;
+    end else begin
+      pixel_we <= 0;
+      if (ws2812_io_req) begin
+        if (ws2812_io_wr) begin
+          case (addr)
+            0: begin
+              pixel_addr <= ws2812_data_in * 3;
+            end
 
-      end else begin
-        // Read operation
-        ws2812_data_out <= registers[addr];
+            1: begin
+              pixel_dbo  <= ws2812_data_in;
+              pixel_we   <= 1;
+              pixel_addr <= 10'(pixel_addr + 1);
+            end
+
+            2: begin
+              number_of_pixel <= ws2812_data_in;
+            end
+          endcase
+        end else begin
+          case (addr)
+            0: begin
+              ws2812_data_out <= 8'(pixel_addr);
+            end
+
+            1: begin
+              ws2812_data_out <= pixel_dbi;
+              pixel_addr <= 10'(pixel_addr + 1);
+
+            end
+            2: begin
+              ws2812_data_out <= number_of_pixel;
+            end
+          endcase
+        end
       end
     end
   end
