@@ -81,14 +81,6 @@ module v9958_top (
       .clk_sdram_lock_w(clk_sdram_lock_w)
   );
 
-  WS2812 #(
-      .WS2812_NUM(1)
-  ) ws2812 (
-      .clk(clk_w),
-      .reset_n(reset_n),
-      .WS2812(led_ws2812)
-  );
-
   // ----------------------------------------
   // Master Reset combined with clock phase locks
   // ----------------------------------------
@@ -195,10 +187,12 @@ module v9958_top (
       .cs_n(cs_n)
   );
 
-  WS2812_REGISTERS #() ws2812_registers (
+  WS2812 ws2812 (
       .clk(clk_w),
-      .reset_n(reset_n_w),
-      .addr(mode),
+      .reset_n(reset_n),
+      .WS2812(led_ws2812),
+
+      .mode(mode),
       .ws2812_io_req(ws2812_io_req),
       .ws2812_io_wr(ws2812_io_wr),
       .ws2812_data_in(ws2812_data_in),

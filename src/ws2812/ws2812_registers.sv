@@ -5,11 +5,9 @@
 // write 3 bytes (RGB) to 31H
 // or read 3 bytes (RGB) from 31H
 // after three reads or writes, the LED number is incremented.
-// 32H - write the number of attached LEDs in strip (defaults to MAX_NUM_LEDS)
+// 32H - write the number of attached LEDs in strip (defaults to MAX_PIXELS)
 
-module WS2812_REGISTERS #(
-    parameter MAX_NUM_LEDS = 4
-) (
+module WS2812_REGISTERS (
     input bit clk,  // standard clock
     input bit reset_n,  //active low reset signal
 
@@ -19,30 +17,27 @@ module WS2812_REGISTERS #(
     input bit ws2812_io_wr,   //for current req (if active), this is active when a write is requested
 
     input  bit [7:0] ws2812_data_in,  //when (ws2812_io_req & !ws2812_io_wr) this is the latched data from CPU
-    output bit [7:0] ws2812_data_out  // when (ws2812_io_req & ws2812_io_wr) this is the data to be written to CPU
+    output bit [7:0] ws2812_data_out, // when (ws2812_io_req & ws2812_io_wr) this is the data to be written to CPU
+
+    output bit [7:0] number_of_pixels,
+
+    output bit pixel_we,
+    output bit [7:0] pixel_dbo,
+    input bit [7:0] pixel_dbi,
+    // 3 bytes per RGB - bytes 0, 1, 2 for first pixel, 3, 4, 5 for second pixel, etc.
+    output bit [9:0] pixel_addr  // Index into pixel
 );
 
-  bit pixel_we;
-  bit [7:0] pixel_dbo;
-  bit [7:0] pixel_dbi;
-  // 3 bytes per RGB - bytes 0, 1, 2 for first pixel, 3, 4, 5 for second pixel, etc.
-  reg [9:0] pixel_addr;  // Index into pixel
-  reg [7:0] number_of_pixel;
+  parameter MAX_PIXELS = 4;
 
-  RAM10 #(
-      .MEM_SIZE(256 * 3)
-  ) pixel (
-      .CLK(clk),
-      .ADR(pixel_addr),
-      .WE (pixel_we),
-      .DBO(pixel_dbo),
-      .DBI(pixel_dbi)
-  );
+  bit [7:0] i_number_of_pixels;
+
+  assign number_of_pixels = i_number_of_pixels;
 
   always @(posedge clk or negedge reset_n) begin
     if (!reset_n) begin
       pixel_addr <= 0;
-      number_of_pixel <= MAX_NUM_LEDS;
+      i_number_of_pixels <= MAX_PIXELS;
 
     end else begin
       pixel_we <= 0;
@@ -60,7 +55,7 @@ module WS2812_REGISTERS #(
             end
 
             2: begin
-              number_of_pixel <= ws2812_data_in;
+              i_number_of_pixels <= ws2812_data_in;
             end
           endcase
         end else begin
@@ -75,7 +70,7 @@ module WS2812_REGISTERS #(
 
             end
             2: begin
-              ws2812_data_out <= number_of_pixel;
+              ws2812_data_out <= i_number_of_pixels;
             end
           endcase
         end

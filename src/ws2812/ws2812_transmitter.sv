@@ -1,11 +1,11 @@
-module WS2812 (
+module WS2812_TRANSMITTER (
     input clk,  // input clock source
     input bit reset_n,
+    input bit [7:0] number_of_pixels,
 
     output bit WS2812  // output to the interface of WS2812
 );
 
-  parameter WS2812_NUM = 0;  // LED number of WS2812 (starts from 0)
   parameter WS2812_WIDTH = 24;  // WS2812 data bit width
   parameter CLK_FRE = 27_000_000;  // CLK frequency (mHZ)
 
@@ -50,7 +50,7 @@ module WS2812 (
         end
 
         DATA_SEND:
-        if (data_send > WS2812_NUM && bit_send == WS2812_WIDTH) begin
+        if (data_send > number_of_pixels && bit_send == WS2812_WIDTH) begin
           clk_count <= 0;
           data_send <= 0;
           bit_send <= 0;

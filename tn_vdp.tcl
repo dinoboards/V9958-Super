@@ -10,8 +10,10 @@ add_file src\\SPI_MCP3202.v
 add_file src\\v9958_top.v
 add_file src\\vram.v
 add_file src\\cpu_io.sv
-add_file src\\ws2812.sv
-add_file src\\ws2812_registers.sv
+
+add_file src\\ws2812\\ws2812.sv
+add_file src\\ws2812\\ws2812_transmitter.sv
+add_file src\\ws2812\\ws2812_registers.sv
 
 add_file src\\video_output\\hdmi_output.v
 add_file src\\video_output\\hdmi_selection.v
