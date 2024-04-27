@@ -76,3 +76,31 @@ module RAM10 #(
   assign DBI = blkram[iadr];
 
 endmodule
+
+module DUAL_PORT_RAM10 #(
+    parameter int MEM_SIZE = 1024
+) (
+    input bit [9:0] ADR1,
+    input bit [9:0] ADR2,
+    input bit CLK,
+    input bit WE1,
+    input bit [7:0] DBO1,
+    output bit [7:0] DBI1,
+    output bit [7:0] DBI2
+);
+
+  bit [7:0] blkram[MEM_SIZE:0];
+  bit [9:0] iadr1, iadr2;
+
+  always @(posedge CLK) begin
+    if (WE1) begin
+      blkram[ADR1] <= DBO1;
+    end
+    iadr1 <= ADR1;
+    iadr2 <= ADR2;
+  end
+
+  assign DBI1 = blkram[iadr1];
+  assign DBI2 = blkram[iadr2];
+
+endmodule
