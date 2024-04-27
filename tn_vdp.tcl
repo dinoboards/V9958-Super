@@ -8,7 +8,6 @@ add_file src\\ram.v
 add_file src\\sdram.v
 add_file src\\SPI_MCP3202.v
 add_file src\\v9958_top.v
-add_file src\\vram.v
 add_file src\\cpu_io.sv
 
 add_file src\\ws2812\\ws2812.sv
