@@ -65,6 +65,7 @@ module VDP_COMMAND (
     input bit mode_high_res,
     input bit mode_graphic_super_colour,
     input bit mode_graphic_super_mid,
+    input bit mode_graphic_super_res,
     input bit vram_wr_ack,
     input bit vram_rd_ack,
     input bit [7:0] vram_rd_data,
@@ -82,7 +83,7 @@ module VDP_COMMAND (
     output bit vram_wr_req,
     output bit [1:0] vram_wr_size,
     output bit p_vram_rd_req,
-    output bit [17:0] p_vram_access_addr,
+    output bit [18:0] p_vram_access_addr,
     output bit [7:0] p_vram_wr_data_8,
     output bit [31:0] p_vram_wr_data_32,
     output bit [15:0] p_vram_wr_data_16,
@@ -101,9 +102,9 @@ module VDP_COMMAND (
   // S#8, S#9
 
   // VDP COMMAND SIGNALS - CAN BE SET BY CPU
-  bit [ 8:0] SX;  // R33,32
+  bit [ 9:0] SX;  // R33,32
   bit [ 9:0] SY;  // R35,34
-  bit [ 8:0] DX;  // R37,36
+  bit [ 9:0] DX;  // R37,36
   bit [ 9:0] DY;  // R39,38
   bit [ 9:0] NX;  // R41,40
   bit [ 9:0] NY;  // R43,42
@@ -125,7 +126,7 @@ module VDP_COMMAND (
   // AND MEMORY INTERFACE (WHICH IS IN THE COLOR GENERATOR)
   bit        internal_vram_wr_req;
   bit        vram_rd_req;
-  bit [17:0] vram_access_addr;
+  bit [18:0] vram_access_addr;
   bit [ 7:0] vram_wr_data_8;
   bit [15:0] vram_wr_data_16;
   bit [31:0] vram_wr_data_32;
@@ -141,7 +142,7 @@ module VDP_COMMAND (
   //??
   bit [ 1:0] rd_x_low;
   bit [ 9:0] vram_access_y;
-  bit [ 8:0] vram_access_x;
+  bit [ 9:0] vram_access_x;
 
   typedef enum logic [3:0] {
     IDLE,
@@ -199,7 +200,7 @@ module VDP_COMMAND (
   assign p_sx_tmp = sx_tmp;
   assign current_command = CMR[7:4];
 
-  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_colour | mode_graphic_super_mid;
+  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_colour | mode_graphic_super_mid | mode_graphic_super_res;
 
   assign vram_wr_size = mode_graphic_super_colour ? `MEMORY_WIDTH_32 : mode_graphic_super_mid ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8;
 
@@ -207,7 +208,9 @@ module VDP_COMMAND (
   assign graphic_4_or_6 = mode_graphic_4 || mode_graphic_6;
 
   bit [9:0] NXCOUNT;
-  assign NXCOUNT = CMR[7:6] == 2'b11 && graphic_4_or_6 ? {1'b0, NX[9:1]} : CMR[7:6] == 2'b11 && mode_graphic_5 ? {2'b00, NX[9:2]} : NX;
+  assign NXCOUNT = CMR[7:6] == 2'b11 && graphic_4_or_6 ? {1'b0, NX[9:1]} :
+                   CMR[7:6] == 2'b11 && mode_graphic_5 ? {2'b00, NX[9:2]} :
+                   NX;
 
   bit [9:0] YCOUNTDELTA;
   assign YCOUNTDELTA = (DIY == 1'b0) ? 10'b0000000001 : 10'b1111111111;
@@ -340,9 +343,11 @@ module VDP_COMMAND (
     case (CMR[7:4])
       LINE: begin
         if (mode_graphic_super_colour) begin
-          nx_loop_end = (nx_tmp == NX) || dx_tmp == 180;
+          nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd180;
         end else if (mode_graphic_super_mid) begin
-          nx_loop_end = (nx_tmp == NX) || dx_tmp == 360;
+          nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd360;
+        end else if (mode_graphic_super_res) begin
+          nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd720;
         end else begin
           nx_loop_end = (nx_tmp == NX) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
         end
@@ -351,9 +356,11 @@ module VDP_COMMAND (
 
       HMMV, HMMC, LMMV, LMMC: begin
         if (mode_graphic_super_colour) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == 180;
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd180;
         end else if (mode_graphic_super_mid) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == 360;
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd360;
+        end else if (mode_graphic_super_res) begin
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd720;
         end else begin
           nx_loop_end = (nx_tmp == 0) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
         end
@@ -419,14 +426,21 @@ module VDP_COMMAND (
       //resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
       //x is 0 to 179, and y 0 to 143
       //addr = 180*2*y + x*2
-      vram_access_addr = 18'((vram_access_y * 180 * 4) + (vram_access_x * 4)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
+      vram_access_addr = 19'((vram_access_y * 180 * 4) + (vram_access_x * 4)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
 
     end else if (mode_graphic_super_mid) begin
       //2 bytes per pixel `GGGG GGRR RRRB BBBB` - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
       //x is 0 to 359, and y 0 to 187 or for 60hz mode y is 0 to 239
       //addr = y * 360*2 + x*2
 
-      vram_access_addr = 18'((vram_access_y * 360 * 2) + (vram_access_x * 2)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
+      vram_access_addr = 19'((vram_access_y * 360 * 2) + (vram_access_x * 2)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
+
+    end else if (mode_graphic_super_res) begin
+      //1 byte per pixel `GGGR RRBB` - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+      //x is 0 to 719, and y 0 to 287 or for 60hz mode y is 0 to 479
+      //addr = y * 720*4 + x*4
+
+      vram_access_addr = 19'((vram_access_y * 720) + (vram_access_x));
 
     end else begin
       vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};
@@ -506,11 +520,11 @@ module VDP_COMMAND (
         reg_wr_ack <= ~reg_wr_ack;
         case (reg_num)
           4'b0000: SX[7:0] <= reg_data;  // #32
-          4'b0001: SX[8] <= reg_data[0];  // #33
+          4'b0001: SX[9:8] <= reg_data[1:0];  // #33
           4'b0010: SY[7:0] <= reg_data;  // #34
           4'b0011: SY[9:8] <= reg_data[1:0];  // #35
           4'b0100: DX[7:0] <= reg_data;  // #36
-          4'b0101: DX[8] <= reg_data[0];  // #37
+          4'b0101: DX[9:8] <= reg_data[1:0];  // #37
           4'b0110: DY[7:0] <= reg_data;  // #38
           4'b0111: DY[9:8] <= reg_data[1:0];  // #39
           4'b1000: NX[7:0] <= reg_data;  // #40
@@ -562,15 +576,15 @@ module VDP_COMMAND (
               end else begin
                 if (CMR[7:4] == YMMM) begin
                   // FOR YMMM, sx_tmp = dx_tmp = DX
-                  sx_tmp <= {2'b00, DX};
+                  sx_tmp <= {1'b0, DX};
                 end else begin
                   // FOR ALL OTHERS, sx_tmp IS BUSINES AS USUAL
-                  sx_tmp <= {2'b00, SX};
+                  sx_tmp <= {1'b0, SX};
                 end
                 // nx_tmp IS BUSINESS AS USUAL FOR ALL BUT THE LINE COMMAND
                 nx_tmp <= NXCOUNT;
               end
-              dx_tmp <= {1'b0, DX};
+              dx_tmp <= DX;
               initializing <= 1'b1;
               state <= CHK_LOOP;
             end
@@ -599,7 +613,7 @@ module VDP_COMMAND (
           RD_VRAM: begin
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM, SRCH, POINT
             vram_access_y <= SY;
-            vram_access_x <= sx_tmp[8:0];
+            vram_access_x <= sx_tmp;
             rd_x_low <= sx_tmp[1:0];
             vram_rd_req <= ~vram_rd_ack;
             case (CMR[7:4])
@@ -668,7 +682,7 @@ module VDP_COMMAND (
           PRE_RD_VRAM: begin
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
             vram_access_y <= DY;
-            vram_access_x <= dx_tmp[8:0];
+            vram_access_x <= dx_tmp;
             rd_x_low <= dx_tmp[1:0];
             vram_rd_req <= ~vram_rd_ack;
             state <= WAIT_PRE_RD_VRAM;
@@ -705,7 +719,7 @@ module VDP_COMMAND (
           WR_VRAM: begin
             // APPLICABLE TO HMMC, YMMM, HMMM, HMMV, LMMC, LMMM, LMMV, LINE, PSET
             vram_access_y <= DY;
-            vram_access_x <= dx_tmp[8:0];
+            vram_access_x <= dx_tmp;
             internal_vram_wr_req <= ~vram_wr_ack;
             state <= WAIT_WR_VRAM;
           end
@@ -720,14 +734,14 @@ module VDP_COMMAND (
                 LINE: begin
                   sx_tmp <= sx_tmp - NY;
                   if (MM == 1'b0) begin
-                    dx_tmp <= dx_tmp + XCOUNTDELTA[9:0];
+                    dx_tmp <= 10'(dx_tmp + XCOUNTDELTA[9:0]);
                   end else begin
                     DY <= DY + YCOUNTDELTA;
                   end
                   state <= LINE_NEW_POS;
                 end
                 default: begin
-                  dx_tmp <= dx_tmp + XCOUNTDELTA[9:0];
+                  dx_tmp <= 10'(dx_tmp + XCOUNTDELTA[9:0]);
                   nx_tmp <= 10'(nx_tmp - 1);
                   state  <= CHK_LOOP;
                 end
@@ -780,21 +794,21 @@ module VDP_COMMAND (
             //   DETERMINE ny_loop_end
             dy_end = 1'b0;
             sy_end = 1'b0;
-            if ((DIY == 1'b1)) begin
-              if (((DY == 0) && (CMR[7:4] != LMCM))) begin
+            if (DIY == 1'b1) begin
+              if (DY == 0 && CMR[7:4] != LMCM) begin
                 dy_end = 1'b1;
               end
-              if (((SY == 0) && (CMR[5] != CMR[4]))) begin
+              if (SY == 0 && CMR[5] != CMR[4]) begin
                 // BIT5 /= BIT4 IS TRUE FOR COMMANDS YMMM, HMMM, LMCM, LMMM
                 sy_end = 1'b1;
               end
             end
-            if (((NY == 1) || (dy_end == 1'b1) || (sy_end == 1'b1))) begin
+            if (NY == 1 || dy_end == 1 || sy_end == 1) begin
               ny_loop_end = 1'b1;
             end else begin
               ny_loop_end = 1'b0;
             end
-            if ((initializing == 1'b0) && nx_loop_end && ny_loop_end) begin
+            if (initializing == 0 && nx_loop_end && ny_loop_end) begin
               state <= EXEC_END;
             end else begin
               // COMMAND NOT YET FINISHED OR COMMAND initializing. DETERMINE NEXT/FIRST STEP
@@ -845,11 +859,11 @@ module VDP_COMMAND (
             if ((initializing == 1'b0) && nx_loop_end) begin
               nx_tmp <= NXCOUNT;
               if (CMR[7:4] == YMMM) begin
-                sx_tmp <= {2'b00, DX};
+                sx_tmp <= {1'b0, DX};
               end else begin
-                sx_tmp <= {2'b00, SX};
+                sx_tmp <= {1'b0, SX};
               end
-              dx_tmp <= {1'b0, DX};
+              dx_tmp <= DX;
               NY <= 10'(NY - 1);
               if ((CMR[5] != CMR[4])) begin
                 // BIT5 /= BIT4 IS TRUE FOR COMMANDS YMMM, HMMM, LMCM, LMMM

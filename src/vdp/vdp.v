@@ -72,7 +72,7 @@ module VDP (
     output wire         INT_N,
     output reg          PRAMWE_N,
     output bit   [ 1:0] PRAM_WR_SIZE,
-    output bit   [17:0] PRAMADR,
+    output bit   [18:0] PRAMADR,
     input  bit   [31:0] PRAMDBI_32,
     input  bit   [31:0] PRAMDBI_32_B,
     input  bit   [15:0] PRAMDBI_16,
@@ -221,7 +221,7 @@ module VDP (
 
   // GRAPHIC SUPER
   bit         super_res_drawing;
-  bit  [15:0] super_vram_addr;
+  bit  [16:0] super_vram_addr;
 
   // SPRITE
   wire        SPMODE2;
@@ -268,7 +268,7 @@ module VDP (
   wire        vdp_cmd_vram_wr_req;
   bit  [ 1:0] vdp_cmd_vram_wr_size;
   wire        vdp_cmd_vram_rd_req;
-  wire [17:0] VDPCMDVRAMACCESSADDR;
+  wire [18:0] VDPCMDVRAMACCESSADDR;
   wire [ 7:0] VDP_CMD_VRAM_WR_DATA_8;
   bit  [31:0] VDPCMDVRAMWRDATA_32;
   bit  [15:0] VDPCMDVRAMWRDATA_16;
@@ -291,7 +291,7 @@ module VDP (
   wire [ 5:0] IVIDEOG_VGA;
   wire [ 5:0] IVIDEOB_VGA;
 
-  bit  [17:0] IRAMADR;
+  bit  [18:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
   bit  [31:0] PRAMDAT_32;
   bit  [31:0] PRAMDAT_32_B;
@@ -588,6 +588,7 @@ module VDP (
       .vdp_super               (vdp_super),
       .super_color             (super_color),
       .super_mid               (super_mid),
+      .super_res               (super_res),
 
       .super_res_drawing(super_res_drawing),
 
@@ -881,6 +882,7 @@ module VDP (
       .mode_high_res(VDPMODEISHIGHRES),
       .mode_graphic_super_colour(super_color),
       .mode_graphic_super_mid(super_mid),
+      .mode_graphic_super_res(super_res),
       .vram_wr_ack(vdp_cmd_vram_wr_ack),
       .vram_rd_ack(vdp_cmd_vram_rd_ack),
       .vram_rd_data(VDPCMDVRAMRDDATA),

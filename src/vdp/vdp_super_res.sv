@@ -15,7 +15,7 @@ module VDP_SUPER_RES (
 
     input bit [31:0] vrm_32,
 
-    output logic [15:0] super_res_vram_addr,
+    output logic [16:0] super_res_vram_addr,
     output bit [7:0] high_res_red,
     output bit [7:0] high_res_green,
     output bit [7:0] high_res_blue,
@@ -47,12 +47,20 @@ module VDP_SUPER_RES (
   assign high_mid_pixel_green = high_res_data[10:5];
   assign high_mid_pixel_blue = high_res_data[4:0];
 
-  assign high_res_red = super_color ? high_res_data[23:16] : {high_mid_pixel_red, 3'b0};
-  assign high_res_green = super_color ? high_res_data[15:8] : {high_mid_pixel_green, 2'b0};
-  assign high_res_blue = super_color ? high_res_data[7:0] : {high_mid_pixel_blue, 3'b0};
+  bit [2:0] high_res_pixel_red;
+  bit [2:0] high_res_pixel_green;
+  bit [1:0] high_res_pixel_blue;
+
+  assign high_res_pixel_green = high_res_data[7:5];
+  assign high_res_pixel_red = high_res_data[4:2];
+  assign high_res_pixel_blue = high_res_data[1:0];
+
+  assign high_res_red = super_color ? high_res_data[23:16] : super_mid ? {high_mid_pixel_red, 3'b0} : {high_res_pixel_red, 5'b0};
+  assign high_res_green = super_color ? high_res_data[15:8] : super_mid ? {high_mid_pixel_green, 2'b0} : {high_res_pixel_green, 5'b0};
+  assign high_res_blue = super_color ? high_res_data[7:0] : super_mid ? {high_mid_pixel_blue, 3'b0} : {high_res_pixel_blue, 6'b0};
 
   assign super_res_visible = super_high_res_visible_x & super_high_res_visible_y;
-  assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0);
+  assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0) || super_res;
   assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
 
   // cx > 720 and cx < 840 - turn on @700, off @ 180
@@ -157,24 +165,33 @@ module VDP_SUPER_RES (
                 line_buffer_index <= 8'(line_buffer_index + 1);
 
                 if (active_line) begin
-                  super_res_vram_addr <= 16'(super_res_vram_addr + 1);
+                  super_res_vram_addr <= 17'(super_res_vram_addr + 1);
                 end
 
               end
 
               1: begin  // (DA)
+                if(super_res) begin
+                  high_res_data <= {8'd0, high_res_data[31:8]};
+                end
                 if (active_line) begin
                   next_rgb <= vrm_32;
                 end
               end
 
               2: begin  // (AP)
+                if(super_res) begin
+                  high_res_data <= {8'd0, high_res_data[31:8]};
+                end
                 if (super_mid) begin
                   high_res_data <= {16'b0, high_res_data[31:16]};
                 end
               end
 
               3: begin  // (FS)
+                if(super_res) begin
+                  high_res_data <= {8'd0, high_res_data[31:8]};
+                end
               end
             endcase
           end
