@@ -51,25 +51,27 @@ module SPI_MCP3202 #(  // set up bits for MOSI (DIN on datasheet)
   bit     [11:0] sample_counter = 1;  // this counter flips over after one sample period
   // it starts at one so INITIALIZE waits one sampling period to begin DISABLE
 
+  // For a target sample rate of 50khz (max), count needs to be 2700(-2)
+  //50khz is 20000ns per cycle
+  //20000ns/7.407...ns = 2700 counts
+
+  //For a target sample rate of 44.1khz, count needs to be 3062(-2)
+  //44.1Khz is 22675.736961451ns per cycle
+  //22675.736961451ns/7.407...ns = 3061.224489795888
+
+  //For a target sampling rate of 40khz, count needs to be 3375(-2)
+  //40khz is 25000ns per cycle
+  //25000ns/7.407...ns = 3375 counts
+
+  //For a target sampling rate of 30khz, count needs to be 4500(-2)
+  //30khz is 33333.333333333ns per cycle
+  //33333.333333333ns/7.407...ns = 4500 counts
+  parameter PERIOD_COUNT = 3061;  // 44.1Khz
+
   always @(posedge clk) begin
     if (EN) begin
-      // For a target sample rate of 50khz (max), count needs to be 2700(-2)
-      //50khz is 20000ns per cycle
-      //20000ns/7.407...ns = 2700 counts
 
-      //For a target sample rate of 44.1khz, count needs to be 3062(-2)
-      //44.1Khz is 22675.736961451ns per cycle
-      //22675.736961451ns/7.407...ns = 3061.224489795888
-
-      //For a target sampling rate of 40khz, count needs to be 3375(-2)
-      //40khz is 25000ns per cycle
-      //25000ns/7.407...ns = 3375 counts
-
-      //For a target sampling rate of 30khz, count needs to be 4500(-2)
-      //30khz is 33333.333333333ns per cycle
-      //33333.333333333ns/7.407...ns = 4500 counts
-
-      if (sample_counter <= 4498)  /* this number is the amount of system clock cycles to finish one sampling period */
+      if (sample_counter <= (PERIOD_COUNT - 2))  /* this number is the amount of system clock cycles to finish one sampling period */
         sample_counter <= 12'(sample_counter + 1);
 
       else begin
