@@ -613,7 +613,7 @@ module VDP_COMMAND (
           RD_VRAM: begin
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM, SRCH, POINT
             vram_access_y <= SY;
-            vram_access_x <= sx_tmp;
+            vram_access_x <= sx_tmp[9:0];
             rd_x_low <= sx_tmp[1:0];
             vram_rd_req <= ~vram_rd_ack;
             case (CMR[7:4])
