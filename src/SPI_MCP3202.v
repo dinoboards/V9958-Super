@@ -66,7 +66,7 @@ module SPI_MCP3202 #(  // set up bits for MOSI (DIN on datasheet)
   //For a target sampling rate of 30khz, count needs to be 4500(-2)
   //30khz is 33333.333333333ns per cycle
   //33333.333333333ns/7.407...ns = 4500 counts
-  parameter PERIOD_COUNT = 3061;  // 44.1Khz
+  localparam PERIOD_COUNT = 3061;  // 44.1Khz
 
   always @(posedge clk) begin
     if (EN) begin
