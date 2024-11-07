@@ -38,7 +38,7 @@ add_file src\\vdp\\vdp_hvcounter.v
 add_file src\\vdp\\vdp_interrupt.v
 add_file src\\vdp\\vdp_line_buffer.v
 add_file src\\vdp\\vdp_package.v
-add_file src\\vdp\\vdp_register.v
+add_file src\\vdp\\vdp_register.sv
 add_file src\\vdp\\vdp_spinforam.v
 add_file src\\vdp\\vdp_sprite.v
 add_file src\\vdp\\vdp_ssg.v

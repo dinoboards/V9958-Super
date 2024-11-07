@@ -303,6 +303,7 @@ module VDP (
 
   // SUPER 24 bit RGB COLOUR
   bit         super_rgb_colour_reg_applied;
+  bit  [31:0] super_rgb_colour_reg;
 `endif
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
@@ -311,7 +312,6 @@ module VDP (
   wire        FF_BWINDOW_Y_DL;
 
   // SUPER 24 bit RGB COLOUR
-  bit  [31:0] super_rgb_colour_reg;
   bit         super_color;
   bit         super_mid;
   bit         super_res;
@@ -881,12 +881,11 @@ module VDP (
       .super_color(super_color),
       .super_mid(super_mid),
       .super_res(super_res),
-      .SPMODE2(SPMODE2),
-
-      .super_rgb_colour_reg(super_rgb_colour_reg)
+      .SPMODE2(SPMODE2)
 
 `ifdef ENABLE_SUPER_RES
       ,
+      .super_rgb_colour_reg(super_rgb_colour_reg)
       .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
 `endif
 
@@ -909,10 +908,6 @@ module VDP (
       .vram_wr_ack(vdp_cmd_vram_wr_ack),
       .vram_rd_ack(vdp_cmd_vram_rd_ack),
       .vram_rd_data(VDPCMDVRAMRDDATA),
-`ifdef ENABLE_SUPER_RES
-      .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
-      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
-`endif
       .reg_wr_req(VDPCMDREGWRREQ),
       .tr_clr_req(VDPCMDTRCLRREQ),
       .reg_num(VDPCMDREGNUM),
@@ -931,9 +926,13 @@ module VDP (
       .p_bd(VDPCMDBD),
       .p_tr(VDPCMDTR),
       .p_sx_tmp(VDPCMDSXTMP),
-      .current_command(CUR_VDP_COMMAND),
-
+      .current_command(CUR_VDP_COMMAND)
+`ifdef ENABLE_SUPER_RES
+      ,
+      .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
+      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
       .super_rgb_colour_reg(super_rgb_colour_reg)
+`endif
   );
 
   VDP_WAIT_CONTROL U_VDP_WAIT_CONTROL (

@@ -153,12 +153,12 @@ module VDP_REGISTER (
     output bit vdp_super,
     output bit super_color,
     output bit super_mid,
-    output bit super_res,
+    output bit super_res
 
-    output bit [31:0] super_rgb_colour_reg  // 24bit colour register
 
 `ifdef ENABLE_SUPER_RES
     ,
+    output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
     output bit super_rgb_colour_reg_applied
 `endif
 );
@@ -214,10 +214,12 @@ module VDP_REGISTER (
   wire W_EVEN_DOTSTATE;
   wire W_IS_BITMAP_MODE;
 
+`ifdef ENABLE_SUPER_RES
   bit [7:0] FF_REG_R30;
+  bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
+`endif
   bit [7:0] FF_REG_R31;
 
-  bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
   bit super_rgb_loading;  // set if RGBs are being loaded into R#30
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
@@ -230,8 +232,8 @@ module VDP_REGISTER (
 
 `ifdef ENABLE_SUPER_RES
   assign super_rgb_colour_reg_applied = FF_REG_R30[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
-`endif
   assign super_rgb_loading = FF_REG_R30[7];  // active when RGBs are being loaded into R#30
+`endif
 
   assign mode_graphic_7_base = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
   assign mode_graphic_super_base = FF_REG_R31[0];  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
@@ -542,7 +544,9 @@ module VDP_REGISTER (
 
       //extension
       FF_REG_R31 <= 0;
+`ifdef ENABLE_SUPER_RES
       super_rgb_colour_reg <= 0;
+`endif
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
         case (mode[1:0])
@@ -746,6 +750,7 @@ module VDP_REGISTER (
   R#30 bit 7 get auto cleared after three bytes received
   if bit 7 cleared, system reset and does not load RGB
 */
+`ifdef ENABLE_SUPER_RES
             5'b11101: begin  // #29
               if (super_rgb_loading) begin
                 case (super_rgb_loading_state)
@@ -765,7 +770,6 @@ module VDP_REGISTER (
                   end
                 endcase
               end
-
             end
 
             5'b11110: begin  //#30 - super control bits
@@ -780,6 +784,9 @@ module VDP_REGISTER (
               FF_REG_R30 <= 0;
               FF_REG_R31 <= VDPP1DATA;
             end
+`endif
+//do we need an `else` here?
+
           endcase
 
         end else if ((VDPREGPTR[4] == 1'b0)) begin
