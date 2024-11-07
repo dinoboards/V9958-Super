@@ -222,8 +222,10 @@ module VDP (
   wire        YJK_EN;
 
   // GRAPHIC SUPER
+`ifdef ENABLE_SUPER_RES
   bit         super_res_drawing;
   bit  [16:0] super_vram_addr;
+`endif
 
   // SPRITE
   wire        SPMODE2;
@@ -594,14 +596,14 @@ module VDP (
       .PRAMADRG123M            (PRAMADRG123M),
       .PRAMADRG4567            (PRAMADRG4567),
       .vdp_cmd_vram_reading_ack(vdp_cmd_vram_reading_ack),
-      .super_vram_addr         (super_vram_addr),
       .vdp_super               (vdp_super),
       .super_color             (super_color),
       .super_mid               (super_mid),
       .super_res               (super_res),
-
+`ifdef ENABLE_SUPER_RES
+      .super_vram_addr         (super_vram_addr),
       .super_res_drawing(super_res_drawing),
-
+`endif
       .vdp_cmd_vram_wr_ack     (vdp_cmd_vram_wr_ack),
       .vdp_cmd_vram_reading_req(vdp_cmd_vram_reading_req),
       .VDP_COMMAND_DRIVE       (VDP_COMMAND_DRIVE),

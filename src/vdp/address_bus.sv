@@ -43,12 +43,15 @@ module ADDRESS_BUS #(
     input bit   [17:0] PRAMADRG123M,
     input bit   [17:0] PRAMADRG4567,
     input bit          vdp_cmd_vram_reading_ack,
-    input logic [16:0] super_vram_addr,
     input bit          vdp_super,
     input bit          super_color,
     input bit          super_mid,
     input bit          super_res,
+
+`ifdef ENABLE_SUPER_RES
+    input logic [16:0] super_vram_addr,
     input bit super_res_drawing,
+`endif
 
     output bit        vdp_cmd_vram_wr_ack,
     output bit        vdp_cmd_vram_reading_req,
@@ -77,6 +80,7 @@ module ADDRESS_BUS #(
 
   bit [17:0] VDPVRAMACCESSADDR;
 
+`ifdef ENABLE_SUPER_RES
   bit [16:0] __super_vram_addr;
 
   always_ff @(posedge RESET, posedge CLK21M) begin
@@ -87,6 +91,7 @@ module ADDRESS_BUS #(
       __super_vram_addr <= super_vram_addr;
     end
   end
+`endif
 
   always_ff @(posedge RESET, posedge CLK21M) begin : P1
     bit [17:0] VDPVRAMACCESSADDRV;
@@ -116,10 +121,13 @@ module ADDRESS_BUS #(
       // (The VRAM access timing is controlled by EIGHTDOTSTATE)
       if (DOTSTATE == 2'b10) begin
 
+`ifdef ENABLE_SUPER_RES
         if (vdp_super && super_res_drawing && REG_R1_DISP_ON) begin
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 
-        end else if(!vdp_super && ((PREWINDOW && REG_R1_DISP_ON) && (EIGHTDOTSTATE == 3'b000 || EIGHTDOTSTATE == 3'b001 || EIGHTDOTSTATE == 3'b010 || EIGHTDOTSTATE == 3'b011 || EIGHTDOTSTATE == 3'b100))) begin
+        end else
+`endif
+        if(!vdp_super && ((PREWINDOW && REG_R1_DISP_ON) && (EIGHTDOTSTATE == 3'b000 || EIGHTDOTSTATE == 3'b001 || EIGHTDOTSTATE == 3'b010 || EIGHTDOTSTATE == 3'b011 || EIGHTDOTSTATE == 3'b100))) begin
           //EIGHTDOTSTATE is 0 to 4, and displayed
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 
@@ -240,7 +248,9 @@ module ADDRESS_BUS #(
         // VRAM READ FOR SCREEN DRAWING
 
         if (vdp_super) begin
+`ifdef ENABLE_SUPER_RES
           IRAMADR <= {__super_vram_addr, 2'b00};
+`endif
           PRAMDBO_8 <= 8'bZ;
           PRAMDBO_16 <= 8'bZ;
           PRAMDBO_32 <= 32'bZ;
