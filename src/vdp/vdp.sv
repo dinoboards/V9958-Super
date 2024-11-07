@@ -345,16 +345,20 @@ module VDP (
   assign IVIDEOG = IVIDEOG_VDP;
   assign IVIDEOB = IVIDEOB_VDP;
 
+`ifdef ENABLE_SUPER_RES
   bit [7:0] high_res_red;
   bit [7:0] high_res_green;
   bit [7:0] high_res_blue;
+`endif
 
   always_comb begin
+`ifdef ENABLE_SUPER_RES
     if (vdp_super) begin
       red   = high_res_red;
       green = high_res_green;
       blue  = high_res_blue;
     end else begin
+`endif
       if (scanlin && CY[0]) begin
         red   = {1'b0, IVIDEOR_VGA, 1'b0};
         green = {1'b0, IVIDEOG_VGA, 1'b0};
@@ -364,7 +368,9 @@ module VDP (
         green = {IVIDEOG_VGA, 2'b0};
         blue  = {IVIDEOB_VGA, 2'b0};
       end
+`ifdef ENABLE_SUPER_RES
     end
+`endif
   end
 
   VDP_VGA U_VDP_VGA (
