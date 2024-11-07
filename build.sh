@@ -5,7 +5,7 @@ rm -rf impl/tmp
 rm -rf impl/gwsynthesis
 
 attempt_build() {
-  stdbuf -o0 /mnt/c/Gowin64/Gowin_V1.9.9.01_x64/IDE/bin/gw_sh.exe tn_vdp.tcl | \
+  stdbuf -o0 /mnt/c/Gowin/Gowin_V1.9.10.03_x64/IDE/bin/gw_sh.exe tn_vdp.tcl | \
   stdbuf -o0 grep --color=always -e "Bitstream generation completed" -e ERROR -e completed -e WARN -e "Undeclared symbol" | \
   stdbuf -o0 grep --color=always -v "PA1001" | \
   stdbuf -o0 grep --color=always -v "NL0002" | \
