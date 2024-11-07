@@ -71,6 +71,7 @@ module VDP_COMMAND (
     input bit [7:0] vram_rd_data,
 `ifdef ENABLE_SUPER_RES
     input bit [31:0] vram_rd_data_32,
+    input bit super_rgb_colour_reg_applied,
 `endif
     input bit reg_wr_req,
     input bit tr_clr_req,
@@ -78,7 +79,6 @@ module VDP_COMMAND (
     input bit [7:0] reg_data,
 
     input bit [31:0] super_rgb_colour_reg,
-    input bit super_rgb_colour_reg_applied,
 
     output bit p_reg_wr_ack,
     output bit p_tr_clr_ack,
@@ -453,6 +453,7 @@ module VDP_COMMAND (
     end
   end
 
+`ifdef ENABLE_SUPER_RES
   bit [31:0] CLR32;
   bit [15:0] CLR16;
 
@@ -478,6 +479,7 @@ module VDP_COMMAND (
       end
     end
   end
+`endif
 
   always @(posedge reset, posedge clk) begin
     bit initializing;
@@ -832,8 +834,10 @@ module VDP_COMMAND (
                 end
                 HMMV: begin
                   vram_wr_data_8 <= CLR;
+`ifdef ENABLE_SUPER_RES
                   vram_wr_data_32 <= CLR32;
                   vram_wr_data_16 <= CLR16;
+`endif
                   state <= WR_VRAM;
                 end
                 LMMC: begin
@@ -847,8 +851,10 @@ module VDP_COMMAND (
                 end
                 LMMV, LINE, PSET: begin
                   vram_wr_data_8 <= CLR;
+`ifdef ENABLE_SUPER_RES
                   vram_wr_data_32 <= CLR32;
                   vram_wr_data_16 <= CLR16;
+`endif
                   state <= PRE_RD_VRAM;
                 end
                 SRCH: begin
