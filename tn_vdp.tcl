@@ -46,7 +46,7 @@ add_file src\\vdp\\vdp_super_res.sv
 add_file src\\vdp\\vdp_text12.v
 add_file src\\vdp\\vdp_vga.v
 add_file src\\vdp\\vdp_wait_control.v
-add_file src\\vdp\\vdp.v
+add_file src\\vdp\\vdp.sv
 
 add_file src\\gowin\\clk_108p.v
 add_file src\\gowin\\clk_135.v

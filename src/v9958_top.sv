@@ -106,8 +106,10 @@ module v9958_top (
   bit   [ 7:0] VrmDbo_8;
   bit   [31:0] VrmDbo_32;
   bit   [15:0] VrmDbo_16;
+`ifdef ENABLE_SUPER_RES
   bit   [31:0] VrmDbi_32;
   bit   [31:0] VrmDbi_32_B;
+`endif
   bit   [15:0] VrmDbi_16;
 
   logic [10:0] cx;
@@ -221,8 +223,10 @@ module v9958_top (
       .PRAMWE_N    (WeVdp_n),
       .PRAM_WR_SIZE(VdpDb_Wr_size),
       .PRAMADR     (VdpAdr),
+`ifdef ENABLE_SUPER_RES
       .PRAMDBI_32  (VrmDbi_32),
       .PRAMDBI_32_B(VrmDbi_32_B),
+`endif
       .PRAMDBI_16  (VrmDbi_16),
       .PRAMDBO_8   (VrmDbo_8),
       .PRAMDBO_16  (VrmDbo_16),

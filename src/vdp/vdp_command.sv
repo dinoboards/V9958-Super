@@ -69,7 +69,9 @@ module VDP_COMMAND (
     input bit vram_wr_ack,
     input bit vram_rd_ack,
     input bit [7:0] vram_rd_data,
+// `ifdef ENABLE_SUPER_RES
     input bit [31:0] vram_rd_data_32,
+// `endif
     input bit reg_wr_req,
     input bit tr_clr_req,
     input bit [3:0] reg_num,
