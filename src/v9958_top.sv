@@ -145,9 +145,9 @@ module v9958_top (
 `ifdef ENABLE_SUPER_RES
       .din32(VrmDbo_32),
       .din16(VrmDbo_16),
-`endif
       .dout32(VrmDbi_32),
       .dout32B(VrmDbi_32_B),
+`endif
       .dout16(VrmDbi_16),
       .word_wr_size(VdpDb_Wr_size),
       .IO_sdram_dq(IO_sdram_dq),

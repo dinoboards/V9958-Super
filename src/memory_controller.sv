@@ -42,14 +42,14 @@ module MEM_CONTROLLER #(
 
     input bit [1:0] word_wr_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
 
-    input bit   [ 7:0] din8,   // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
+    input bit [7:0] din8,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
 `ifdef ENABLE_SUPER_RES
-    input bit   [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
+    input bit [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
     input logic [31:0] din32,  // The data to be written to the SDRAM when wdm is 00
+    output bit [31:0] dout32,
+    output bit [31:0] dout32B,  //2nd channel of 32 bit data - to avoid congestion???
 `endif
     output bit [15:0] dout16,  // The data read from the SDRAM. Available 4 cycles after the read signal is set.
-    output bit [31:0] dout32,
-    output bit [31:0] dout32B, //2nd channel of 32 bit data - to avoid congestion???
 
     output bit enabled,  // Signal indicating that the memory controller is enabled.
 
@@ -97,8 +97,10 @@ module MEM_CONTROLLER #(
 
   assign word_addr = {1'b0, addr[22:1]};
 
-  assign dout32 = data32;
+`ifdef ENABLE_SUPER_RES
+  assign dout32  = data32;
   assign dout32B = data32B;
+`endif
   assign dout16 = data16;
 
   always_ff @(posedge clk or negedge resetn) begin
@@ -219,9 +221,11 @@ module MEM_CONTROLLER #(
             if (~MemDataReady)  // assert data ready
               fail <= 1'b1;
             if (r_read) begin
+`ifdef ENABLE_SUPER_RES
               data32  <= MemDout32;
               data32B <= MemDout32;
-              data16  <= MemDout16;
+`endif
+              data16 <= MemDout16;
             end
             r_read <= 1'b0;
           end
