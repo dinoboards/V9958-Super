@@ -43,9 +43,10 @@ module MEM_CONTROLLER #(
     input bit [1:0] word_wr_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
 
     input bit   [ 7:0] din8,   // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
+`ifdef ENABLE_SUPER_RES
     input bit   [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
     input logic [31:0] din32,  // The data to be written to the SDRAM when wdm is 00
-
+`endif
     output bit [15:0] dout16,  // The data read from the SDRAM. Available 4 cycles after the read signal is set.
     output bit [31:0] dout32,
     output bit [31:0] dout32B, //2nd channel of 32 bit data - to avoid congestion???
@@ -111,6 +112,7 @@ module MEM_CONTROLLER #(
     end
   end
 
+`ifdef ENABLE_SUPER_RES
   always_comb begin
     __din32 = {32{1'bx}};
     __wdm = 2'bxx;
@@ -135,6 +137,14 @@ module MEM_CONTROLLER #(
       end
     endcase
   end
+`else
+  always_comb begin
+    __din32 = {din8, din8, din8, din8};
+
+    __wdm = {~addr[0], addr[0]};
+    wdm = word_addr[0] == 1'd0 ? {2'b11, __wdm} : {__wdm, 2'b11};  // only write the correct byte
+  end
+`endif
 
   assign operation_write = busy ? MemWR : write;
   assign operation_read  = busy ? MemRD : read;

@@ -38,8 +38,8 @@ set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {
 set_false_path -from [get_regs {u_v9958/address_bus/IRAMADR*}] -to [get_regs {vram/u_sdram/FF_SDRAM_DQM*}]
 set_false_path -from [get_regs {u_v9958/address_bus/IRAMADR*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
 set_false_path -from [get_regs {u_v9958/address_bus/PRAMWE_N*}] -to [get_regs {vram/u_sdram/stat*}]
-set_false_path -from [get_regs {u_v9958/address_bus/PRAMWE_N*}] -to [get_regs {vram/requested_word_wr_size*}]
-set_false_path -from [get_regs {u_v9958/address_bus/*}] -to [get_regs {vram/requested_din32*}]
+# set_false_path -from [get_regs {u_v9958/address_bus/PRAMWE_N*}] -to [get_regs {vram/requested_word_wr_size*}]
+# set_false_path -from [get_regs {u_v9958/address_bus/*}] -to [get_regs {vram/requested_din32*}]
 
 set_false_path -from [get_regs {vram/data16*}] -to [get_regs {u_v9958/U_SPRITE/*}]
 

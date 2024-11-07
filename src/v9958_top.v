@@ -142,8 +142,10 @@ module v9958_top (
       .enabled(ram_enabled),
       .addr({4'b0, VdpAdr}),
       .din8(VrmDbo_8),
+`ifdef ENABLE_SUPER_RES
       .din32(VrmDbo_32),
       .din16(VrmDbo_16),
+`endif
       .dout32(VrmDbi_32),
       .dout32B(VrmDbi_32_B),
       .dout16(VrmDbi_16),
