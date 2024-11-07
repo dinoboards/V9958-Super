@@ -72,13 +72,12 @@ module VDP_COMMAND (
 `ifdef ENABLE_SUPER_RES
     input bit [31:0] vram_rd_data_32,
     input bit super_rgb_colour_reg_applied,
+    input bit [31:0] super_rgb_colour_reg,
 `endif
     input bit reg_wr_req,
     input bit tr_clr_req,
     input bit [3:0] reg_num,
     input bit [7:0] reg_data,
-
-    input bit [31:0] super_rgb_colour_reg,
 
     output bit p_reg_wr_ack,
     output bit p_tr_clr_ack,
