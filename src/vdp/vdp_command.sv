@@ -69,9 +69,9 @@ module VDP_COMMAND (
     input bit vram_wr_ack,
     input bit vram_rd_ack,
     input bit [7:0] vram_rd_data,
-// `ifdef ENABLE_SUPER_RES
+`ifdef ENABLE_SUPER_RES
     input bit [31:0] vram_rd_data_32,
-// `endif
+`endif
     input bit reg_wr_req,
     input bit tr_clr_req,
     input bit [3:0] reg_num,
@@ -220,14 +220,17 @@ module VDP_COMMAND (
   bit [1:0] MAXXMASK;
   assign MAXXMASK = mode_high_res ? 2'b10 : 2'b01;  // GRAPHIC 5,6
 
+`ifdef ENABLE_SUPER_RES
+  bit [31:0] rd_point_32;
   bit [15:0] rd_point_16;
   assign rd_point_16 = vram_access_addr[1] ? vram_rd_data_32[31:16] : vram_rd_data_32[15:0];
+`endif
 
   bit [ 7:0] RDPOINT;
-  bit [31:0] rd_point_32;
   always_comb begin
+`ifdef ENABLE_SUPER_RES
     rd_point_32 = vram_rd_data_32;
-
+`endif
     // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
     if (graphic_4_or_6) begin
       RDPOINT = rd_x_low[0] ? {4'b0000, vram_rd_data[3:0]} : {4'b0000, vram_rd_data[7:4]};
@@ -239,7 +242,7 @@ module VDP_COMMAND (
         2'b10: RDPOINT = {6'b000000, vram_rd_data[3:2]};
         2'b11: RDPOINT = {6'b000000, vram_rd_data[1:0]};
       endcase
-
+`ifdef ENABLE_SUPER_RES
     end else if (mode_graphic_super_colour) begin
       //vram_rd_data_32 has the 24 bit RGB colour codes
       //RDPOINT has 8 bit RGB (GGGR RRBB)
@@ -251,7 +254,7 @@ module VDP_COMMAND (
       //RDPOINT has 8 bit RGB (GGGR RRBB)
       //need to convert from the 16 bit view to the 8 bit value
       RDPOINT = {rd_point_16[10:8], rd_point_16[15:13], rd_point_16[4:3]};
-
+`endif
     end else begin
       RDPOINT = vram_rd_data;
     end
@@ -276,12 +279,12 @@ module VDP_COMMAND (
     endcase
   end
 
+`ifdef ENABLE_SUPER_RES
   bit [31:0] logical_operation_dest_colour_32;
   always_comb begin
     // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
     // ON THE POINT TO BE WRITTEN.
 
-    //rd_point_32 = vram_rd_data_32
     //enhanced 24 bit operations
     if ((CMR[3] == 1'b0) || (vram_wr_data_32[23:0] != 24'b00000000)) begin
       case (CMR[2:0])
@@ -317,6 +320,7 @@ module VDP_COMMAND (
       logical_operation_dest_colour_16 = rd_point_16;
     end
   end
+`endif
 
   bit [7:0] logical_operation_dest_colour;
   always_comb begin
@@ -703,13 +707,13 @@ module VDP_COMMAND (
                   2'b10: vram_wr_data_8 <= {vram_rd_data[7:4], logical_operation_dest_colour[1:0], vram_rd_data[1:0]};
                   2'b11: vram_wr_data_8 <= {vram_rd_data[7:2], logical_operation_dest_colour[1:0]};
                 endcase
-
+`ifdef ENABLE_SUPER_RES
               end else if (mode_graphic_super_colour) begin
                 vram_wr_data_32 <= logical_operation_dest_colour_32;
 
               end else if (mode_graphic_super_mid) begin
                 vram_wr_data_16 <= logical_operation_dest_colour_16;
-
+`endif
               end else begin
                 vram_wr_data_8 <= logical_operation_dest_colour;
               end
