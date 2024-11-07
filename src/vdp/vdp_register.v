@@ -382,7 +382,7 @@ module VDP_REGISTER (
               4'b1101: begin  //READ S#13
                 DBI <= 0;
               end
-
+`ifdef ENABLE_SUPER_RES
               4'b1110: begin  //READ S#14
                 DBI <= super_rgb_colour_reg[23:16];
               end
@@ -390,11 +390,14 @@ module VDP_REGISTER (
               4'b1111: begin  //READ S#15
                 DBI <= 0;
               end
+`endif
               default: begin
                 DBI <= 8'd255;
               end
             endcase
           end
+
+`ifdef ENABLE_SUPER_RES
           2'b10: begin  // PORT#2: 9A NOT SUPPORTED IN READ MODE
             DBI <= {4'b0, VDPREGPTR[4:0]};
           end
@@ -411,6 +414,12 @@ module VDP_REGISTER (
               end
             endcase
           end
+`else
+          default: begin
+            DBI <= 255;
+          end
+`endif
+
         endcase
       end
     end
