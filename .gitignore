@@ -2,3 +2,5 @@ impl/*
 experiments/impl/*
 *.user
 !impl/tn_vdp_process_config.json
+
+docs/SUG*.pdf

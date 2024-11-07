@@ -147,9 +147,9 @@ module v9958_top (
       .din16(VrmDbo_16),
       .dout32(VrmDbi_32),
       .dout32B(VrmDbi_32_B),
+      .word_wr_size(VdpDb_Wr_size),
 `endif
       .dout16(VrmDbi_16),
-      .word_wr_size(VdpDb_Wr_size),
       .IO_sdram_dq(IO_sdram_dq),
       .O_sdram_addr(O_sdram_addr),
       .O_sdram_ba(O_sdram_ba),

@@ -58,9 +58,29 @@ set_device -device_version C GW2AR-LV18QN88C8/I7
 
 set_option -top_module v9958_top
 set_option -loading_rate 250/10
+
+# -timing_driven <0|1>
+# Timing driven optimization of the placement and routing is performed,
+# and the default is 1.
+# 0: No
+# 1: Yes
 set_option -timing_driven 1
-set_option -place_option 1
-set_option -route_option 1
+
+# -place_option <0|1|2|3|4>
+# Place algorithm option, and the default is 0.
+# 0: default place algorithm, compilation speed priority
+# 1: place algorithm 1, routability priority
+# 2: place algorithm 2, timing priority
+# 3: Unknown
+# 4: Unknown
+set_option -place_option 2
+
+# -route_option <0|1|2>
+# Route algorithm option, and the default is 0.
+# 0: default route algorithm, the default route algorithm according to congestion.
+# 1: route algorithm 1, routing according to timing.
+# 2: route algorithm 2, routing speed will be faster.
+set_option -route_option 0
 set_option -bit_compress 1
 set_option -bit_crc_check 1
 set_option -bit_security 1
@@ -75,11 +95,17 @@ set_option -show_all_warn 1
 # set_option -maxfan 4000
 set_option -gen_text_timing_rpt 1
 set_option -rpt_auto_place_io_info 1
-set_option -replicate_resources 1
-# set_option -ireg_in_iob 0
-# set_option -oreg_in_iob 0
-# set_option -ioreg_in_iob 0
-set_option -replicate_resources 1
+
+
+# -replicate_resources <0|1>
+# Enable this option, Place & Route will replicate resources with high
+# fanout to reduce fanout and get better timing results, and default is 0.
+# 0: Disable
+# 1: Enable
+set_option -replicate_resources 0
+set_option -ireg_in_iob 0
+set_option -oreg_in_iob 0
+set_option -ioreg_in_iob 0
 
 # set_option -correct_hold_violation 1
 # set_option inc_place 0

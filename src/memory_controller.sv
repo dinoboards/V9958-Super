@@ -40,10 +40,10 @@ module MEM_CONTROLLER #(
     input bit        refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
     input bit [22:0] addr,       // The address to read from or write to in the SDRAM
 
-    input bit [1:0] word_wr_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
 
     input bit [7:0] din8,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
 `ifdef ENABLE_SUPER_RES
+    input bit [1:0] word_wr_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
     input bit [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
     input logic [31:0] din32,  // The data to be written to the SDRAM when wdm is 00
     output bit [31:0] dout32,
@@ -78,7 +78,9 @@ module MEM_CONTROLLER #(
   bit [1:0] __wdm;
   bit [3:0] wdm;
   bit [31:0] __din32;
+`ifdef ENABLE_SUPER_RES
   bit [1:0] requested_word_wr_size;  // The word size captured at time operation initiated
+`endif
   bit [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
   logic [31:0] MemDout32;
@@ -103,6 +105,7 @@ module MEM_CONTROLLER #(
 `endif
   assign dout16 = data16;
 
+`ifdef ENABLE_SUPER_RES
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
       requested_word_wr_size <= `MEMORY_WIDTH_16;
@@ -113,6 +116,7 @@ module MEM_CONTROLLER #(
       end
     end
   end
+`endif
 
 `ifdef ENABLE_SUPER_RES
   always_comb begin

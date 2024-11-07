@@ -20,28 +20,28 @@ create_generated_clock -name clk_audio -source [get_ports {clk}] -master_clock c
 
 # ignore some paths between sdram and the v9958 units.  At the video circuits limit their rate of read/writes
 # I dont think any meatastability will occur
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nRAS*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nCAS*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/cycle*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/state*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/ff_busy*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nRAS*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nCAS*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/cycle*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/state*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DH_CLK*}] -to [get_regs {vram/u_sdram/ff_busy*}]
 
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nRAS*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nCAS*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/cycle*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/requested_din32*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/ff_busy*}]
-set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/state*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nRAS*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_nCAS*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/cycle*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/requested_din32*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/ff_busy*}]
+# set_false_path -from [get_regs {u_v9958/U_SSG/FF_VIDEO_DL_CLK*}] -to [get_regs {vram/u_sdram/state*}]
 
-set_false_path -from [get_regs {u_v9958/address_bus/IRAMADR*}] -to [get_regs {vram/u_sdram/FF_SDRAM_DQM*}]
-set_false_path -from [get_regs {u_v9958/address_bus/IRAMADR*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
-set_false_path -from [get_regs {u_v9958/address_bus/PRAMWE_N*}] -to [get_regs {vram/u_sdram/stat*}]
+# set_false_path -from [get_regs {u_v9958/address_bus/IRAMADR*}] -to [get_regs {vram/u_sdram/FF_SDRAM_DQM*}]
+# set_false_path -from [get_regs {u_v9958/address_bus/IRAMADR*}] -to [get_regs {vram/u_sdram/FF_SDRAM_A*}]
+# set_false_path -from [get_regs {u_v9958/address_bus/PRAMWE_N*}] -to [get_regs {vram/u_sdram/stat*}]
 # set_false_path -from [get_regs {u_v9958/address_bus/PRAMWE_N*}] -to [get_regs {vram/requested_word_wr_size*}]
 # set_false_path -from [get_regs {u_v9958/address_bus/*}] -to [get_regs {vram/requested_din32*}]
 
-set_false_path -from [get_regs {vram/data16*}] -to [get_regs {u_v9958/U_SPRITE/*}]
+# set_false_path -from [get_regs {vram/data16*}] -to [get_regs {u_v9958/U_SPRITE/*}]
 
 # as audio only changes at maximum rate of upto 50khz, we can safely
 # ignore the setup and hold time of the audio clock to the
