@@ -81,4 +81,6 @@ set_option -replicate_resources 1
 # set_option -ioreg_in_iob 0
 set_option -replicate_resources 1
 
+# set_option -correct_hold_violation 1
+# set_option inc_place 0
 run pnr

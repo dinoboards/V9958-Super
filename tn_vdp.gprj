@@ -5,53 +5,54 @@
     <Version>5</Version>
     <Device name="GW2AR-18C" pn="GW2AR-LV18QN88C8/I7">gw2ar18c-000</Device>
     <FileList>
-<File path="src/clockdiv.v" type="file.verilog" enable="1"/>
-<File path="src/clocks.v" type="file.verilog" enable="1"/>
-<File path="src/audio.sv" type="file.verilog" enable="1"/>
-<File path="src/memory_controller.sv" type="file.verilog" enable="1"/>
-<File path="src/palette_g.v" type="file.verilog" enable="1"/>
-<File path="src/palette_rb.v" type="file.verilog" enable="1"/>
-<File path="src/ram.v" type="file.verilog" enable="1"/>
-<File path="src/sdram.v" type="file.verilog" enable="1"/>
-<File path="src/SPI_MCP3202.v" type="file.verilog" enable="1"/>
-<File path="src/v9958_top.v" type="file.verilog" enable="1"/>
-<File path="src/vram.v" type="file.verilog" enable="1"/>
-<File path="src/cpu_io.sv" type="file.verilog" enable="1"/>
-<File path="src/video_output/hdmi_output.v" type="file.verilog" enable="1"/>
-<File path="src/video_output/hdmi_selection.v" type="file.verilog" enable="1"/>
-<File path="src/hdmi/audio_clock_regeneration_packet.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/audio_info_frame.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/audio_sample_packet.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/auxiliary_video_information_info_frame.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/hdmi.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/packet_assembler.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/packet_picker.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/serializer.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/source_product_description_info_frame.sv" type="file.verilog" enable="1"/>
-<File path="src/hdmi/tmds_channel.sv" type="file.verilog" enable="1"/>
-<File path="src/vdp/address_bus.sv" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_colordec.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_command.sv" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_double_buffer.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_graphic123m.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_graphic4567.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_hvcounter.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_interrupt.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_line_buffer.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_package.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_register.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_spinforam.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_sprite.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_ssg.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_super_res.sv" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_text12.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_vga.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp_wait_control.v" type="file.verilog" enable="1"/>
-<File path="src/vdp/vdp.v" type="file.verilog" enable="1"/>
-<File path="src/gowin/clk_108p.v" type="file.verilog" enable="1"/>
-<File path="src/gowin/clk_135.v" type="file.verilog" enable="1"/>
-<File path="src/ws2812.sv" type="file.verilog" enable="1"/>
-
+        <File path="src/SPI_MCP3202.v" type="file.verilog" enable="1"/>
+        <File path="src/audio.sv" type="file.verilog" enable="1"/>
+        <File path="src/clockdiv.v" type="file.verilog" enable="1"/>
+        <File path="src/clocks.v" type="file.verilog" enable="1"/>
+        <File path="src/cpu_io.sv" type="file.verilog" enable="1"/>
+        <File path="src/gowin/clk_108p.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin/clk_135.v" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/audio_clock_regeneration_packet.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/audio_info_frame.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/audio_sample_packet.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/auxiliary_video_information_info_frame.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/hdmi.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/packet_assembler.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/packet_picker.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/serializer.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/source_product_description_info_frame.sv" type="file.verilog" enable="1"/>
+        <File path="src/hdmi/tmds_channel.sv" type="file.verilog" enable="1"/>
+        <File path="src/memory_controller.sv" type="file.verilog" enable="1"/>
+        <File path="src/palette_g.v" type="file.verilog" enable="1"/>
+        <File path="src/palette_rb.v" type="file.verilog" enable="1"/>
+        <File path="src/ram.v" type="file.verilog" enable="1"/>
+        <File path="src/sdram.v" type="file.verilog" enable="1"/>
+        <File path="src/v9958_top.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/address_bus.sv" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_colordec.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_command.sv" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_constants.vh" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_double_buffer.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_graphic123m.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_graphic4567.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_hvcounter.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_interrupt.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_line_buffer.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_package.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_register.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_spinforam.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_sprite.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_ssg.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_super_res.sv" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_text12.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_vga.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_wait_control.v" type="file.verilog" enable="1"/>
+        <File path="src/video_output/hdmi_output.v" type="file.verilog" enable="1"/>
+        <File path="src/video_output/hdmi_selection.v" type="file.verilog" enable="1"/>
+        <File path="src/ws2812/ws2812.sv" type="file.verilog" enable="1"/>
+        <File path="src/ws2812/ws2812_registers.sv" type="file.verilog" enable="1"/>
+        <File path="src/ws2812/ws2812_transmitter.sv" type="file.verilog" enable="1"/>
         <File path="src/v9958.cst" type="file.cst" enable="1"/>
         <File path="src/v9958.sdc" type="file.sdc" enable="1"/>
     </FileList>
