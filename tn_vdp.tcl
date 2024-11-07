@@ -80,7 +80,7 @@ set_option -place_option 2
 # 0: default route algorithm, the default route algorithm according to congestion.
 # 1: route algorithm 1, routing according to timing.
 # 2: route algorithm 2, routing speed will be faster.
-set_option -route_option 0
+set_option -route_option 1
 set_option -bit_compress 1
 set_option -bit_crc_check 1
 set_option -bit_security 1

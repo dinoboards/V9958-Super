@@ -936,7 +936,7 @@ module VDP (
       .ACTIVE(VDP_COMMAND_ACTIVE)
   );
 
-
+`ifdef ENABLE_SUPER_RES
   VDP_SUPER_RES vdp_super_res (
       .reset(RESET),
       .clk(CLK21M),
@@ -948,15 +948,14 @@ module VDP (
       .cy(CY),
       .pal_mode(PAL_MODE),
       .REG_R1_DISP_ON(REG_R1_DISP_ON),
-`ifdef ENABLE_SUPER_RES
       .vrm_32(PRAMDAT_32_B),
-`endif
       .super_res_vram_addr(super_vram_addr),
       .high_res_red(high_res_red),
       .high_res_green(high_res_green),
       .high_res_blue(high_res_blue),
       .super_res_drawing(super_res_drawing)
   );
+`endif
 
 
 endmodule
