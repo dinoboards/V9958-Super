@@ -148,16 +148,14 @@ module VDP_REGISTER (
     output wire VDPMODEGRAPHIC6,
     output wire VDPMODEGRAPHIC7,
     output wire VDPMODEISHIGHRES,
-    output wire SPMODE2,
+    output wire SPMODE2
 
+`ifdef ENABLE_SUPER_RES
+    ,
     output bit vdp_super,
     output bit super_color,
     output bit super_mid,
     output bit super_res
-
-
-`ifdef ENABLE_SUPER_RES
-    ,
     output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
     output bit super_rgb_colour_reg_applied
 `endif
@@ -224,21 +222,20 @@ module VDP_REGISTER (
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
 
-  assign ACK = FF_ACK;
-  assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;
-  assign super_color = vdp_super && FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
-  assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
-  assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-
-`ifdef ENABLE_SUPER_RES
-  assign super_rgb_colour_reg_applied = FF_REG_R30[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
-  assign super_rgb_loading = FF_REG_R30[7];  // active when RGBs are being loaded into R#30
-`endif
-
   assign mode_graphic_7_base = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
   assign mode_graphic_super_base = FF_REG_R31[0];  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
 
+  assign ACK = FF_ACK;
+  assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;
+
+`ifdef ENABLE_SUPER_RES
   assign vdp_super = mode_graphic_super_base & mode_graphic_7_base;
+  assign super_rgb_colour_reg_applied = FF_REG_R30[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
+  assign super_rgb_loading = FF_REG_R30[7];  // active when RGBs are being loaded into R#30
+  assign super_color = vdp_super && FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
+  assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
+  assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+`endif
 
   assign VDPMODEGRAPHIC1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00000);
   assign VDPMODETEXT1 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b00001);

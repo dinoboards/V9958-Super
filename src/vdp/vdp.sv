@@ -73,10 +73,6 @@ module VDP (
     output reg          PRAMWE_N,
     output bit   [ 1:0] PRAM_WR_SIZE,
     output bit   [18:0] PRAMADR,
-`ifdef ENABLE_SUPER_RES
-    input  bit   [31:0] PRAMDBI_32,
-    input  bit   [31:0] PRAMDBI_32_B,
-`endif
     input  bit   [15:0] PRAMDBI_16,
     output reg   [ 7:0] PRAMDBO_8,
     output logic [31:0] PRAMDBO_32,
@@ -92,9 +88,14 @@ module VDP (
 
     output bit [7:0] red,
     output bit [7:0] green,
-    output bit [7:0] blue,
+    output bit [7:0] blue
 
+`ifdef ENABLE_SUPER_RES
+    ,
+    input  bit   [31:0] PRAMDBI_32,
+    input  bit   [31:0] PRAMDBI_32_B,
     output bit vdp_super
+`endif
 );
 
   import custom_timings::*;
@@ -603,13 +604,13 @@ module VDP (
       .PRAMADRG123M            (PRAMADRG123M),
       .PRAMADRG4567            (PRAMADRG4567),
       .vdp_cmd_vram_reading_ack(vdp_cmd_vram_reading_ack),
-      .vdp_super               (vdp_super),
       .super_color             (super_color),
       .super_mid               (super_mid),
       .super_res               (super_res),
 `ifdef ENABLE_SUPER_RES
+      .vdp_super               (vdp_super),
       .super_vram_addr         (super_vram_addr),
-      .super_res_drawing(super_res_drawing),
+      .super_res_drawing       (super_res_drawing),
 `endif
       .vdp_cmd_vram_wr_ack     (vdp_cmd_vram_wr_ack),
       .vdp_cmd_vram_reading_req(vdp_cmd_vram_reading_req),
@@ -877,14 +878,14 @@ module VDP (
       .VDPMODEGRAPHIC6(VDPMODEGRAPHIC6),
       .VDPMODEGRAPHIC7(VDPMODEGRAPHIC7),
       .VDPMODEISHIGHRES(VDPMODEISHIGHRES),
-      .vdp_super(vdp_super),
-      .super_color(super_color),
-      .super_mid(super_mid),
-      .super_res(super_res),
       .SPMODE2(SPMODE2)
 
 `ifdef ENABLE_SUPER_RES
       ,
+      .vdp_super(vdp_super),
+      .super_color(super_color),
+      .super_mid(super_mid),
+      .super_res(super_res),
       .super_rgb_colour_reg(super_rgb_colour_reg)
       .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
 `endif

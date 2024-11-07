@@ -43,12 +43,12 @@ module ADDRESS_BUS #(
     input bit   [17:0] PRAMADRG123M,
     input bit   [17:0] PRAMADRG4567,
     input bit          vdp_cmd_vram_reading_ack,
-    input bit          vdp_super,
     input bit          super_color,
     input bit          super_mid,
     input bit          super_res,
 
 `ifdef ENABLE_SUPER_RES
+    input bit          vdp_super,
     input logic [16:0] super_vram_addr,
     input bit super_res_drawing,
 `endif
@@ -127,11 +127,20 @@ module ADDRESS_BUS #(
 
         end else
 `endif
+
+`ifdef ENABLE_SUPER_RES
         if(!vdp_super && ((PREWINDOW && REG_R1_DISP_ON) && (EIGHTDOTSTATE == 3'b000 || EIGHTDOTSTATE == 3'b001 || EIGHTDOTSTATE == 3'b010 || EIGHTDOTSTATE == 3'b011 || EIGHTDOTSTATE == 3'b100))) begin
+`else
+        if(((PREWINDOW && REG_R1_DISP_ON) && (EIGHTDOTSTATE == 3'b000 || EIGHTDOTSTATE == 3'b001 || EIGHTDOTSTATE == 3'b010 || EIGHTDOTSTATE == 3'b011 || EIGHTDOTSTATE == 3'b100))) begin
+`endif
           //EIGHTDOTSTATE is 0 to 4, and displayed
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 
+`ifdef ENABLE_SUPER_RES
         end else if (!vdp_super && (PREWINDOW && REG_R1_DISP_ON && TXVRAMREADEN)) begin
+`else
+        end else if ((PREWINDOW && REG_R1_DISP_ON && TXVRAMREADEN)) begin
+`endif
           // EIGHTDOTSTATE is 5 to 7, and displayed, and it is in text mode
           VRAMACCESSSWITCH = VRAM_ACCESS_DRAW;
 
@@ -247,16 +256,15 @@ module ADDRESS_BUS #(
         // VRAM_ACCESS_DRAW
         // VRAM READ FOR SCREEN DRAWING
 
-        if (vdp_super) begin
 `ifdef ENABLE_SUPER_RES
+        if (vdp_super) begin
           IRAMADR <= {__super_vram_addr, 2'b00};
-`endif
           PRAMDBO_8 <= 8'bZ;
           PRAMDBO_16 <= 8'bZ;
           PRAMDBO_32 <= 32'bZ;
           PRAMWE_N <= 1'b1;
         end else begin
-
+`endif
           case (DOTSTATE)
             2'b10: begin
               PRAMDBO_8  <= 8'bZ;
@@ -287,7 +295,9 @@ module ADDRESS_BUS #(
           VDPVRAMACCESSADDR <= VDPVRAMACCESSADDRTMP;
           VDPVRAMADDRSETACK <= ~VDPVRAMADDRSETACK;
         end
+`ifdef ENABLE_SUPER_RES
       end
+`endif
     end
   end
 

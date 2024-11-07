@@ -107,6 +107,7 @@ module v9958_top (
   bit   [31:0] VrmDbo_32;
   bit   [15:0] VrmDbo_16;
 `ifdef ENABLE_SUPER_RES
+  bit vdp_super;
   bit   [31:0] VrmDbi_32;
   bit   [31:0] VrmDbi_32_B;
 `endif
@@ -122,7 +123,6 @@ module v9958_top (
   bit v9958_write;
   bit memory_refresh;
   bit [16:0] super_res_vram_addr;
-  bit vdp_super;
 
   logic [15:0] audio_sample_word[1:0];
 
@@ -224,6 +224,7 @@ module v9958_top (
       .PRAM_WR_SIZE(VdpDb_Wr_size),
       .PRAMADR     (VdpAdr),
 `ifdef ENABLE_SUPER_RES
+      .vdp_super   (vdp_super),
       .PRAMDBI_32  (VrmDbi_32),
       .PRAMDBI_32_B(VrmDbi_32_B),
 `endif
@@ -238,7 +239,6 @@ module v9958_top (
       .SPMAXSPR    (1'b0),
       .CX          (cx),
       .CY          (cy),
-      .vdp_super   (vdp_super),
       .red         (dvi_r),
       .green       (dvi_g),
       .blue        (dvi_b)
