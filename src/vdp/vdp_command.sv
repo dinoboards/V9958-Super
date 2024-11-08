@@ -79,8 +79,6 @@ module VDP_COMMAND (
     output bit p_vram_rd_req,
     output bit [18:0] p_vram_access_addr,
     output bit [7:0] p_vram_wr_data_8,
-    output bit [31:0] p_vram_wr_data_32,
-    output bit [15:0] p_vram_wr_data_16,
     output bit [7:0] p_clr,
     output bit p_ce,
     output bit p_bd,
@@ -90,6 +88,8 @@ module VDP_COMMAND (
 
 `ifdef ENABLE_SUPER_RES
     ,
+    output bit [31:0] p_vram_wr_data_32,
+    output bit [15:0] p_vram_wr_data_16,
     output bit [1:0] vram_wr_size,
     input bit mode_graphic_super_colour,
     input bit mode_graphic_super_mid,
@@ -196,8 +196,6 @@ module VDP_COMMAND (
   assign p_vram_rd_req = vram_rd_req;
   assign p_vram_access_addr = vram_access_addr;
   assign p_vram_wr_data_8 = vram_wr_data_8;
-  assign p_vram_wr_data_32 = vram_wr_data_32;
-  assign p_vram_wr_data_16 = vram_wr_data_16;
   assign p_clr = CLR;
   assign p_ce = CE;
   assign p_bd = BD;
@@ -206,6 +204,9 @@ module VDP_COMMAND (
   assign current_command = CMR[7:4];
 
 `ifdef ENABLE_SUPER_RES
+  assign p_vram_wr_data_32 = vram_wr_data_32;
+  assign p_vram_wr_data_16 = vram_wr_data_16;
+
   assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_colour | mode_graphic_super_mid | mode_graphic_super_res;
   assign vram_wr_size = mode_graphic_super_colour ? `MEMORY_WIDTH_32 : mode_graphic_super_mid ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8;
 `else
