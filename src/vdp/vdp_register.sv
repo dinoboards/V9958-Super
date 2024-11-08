@@ -215,9 +215,8 @@ module VDP_REGISTER (
 
 `ifdef ENABLE_SUPER_RES
   bit [7:0] FF_REG_R30;
-  bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
-`endif
   bit [7:0] FF_REG_R31;
+  bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
 
   bit super_rgb_loading;  // set if RGBs are being loaded into R#30
   bit mode_graphic_7_base;
@@ -225,6 +224,8 @@ module VDP_REGISTER (
 
   assign mode_graphic_7_base = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
   assign mode_graphic_super_base = FF_REG_R31[0];  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
+`endif
+
 
   assign ACK = FF_ACK;
   assign SPVDPS0RESETREQ = FF_SPVDPS0RESETREQ;
@@ -249,7 +250,11 @@ module VDP_REGISTER (
   assign VDPMODEGRAPHIC4 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b01100);
   assign VDPMODEGRAPHIC5 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10000);
   assign VDPMODEGRAPHIC6 = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b10100);
+`ifdef ENABLE_SUPER_RES
   assign VDPMODEGRAPHIC7 = !mode_graphic_super_base && mode_graphic_7_base;
+`else
+  assign VDPMODEGRAPHIC7 =  (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
+`endif
   assign VDPMODEISHIGHRES = (REG_R0_DISP_MODE[3:2] == 2'b10 && REG_R1_DISP_MODE == 2'b00);
   assign SPMODE2 = (REG_R1_DISP_MODE == 2'b00 && (REG_R0_DISP_MODE[3] | REG_R0_DISP_MODE[2]) == 1'b1);
 
@@ -540,9 +545,8 @@ module VDP_REGISTER (
       FF_PALETTE_WR_REQ <= 1'b0;
       PALETTEWRNUM <= 4'd0;
 
-      //extension
-      FF_REG_R31 <= 0;
 `ifdef ENABLE_SUPER_RES
+      FF_REG_R31 <= 0;
       super_rgb_colour_reg <= 0;
 `endif
     end else begin
