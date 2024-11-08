@@ -32,7 +32,6 @@ module ADDRESS_BUS #(
     input bit          VDPVRAMRDREQ,
     input bit          VDP_COMMAND_ACTIVE,
     input bit          vdp_cmd_vram_wr_req,
-    input bit   [ 1:0] vdp_cmd_vram_wr_size,
     input bit          vdp_cmd_vram_rd_req,
     input bit          VDPVRAMREADINGA,
     input bit          vdp_cmd_vram_rd_ack,
@@ -47,6 +46,7 @@ module ADDRESS_BUS #(
     input bit          vdp_cmd_vram_reading_ack,
 
 `ifdef ENABLE_SUPER_RES
+    input bit   [ 1:0] vdp_cmd_vram_wr_size,
     input bit          vdp_super,
     input logic [16:0] super_vram_addr,
     input bit super_res_drawing,
@@ -231,8 +231,11 @@ module ADDRESS_BUS #(
         PRAMDBO_16 <= VDPCMDVRAMWRDATA_16;
         PRAMDBO_32 <= VDPCMDVRAMWRDATA_32;
         PRAMWE_N <= 1'b0;
+`ifdef ENABLE_SUPER_RES
         PRAM_WR_SIZE <= vdp_cmd_vram_wr_size;
-
+`else
+        PRAM_WR_SIZE <= `MEMORY_WIDTH_8;
+`endif
         vdp_cmd_vram_wr_ack <= ~vdp_cmd_vram_wr_ack;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin

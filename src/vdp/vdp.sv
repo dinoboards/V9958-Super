@@ -271,7 +271,6 @@ module VDP (
   wire        VDPCMDREGWRREQ;
   wire        VDPCMDTRCLRREQ;
   wire        vdp_cmd_vram_wr_req;
-  bit  [ 1:0] vdp_cmd_vram_wr_size;
   wire        vdp_cmd_vram_rd_req;
   wire [18:0] VDPCMDVRAMACCESSADDR;
   wire [ 7:0] VDP_CMD_VRAM_WR_DATA_8;
@@ -299,6 +298,7 @@ module VDP (
   bit  [18:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
 `ifdef ENABLE_SUPER_RES
+  bit  [ 1:0] vdp_cmd_vram_wr_size;
   reg  [31:0] VDPCMDVRAMRDDATA_32;
   bit  [31:0] PRAMDAT_32;
   bit  [31:0] PRAMDAT_32_B;
@@ -591,7 +591,6 @@ module VDP (
       .VDPVRAMRDREQ            (VDPVRAMRDREQ),
       .VDP_COMMAND_ACTIVE      (VDP_COMMAND_ACTIVE),
       .vdp_cmd_vram_wr_req     (vdp_cmd_vram_wr_req),
-      .vdp_cmd_vram_wr_size    (vdp_cmd_vram_wr_size),
       .vdp_cmd_vram_rd_req     (vdp_cmd_vram_rd_req),
       .VDPVRAMREADINGA         (VDPVRAMREADINGA),
       .vdp_cmd_vram_rd_ack     (vdp_cmd_vram_rd_ack),
@@ -605,6 +604,7 @@ module VDP (
       .PRAMADRG4567            (PRAMADRG4567),
       .vdp_cmd_vram_reading_ack(vdp_cmd_vram_reading_ack),
 `ifdef ENABLE_SUPER_RES
+      .vdp_cmd_vram_wr_size    (vdp_cmd_vram_wr_size),
       .vdp_super               (vdp_super),
       .super_vram_addr         (super_vram_addr),
       .super_res_drawing       (super_res_drawing),
