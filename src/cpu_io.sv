@@ -7,8 +7,9 @@ module CPU_IO (
     input bit clk_sdram,
     input bit [7:0] vdp_data_out,
     input bit [7:0] ws2812_data_out,
-    input bit rd_iorq_n,
-    input bit wr_iorq_n,
+    input bit rd_n,
+    input bit wr_n,
+    input bit iorq_n,
 
     output bit vdp_io_req,
     output bit vdp_io_wr,
@@ -19,6 +20,13 @@ module CPU_IO (
     output bit [7:0] ws2812_data_in,
     output bit cs_n
 );
+
+
+  bit rd_iorq_n;
+  bit wr_iorq_n;
+
+  assign rd_iorq_n = rd_n | iorq_n;
+  assign wr_iorq_n = wr_n | iorq_n;
 
   bit       io_state_r = 1'b0;
   bit [1:0] cs_latch;

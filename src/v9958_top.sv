@@ -15,14 +15,16 @@ module v9958_top (
 
     input [7:2] A,
 
-    input rd_iorq_n,
-    input wr_iorq_n,
+    input rd_n,
+    input wr_n,
+    input iorq_n,
 
     input clk,
 
     input reset_n,
     input [1:0] mode,
     output cs_n,
+    output bus_clk,
 
     output int_n,
     inout [7:0] cd,
@@ -81,6 +83,17 @@ module v9958_top (
       .clk_sdramp_w(clk_sdramp_w),
       .clk_sdram_lock_w(clk_sdram_lock_w)
   );
+
+  bit _bus_clk;
+
+  always_ff @(posedge clk or negedge reset_n) begin
+    if (reset_n == 0) begin
+        _bus_clk <= 1'b0;
+    end else begin
+        _bus_clk <= ~_bus_clk;
+    end
+  end
+  assign bus_clk = _bus_clk;
 
   // ----------------------------------------
   // Master Reset combined with clock phase locks
@@ -173,8 +186,9 @@ module v9958_top (
       .clk(clk_w),
       .reset_n(reset_n_w),
       .A(A),
-      .rd_iorq_n(rd_iorq_n),
-      .wr_iorq_n(wr_iorq_n),
+      .iorq_n(iorq_n),
+      .rd_n(rd_n),
+      .wr_n(wr_n),
       .cd(cd),
       .clk_sdram(clk_sdram_w),
 
