@@ -55,6 +55,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //----------------------------------------------------------------------------
 
+`include "..\features.vh"
+
 module VDP_COMMAND (
     input bit reset,
     input bit clk,
@@ -63,17 +65,9 @@ module VDP_COMMAND (
     input bit mode_graphic_6,
     input bit mode_graphic_7,
     input bit mode_high_res,
-    input bit mode_graphic_super_colour,
-    input bit mode_graphic_super_mid,
-    input bit mode_graphic_super_res,
     input bit vram_wr_ack,
     input bit vram_rd_ack,
     input bit [7:0] vram_rd_data,
-`ifdef ENABLE_SUPER_RES
-    input bit [31:0] vram_rd_data_32,
-    input bit super_rgb_colour_reg_applied,
-    input bit [31:0] super_rgb_colour_reg,
-`endif
     input bit reg_wr_req,
     input bit tr_clr_req,
     input bit [3:0] reg_num,
@@ -82,7 +76,6 @@ module VDP_COMMAND (
     output bit p_reg_wr_ack,
     output bit p_tr_clr_ack,
     output bit vram_wr_req,
-    output bit [1:0] vram_wr_size,
     output bit p_vram_rd_req,
     output bit [18:0] p_vram_access_addr,
     output bit [7:0] p_vram_wr_data_8,
@@ -94,6 +87,17 @@ module VDP_COMMAND (
     output bit p_tr,
     output bit [10:0] p_sx_tmp,
     output bit [7:4] current_command
+
+`ifdef ENABLE_SUPER_RES
+    ,
+    output bit [1:0] vram_wr_size,
+    input bit mode_graphic_super_colour,
+    input bit mode_graphic_super_mid,
+    input bit mode_graphic_super_res,
+    input bit [31:0] vram_rd_data_32,
+    input bit super_rgb_colour_reg_applied,
+    input bit [31:0] super_rgb_colour_reg
+`endif
 );
 
   // R44, S#7
@@ -201,9 +205,12 @@ module VDP_COMMAND (
   assign p_sx_tmp = sx_tmp;
   assign current_command = CMR[7:4];
 
+`ifdef ENABLE_SUPER_RES
   assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_colour | mode_graphic_super_mid | mode_graphic_super_res;
-
   assign vram_wr_size = mode_graphic_super_colour ? `MEMORY_WIDTH_32 : mode_graphic_super_mid ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8;
+`else
+  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7;
+`endif
 
   bit graphic_4_or_6;
   assign graphic_4_or_6 = mode_graphic_4 || mode_graphic_6;
@@ -347,6 +354,7 @@ module VDP_COMMAND (
     // DETERMINE IF X-LOOP IS FINISHED
     case (CMR[7:4])
       LINE: begin
+`ifdef ENABLE_SUPER_RES
         if (mode_graphic_super_colour) begin
           nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd180;
         end else if (mode_graphic_super_mid) begin
@@ -354,12 +362,15 @@ module VDP_COMMAND (
         end else if (mode_graphic_super_res) begin
           nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd720;
         end else begin
+`endif
           nx_loop_end = (nx_tmp == NX) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
+`ifdef ENABLE_SUPER_RES
         end
-
+`endif
       end
 
       HMMV, HMMC, LMMV, LMMC: begin
+`ifdef ENABLE_SUPER_RES
         if (mode_graphic_super_colour) begin
           nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd180;
         end else if (mode_graphic_super_mid) begin
@@ -367,8 +378,11 @@ module VDP_COMMAND (
         end else if (mode_graphic_super_res) begin
           nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd720;
         end else begin
+`endif
           nx_loop_end = (nx_tmp == 0) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
+`ifdef ENABLE_SUPER_RES
         end
+`endif
       end
 
       YMMM: begin
@@ -427,6 +441,7 @@ module VDP_COMMAND (
     end else if (mode_graphic_6) begin
       vram_access_addr = {vram_access_y[8:0], vram_access_x[8:1]};
 
+`ifdef ENABLE_SUPER_RES
     end else if (mode_graphic_super_colour) begin
       //resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
       //x is 0 to 179, and y 0 to 143
@@ -446,6 +461,7 @@ module VDP_COMMAND (
       //addr = y * 720*4 + x*4
 
       vram_access_addr = 19'((vram_access_y * 720) + (vram_access_x));
+`endif
 
     end else begin
       vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};

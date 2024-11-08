@@ -56,6 +56,7 @@
 
 
 `include "vdp_constants.vh"
+`include "../features.vh"
 
 module VDP_REGISTER (
     input wire RESET,
@@ -155,7 +156,7 @@ module VDP_REGISTER (
     output bit vdp_super,
     output bit super_color,
     output bit super_mid,
-    output bit super_res
+    output bit super_res,
     output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
     output bit super_rgb_colour_reg_applied
 `endif

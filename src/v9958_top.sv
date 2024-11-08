@@ -1,4 +1,5 @@
 `include "vdp_constants.vh"
+`include "features.vh"
 
 module v9958_top (
     output bit led1_n,

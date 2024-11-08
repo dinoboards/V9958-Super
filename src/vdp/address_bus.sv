@@ -1,3 +1,5 @@
+`include "..\features.vh"
+
 module ADDRESS_BUS #(
 ) (
     input bit          CLK21M,
@@ -43,9 +45,6 @@ module ADDRESS_BUS #(
     input bit   [17:0] PRAMADRG123M,
     input bit   [17:0] PRAMADRG4567,
     input bit          vdp_cmd_vram_reading_ack,
-    input bit          super_color,
-    input bit          super_mid,
-    input bit          super_res,
 
 `ifdef ENABLE_SUPER_RES
     input bit          vdp_super,

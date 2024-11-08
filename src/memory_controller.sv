@@ -28,6 +28,7 @@ Need to support:
 */
 
 `include "vdp_constants.vh"
+`include "features.vh"
 
 module MEM_CONTROLLER #(
     parameter int FREQ = 54_000_000

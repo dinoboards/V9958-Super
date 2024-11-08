@@ -59,6 +59,7 @@
 //
 
 `include "vdp_constants.vh"
+`include "../features.vh"
 
 module VDP (
     input  wire         CLK21M,
@@ -305,6 +306,9 @@ module VDP (
   // SUPER 24 bit RGB COLOUR
   bit         super_rgb_colour_reg_applied;
   bit  [31:0] super_rgb_colour_reg;
+  bit         super_color;
+  bit         super_mid;
+  bit         super_res;
 `endif
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
@@ -312,10 +316,6 @@ module VDP (
   wire        ENAHSYNC;
   wire        FF_BWINDOW_Y_DL;
 
-  // SUPER 24 bit RGB COLOUR
-  bit         super_color;
-  bit         super_mid;
-  bit         super_res;
 
   parameter VRAM_ACCESS_IDLE = 0;
   parameter VRAM_ACCESS_DRAW = 1;
@@ -604,9 +604,6 @@ module VDP (
       .PRAMADRG123M            (PRAMADRG123M),
       .PRAMADRG4567            (PRAMADRG4567),
       .vdp_cmd_vram_reading_ack(vdp_cmd_vram_reading_ack),
-      .super_color             (super_color),
-      .super_mid               (super_mid),
-      .super_res               (super_res),
 `ifdef ENABLE_SUPER_RES
       .vdp_super               (vdp_super),
       .super_vram_addr         (super_vram_addr),
@@ -886,7 +883,7 @@ module VDP (
       .super_color(super_color),
       .super_mid(super_mid),
       .super_res(super_res),
-      .super_rgb_colour_reg(super_rgb_colour_reg)
+      .super_rgb_colour_reg(super_rgb_colour_reg),
       .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
 `endif
 
@@ -903,9 +900,6 @@ module VDP (
       .mode_graphic_6(VDPMODEGRAPHIC6),
       .mode_graphic_7(VDPMODEGRAPHIC7),
       .mode_high_res(VDPMODEISHIGHRES),
-      .mode_graphic_super_colour(super_color),
-      .mode_graphic_super_mid(super_mid),
-      .mode_graphic_super_res(super_res),
       .vram_wr_ack(vdp_cmd_vram_wr_ack),
       .vram_rd_ack(vdp_cmd_vram_rd_ack),
       .vram_rd_data(VDPCMDVRAMRDDATA),
@@ -916,7 +910,6 @@ module VDP (
       .p_reg_wr_ack(VDPCMDREGWRACK),
       .p_tr_clr_ack(VDPCMDTRCLRACK),
       .vram_wr_req(vdp_cmd_vram_wr_req),
-      .vram_wr_size(vdp_cmd_vram_wr_size),
       .p_vram_rd_req(vdp_cmd_vram_rd_req),
       .p_vram_access_addr(VDPCMDVRAMACCESSADDR),
       .p_vram_wr_data_8(VDP_CMD_VRAM_WR_DATA_8),
@@ -930,6 +923,10 @@ module VDP (
       .current_command(CUR_VDP_COMMAND)
 `ifdef ENABLE_SUPER_RES
       ,
+      .vram_wr_size(vdp_cmd_vram_wr_size),
+      .mode_graphic_super_colour(super_color),
+      .mode_graphic_super_mid(super_mid),
+      .mode_graphic_super_res(super_res),
       .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
       .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
       .super_rgb_colour_reg(super_rgb_colour_reg)
