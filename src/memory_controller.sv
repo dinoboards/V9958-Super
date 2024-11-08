@@ -80,7 +80,9 @@ module MEM_CONTROLLER #(
   bit [3:0] wdm;
   bit [31:0] __din32;
 `ifdef ENABLE_SUPER_RES
-  bit [1:0] requested_word_wr_size;  // The word size captured at time operation initiated
+  bit [ 1:0] requested_word_wr_size;  // The word size captured at time operation initiated
+  bit [31:0] data32;
+  bit [31:0] data32B;
 `endif
   bit [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
@@ -88,8 +90,6 @@ module MEM_CONTROLLER #(
   logic [15:0] MemDout16;
   bit [2:0] cycles;
   bit r_read;
-  bit [31:0] data32;
-  bit [31:0] data32B;
   bit [15:0] data16;
   bit MemBusy, MemDataReady;
   bit __operation_initiated;

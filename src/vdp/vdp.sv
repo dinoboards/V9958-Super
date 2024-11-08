@@ -72,7 +72,6 @@ module VDP (
     input  wire  [ 7:0] DBO,
     output wire         INT_N,
     output reg          PRAMWE_N,
-    output bit   [ 1:0] PRAM_WR_SIZE,
     output bit   [18:0] PRAMADR,
     input  bit   [15:0] PRAMDBI_16,
     output reg   [ 7:0] PRAMDBO_8,
@@ -95,6 +94,7 @@ module VDP (
     ,
     input  bit   [31:0] PRAMDBI_32,
     input  bit   [31:0] PRAMDBI_32_B,
+    output bit   [ 1:0] PRAM_WR_SIZE,
     output bit vdp_super
 `endif
 );
@@ -608,6 +608,7 @@ module VDP (
       .vdp_super               (vdp_super),
       .super_vram_addr         (super_vram_addr),
       .super_res_drawing       (super_res_drawing),
+      .PRAM_WR_SIZE            (PRAM_WR_SIZE),
 `endif
       .vdp_cmd_vram_wr_ack     (vdp_cmd_vram_wr_ack),
       .vdp_cmd_vram_reading_req(vdp_cmd_vram_reading_req),
@@ -615,7 +616,6 @@ module VDP (
       .IRAMADR                 (IRAMADR),
       .PRAMDBO_8               (PRAMDBO_8),
       .PRAMWE_N                (PRAMWE_N),
-      .PRAM_WR_SIZE            (PRAM_WR_SIZE),
       .VDPVRAMREADINGR         (VDPVRAMREADINGR),
       .VDPVRAMRDACK            (VDPVRAMRDACK),
       .VDPVRAMWRACK            (VDPVRAMWRACK),

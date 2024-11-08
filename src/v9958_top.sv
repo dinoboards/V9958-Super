@@ -95,35 +95,34 @@ module v9958_top (
   // V5598 Video Generation
   // ----------------------------------------
 
-  bit          vdp_io_req;
-  bit          vdp_io_wr;
-  bit   [ 7:0] vdp_data_in;
-  bit   [ 7:0] vdp_data_out;
-  bit          VideoDLClk;
-  bit          VideoDHClk;
-  bit          WeVdp_n;
-  bit   [ 1:0] VdpDb_Wr_size;
-  bit   [18:0] VdpAdr;
-  bit   [ 7:0] VrmDbo_8;
-  bit   [31:0] VrmDbo_32;
-  bit   [15:0] VrmDbo_16;
+  bit        vdp_io_req;
+  bit        vdp_io_wr;
+  bit [ 7:0] vdp_data_in;
+  bit [ 7:0] vdp_data_out;
+  bit        VideoDLClk;
+  bit        VideoDHClk;
+  bit        WeVdp_n;
+  bit [18:0] VdpAdr;
+  bit [ 7:0] VrmDbo_8;
+  bit [31:0] VrmDbo_32;
+  bit [15:0] VrmDbo_16;
 `ifdef ENABLE_SUPER_RES
+  bit [1:0] VdpDb_Wr_size;
   bit vdp_super;
-  bit   [31:0] VrmDbi_32;
-  bit   [31:0] VrmDbi_32_B;
+  bit [31:0] VrmDbi_32;
+  bit [31:0] VrmDbi_32_B;
 `endif
-  bit   [15:0] VrmDbi_16;
+  bit [15:0] VrmDbi_16;
 
   logic [10:0] cx;
-  logic [ 9:0] cy;
+  logic [9:0] cy;
 
-  bit ram_busy, ram_fail;
+  bit ram_fail;
   bit ram_enabled;
 
   bit v9958_read;
   bit v9958_write;
   bit memory_refresh;
-  bit [16:0] super_res_vram_addr;
 
   logic [15:0] audio_sample_word[1:0];
 
@@ -222,9 +221,9 @@ module v9958_top (
       .DBO         (vdp_data_in),
       .INT_N       (int_n),
       .PRAMWE_N    (WeVdp_n),
-      .PRAM_WR_SIZE(VdpDb_Wr_size),
       .PRAMADR     (VdpAdr),
 `ifdef ENABLE_SUPER_RES
+      .PRAM_WR_SIZE(VdpDb_Wr_size),
       .vdp_super   (vdp_super),
       .PRAMDBI_32  (VrmDbi_32),
       .PRAMDBI_32_B(VrmDbi_32_B),

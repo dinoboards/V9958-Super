@@ -32,7 +32,11 @@
 `define LED_TV_Y_NTSC 1
 `define LED_TV_Y_PAL 3
 
+`ifdef ENABLE_SUPER_RES
 `define VDP_ID 5'b10010  // V9958 - SUPER
+`else
+`define VDP_ID 5'b00010  // V9958
+`endif
 
 `define V_BLANKING_START_192_NTSC 240
 `define V_BLANKING_START_212_NTSC 250

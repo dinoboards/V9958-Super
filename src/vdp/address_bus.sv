@@ -50,6 +50,7 @@ module ADDRESS_BUS #(
     input bit          vdp_super,
     input logic [16:0] super_vram_addr,
     input bit super_res_drawing,
+    output bit [ 1:0] PRAM_WR_SIZE,
 `endif
 
     output bit        vdp_cmd_vram_wr_ack,
@@ -58,7 +59,6 @@ module ADDRESS_BUS #(
     output bit [18:0] IRAMADR,
     output bit [ 7:0] PRAMDBO_8,
     output bit        PRAMWE_N,
-    output bit [ 1:0] PRAM_WR_SIZE,
     output bit        VDPVRAMREADINGR,
     output bit        VDPVRAMRDACK,
     output bit        VDPVRAMWRACK,
@@ -100,7 +100,9 @@ module ADDRESS_BUS #(
       IRAMADR <= {19{1'b1}};
       PRAMDBO_8 <= {8{1'bZ}};
       PRAMWE_N <= 1'b1;
+`ifdef ENABLE_SUPER_RES
       PRAM_WR_SIZE <= `MEMORY_WIDTH_8;
+`endif
       VDPVRAMREADINGR <= 1'b0;
       VDPVRAMRDACK <= 1'b0;
       VDPVRAMWRACK <= 1'b0;
@@ -198,7 +200,9 @@ module ADDRESS_BUS #(
         end
         PRAMDBO_8 <= VDPVRAMACCESSDATA;
         PRAMWE_N <= 1'b0;
+`ifdef ENABLE_SUPER_RES
         PRAM_WR_SIZE <= `MEMORY_WIDTH_8;  //write an 8 bit value
+`endif
         VDPVRAMWRACK <= ~VDPVRAMWRACK;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUR)) begin
@@ -233,8 +237,6 @@ module ADDRESS_BUS #(
         PRAMWE_N <= 1'b0;
 `ifdef ENABLE_SUPER_RES
         PRAM_WR_SIZE <= vdp_cmd_vram_wr_size;
-`else
-        PRAM_WR_SIZE <= `MEMORY_WIDTH_8;
 `endif
         vdp_cmd_vram_wr_ack <= ~vdp_cmd_vram_wr_ack;
 
