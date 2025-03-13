@@ -56,7 +56,6 @@
 
 
 `include "vdp_constants.vh"
-`include "../features.vh"
 
 module VDP_REGISTER (
     input wire RESET,

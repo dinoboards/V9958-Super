@@ -1,3 +1,5 @@
+`include "features.vh"
+
 `define LEFT_BORDER 255
 
 // display start position ( when adjust=(0,0) )

@@ -59,7 +59,6 @@
 //
 
 `include "vdp_constants.vh"
-`include "../features.vh"
 
 module VDP (
     input  wire         CLK21M,
