@@ -34,18 +34,27 @@ module PALETTE (
     input bit WE,
     input bit [3:0] DBO,
     output bit [3:0] DBI
+
+`ifdef ENABLE_SUPER_RES
+    ,
+    input bit [3:0] ADR2,
+    output bit [3:0] DBI2
+`endif
 );
 
   reg [7:0] blkram[0:15] = '{8'h00, 8'h00, 8'h05, 8'h06, 8'h02, 8'h03, 8'h02, 8'h06, 8'h02, 8'h03, 8'h05, 8'h06, 8'h04, 8'h02, 8'h05, 8'h07};
   reg [3:0] iadr;
+  reg [3:0] iadr2;
 
   always @(posedge CLK) begin
     if (WE) begin
       blkram[ADR] <= {4'b0, DBO};
     end
     iadr <= ADR;
+    iadr2 <= ADR2;
   end
 
   assign DBI = blkram[iadr][3:0];
+  assign DBI2 = blkram[iadr2][3:0];
 
 endmodule

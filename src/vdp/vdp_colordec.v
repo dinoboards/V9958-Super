@@ -55,6 +55,8 @@
 //  POSSIBILITY OF SUCH DAMAGE.
 //----------------------------------------------------------------------------
 
+`include "vdp_constants.vh"
+
 
 module VDP_COLORDEC (
     input wire RESET,
@@ -126,13 +128,13 @@ module VDP_COLORDEC (
       FF_VIDEO_G <= 6'b000000;
       FF_VIDEO_B <= 6'b000000;
     end else begin
-      if ((W_EVEN_DOTSTATE == 1'b1)) begin
-        if ((VDPMODEGRAPHIC7 == 1'b1 && FF_YJK_EN == 1'b1 && FF_SPRITECOLOROUT == 1'b0)) begin
+      if (W_EVEN_DOTSTATE == 1'b1) begin
+        if (VDPMODEGRAPHIC7 == 1'b1 && FF_YJK_EN == 1'b1 && FF_SPRITECOLOROUT == 1'b0) begin
           //  YJK MODE
           FF_VIDEO_R <= FF_YJK_R;
           FF_VIDEO_G <= FF_YJK_G;
           FF_VIDEO_B <= FF_YJK_B;
-        end else if ((VDPMODEGRAPHIC7 == 1'b0 || REG_R25_YJK == 1'b1)) begin
+        end else if (VDPMODEGRAPHIC7 == 1'b0 || REG_R25_YJK == 1'b1) begin
           //  PALETTE COLOR (NOT GRAPHIC7, SPRITE ON YJK MODE, YAE COLOR ON YJK MODE)
 `ifdef ENABLE_SUPER_RES
           FF_VIDEO_R <= {PALETTE_DATA_R_OUT[3:0], 2'b00};
@@ -177,14 +179,18 @@ module VDP_COLORDEC (
   end
 
   // FOR OTHERS
-  assign W_FORE_COLOR = ((VDPMODETEXT1 | VDPMODETEXT1Q | VDPMODETEXT2) == 1'b1) ? COLORCODET12 : (SPRITECOLOROUT == 1'b1) ? COLORCODESPRITE : ((VDPMODEGRAPHIC1 | VDPMODEGRAPHIC2 | VDPMODEGRAPHIC3 | VDPMODEMULTI | VDPMODEMULTIQ) == 1'b1) ? COLORCODEG123M : COLORCODEG4567[3:0];
+  assign W_FORE_COLOR = ((VDPMODETEXT1 | VDPMODETEXT1Q | VDPMODETEXT2) == 1'b1) ? COLORCODET12 :
+                         (SPRITECOLOROUT == 1'b1)                               ? COLORCODESPRITE :
+                         ((VDPMODEGRAPHIC1 | VDPMODEGRAPHIC2 | VDPMODEGRAPHIC3 | VDPMODEMULTI | VDPMODEMULTIQ) == 1'b1) ? COLORCODEG123M :
+                         COLORCODEG4567[3:0];
+
   assign W_BACK_COLOR = REG_R7_FRAME_COL[3:0];
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_PALETTE_ADDR <= {4{1'b0}};
+    if (RESET == 1) begin
+      FF_PALETTE_ADDR <= {4'b0000};
     end else begin
-      if ((W_EVEN_DOTSTATE == 1'b1)) begin
-        if ((WINDOW == 1'b0 || REG_R1_DISP_ON == 1'b0 || (W_FORE_COLOR == 4'b0000 && REG_R8_COL0_ON == 1'b0))) begin
+      if (W_EVEN_DOTSTATE == 1) begin
+        if (WINDOW == 1'b0 || REG_R1_DISP_ON == 1'b0 || (W_FORE_COLOR == 4'b0000 && REG_R8_COL0_ON == 1'b0)) begin
           FF_PALETTE_ADDR <= W_BACK_COLOR;
         end else begin
           FF_PALETTE_ADDR <= W_FORE_COLOR;

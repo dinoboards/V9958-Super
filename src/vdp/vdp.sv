@@ -146,7 +146,7 @@ module VDP (
   wire [ 8:0] PREDOTCOUNTER_YP;
 
   // VDP REGISTER ACCESS
-  reg  [16:0] VDPVRAMACCESSADDR;
+  // reg  [17:0] VDPVRAMACCESSADDR;
   reg         VDPVRAMREADINGR;
   reg         VDPVRAMREADINGA;
   wire [ 3:1] VDPR0DISPNUM;
@@ -226,6 +226,10 @@ module VDP (
 `ifdef ENABLE_SUPER_RES
   bit         super_res_drawing;
   bit  [16:0] super_vram_addr;
+  bit [3:0] PALETTE_ADDR2;
+  bit[3:0] PALETTE_DATA_R2_OUT;
+  bit[3:0] PALETTE_DATA_G2_OUT;
+  bit[3:0] PALETTE_DATA_B2_OUT;
 `endif
 
   // SPRITE
@@ -666,6 +670,12 @@ module VDP (
       .REG_R7_FRAME_COL(REG_R7_FRAME_COL),
       .REG_R8_COL0_ON(REG_R8_COL0_ON),
       .REG_R25_YJK(REG_R25_YJK)
+
+// `ifdef ENABLE_SUPER_RES
+//     ,
+//     .super_res(super_res),
+//     .super_res_color_code(super_res_color_code)
+// `endif
   );
 
   //---------------------------------------------------------------------------
@@ -887,7 +897,11 @@ module VDP (
       .super_mid(super_mid),
       .super_res(super_res),
       .super_rgb_colour_reg(super_rgb_colour_reg),
-      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied)
+      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
+      .PALETTE_ADDR2(PALETTE_ADDR2),
+      .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
+      .PALETTE_DATA_G2_OUT(PALETTE_DATA_G2_OUT),
+      .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT)
 `endif
 
   );
@@ -966,7 +980,12 @@ module VDP (
       .high_res_red(high_res_red),
       .high_res_green(high_res_green),
       .high_res_blue(high_res_blue),
-      .super_res_drawing(super_res_drawing)
+      .super_res_drawing(super_res_drawing),
+      .PALETTE_ADDR2(PALETTE_ADDR2),
+      .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
+      .PALETTE_DATA_G2_OUT(PALETTE_DATA_G2_OUT),
+      .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT)
+
   );
 `endif
 

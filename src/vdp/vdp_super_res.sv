@@ -15,6 +15,11 @@ module VDP_SUPER_RES (
 
     input bit [31:0] vrm_32,
 
+    output bit [3:0] PALETTE_ADDR2,
+    input bit[3:0] PALETTE_DATA_R2_OUT,
+    input bit[3:0] PALETTE_DATA_G2_OUT,
+    input bit[3:0] PALETTE_DATA_B2_OUT,
+
     output logic [16:0] super_res_vram_addr,
     output bit [7:0] high_res_red,
     output bit [7:0] high_res_green,
@@ -47,17 +52,15 @@ module VDP_SUPER_RES (
   assign high_mid_pixel_green = high_res_data[10:5];
   assign high_mid_pixel_blue = high_res_data[4:0];
 
-  bit [2:0] high_res_pixel_red;
-  bit [2:0] high_res_pixel_green;
-  bit [1:0] high_res_pixel_blue;
+  // assign PALETTE_ADDR2 = high_res_data[3:0];
 
-  assign high_res_pixel_green = high_res_data[7:5];
-  assign high_res_pixel_red = high_res_data[4:2];
-  assign high_res_pixel_blue = high_res_data[1:0];
+  assign high_res_red = {PALETTE_DATA_R2_OUT, 4'b0};
+  assign high_res_green = {PALETTE_DATA_G2_OUT, 4'b0};
+  assign high_res_blue = {PALETTE_DATA_B2_OUT, 4'b0};
 
-  assign high_res_red = super_color ? high_res_data[23:16] : super_mid ? {high_mid_pixel_red, 3'b0} : {high_res_pixel_red, 5'b0};
-  assign high_res_green = super_color ? high_res_data[15:8] : super_mid ? {high_mid_pixel_green, 2'b0} : {high_res_pixel_green, 5'b0};
-  assign high_res_blue = super_color ? high_res_data[7:0] : super_mid ? {high_mid_pixel_blue, 3'b0} : {high_res_pixel_blue, 6'b0};
+  // assign high_res_red = {high_res_data[7:5], 5'b0};
+  // assign high_res_green = {high_res_data[4:2], 5'b0};
+  // assign high_res_blue = {high_res_data[1:0], 6'b0};
 
   assign super_res_visible = super_high_res_visible_x & super_high_res_visible_y;
   assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0) || super_res;
@@ -153,10 +156,12 @@ module VDP_SUPER_RES (
 
           end else begin
             case (cx[1:0])
+              // During clock cycle 0, the last pixel of the double word is rendered
               0: begin  // (DL)
                 if (active_line) begin
                   line_buffer[line_buffer_index] <= REG_R1_DISP_ON ? next_rgb : 0;
                   high_res_data <= REG_R1_DISP_ON ? next_rgb : 0;
+                  PALETTE_ADDR2 = REG_R1_DISP_ON ? next_rgb[3:0] : 0; // should move to 3?
 
                 end else begin
                   high_res_data <= line_buffer[line_buffer_index];
@@ -170,27 +175,34 @@ module VDP_SUPER_RES (
 
               end
 
+              // During clock cycle 1, the first pixel of the double word is rendered
+              // Request for next double word is initiated at during this clock cycle (next_rgb)
               1: begin  // (DA)
                 if(super_res) begin
                   high_res_data <= {8'd0, high_res_data[31:8]};
+                  PALETTE_ADDR2 = high_res_data[11:8]; //should move to 0
                 end
                 if (active_line) begin
-                  next_rgb <= vrm_32;
+                  next_rgb <= vrm_32; // when will data be ready - 4 clocks later (ie the previous cycle)
                 end
               end
 
+              // During clock cycle 2, the second pixel of the double word is rendered
               2: begin  // (AP)
                 if(super_res) begin
                   high_res_data <= {8'd0, high_res_data[31:8]};
+                  PALETTE_ADDR2 = high_res_data[11:8]; //should move to 1
                 end
                 if (super_mid) begin
                   high_res_data <= {16'b0, high_res_data[31:16]};
                 end
               end
 
+              // During clock cycle 3, the third pixel of the double word is rendered
               3: begin  // (FS)
                 if(super_res) begin
                   high_res_data <= {8'd0, high_res_data[31:8]};
+                  PALETTE_ADDR2 = high_res_data[11:8]; //should move to 2
                 end
               end
             endcase

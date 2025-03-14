@@ -77,7 +77,7 @@ module ADDRESS_BUS #(
   localparam VRAM_ACCESS_VDPR = 6;
   localparam VRAM_ACCESS_VDPS = 7;
 
-  bit [17:0] VDPVRAMACCESSADDR;
+  bit [18:0] VDPVRAMACCESSADDR;
 
 `ifdef ENABLE_SUPER_RES
   bit [16:0] __super_vram_addr;
@@ -107,7 +107,7 @@ module ADDRESS_BUS #(
       VDPVRAMRDACK <= 1'b0;
       VDPVRAMWRACK <= 1'b0;
       VDPVRAMADDRSETACK <= 1'b0;
-      VDPVRAMACCESSADDR <= {17{1'b0}};
+      VDPVRAMACCESSADDR <= {19'b0};
       vdp_cmd_vram_wr_ack <= 1'b0;
       vdp_cmd_vram_reading_req <= 1'b0;
       VDP_COMMAND_DRIVE <= 1'b0;
@@ -196,7 +196,7 @@ module ADDRESS_BUS #(
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
           VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDR[13:0] + 1);
         end else begin
-          VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDR + 1);
+          VDPVRAMACCESSADDR <= 19'(VDPVRAMACCESSADDR + 1); //TODO: has extending the bit width broken compatibility with non super res modes
         end
         PRAMDBO_8 <= VDPVRAMACCESSDATA;
         PRAMWE_N <= 1'b0;
@@ -220,7 +220,7 @@ module ADDRESS_BUS #(
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
           VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDRV[13:0] + 1);
         end else begin
-          VDPVRAMACCESSADDR <= 17'(VDPVRAMACCESSADDRV + 1);
+          VDPVRAMACCESSADDR <= 19'(VDPVRAMACCESSADDRV + 1);
         end
         PRAMDBO_8 <= 8'bZ;
 `ifdef ENABLE_SUPER_RES

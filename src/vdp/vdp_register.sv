@@ -158,7 +158,12 @@ module VDP_REGISTER (
     output bit super_mid,
     output bit super_res,
     output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
-    output bit super_rgb_colour_reg_applied
+    output bit super_rgb_colour_reg_applied,
+
+    input bit [3:0] PALETTE_ADDR2,
+    output bit[3:0] PALETTE_DATA_R2_OUT,
+    output bit[3:0] PALETTE_DATA_G2_OUT,
+    output bit[3:0] PALETTE_DATA_B2_OUT
 `endif
 );
 
@@ -342,6 +347,11 @@ module VDP_REGISTER (
       .WE (PALETTEWE),
       .DBO(PALETTE_DATA_R_IN),
       .DBI(PALETTE_DATA_R_OUT)
+`ifdef ENABLE_SUPER_RES
+      ,
+      .ADR2(PALETTE_ADDR2),
+      .DBI2(PALETTE_DATA_R2_OUT)
+`endif
   );
 
   PALETTE U_PALETTE_MEM_G (
@@ -350,6 +360,11 @@ module VDP_REGISTER (
       .WE (PALETTEWE),
       .DBO(PALETTE_DATA_G_IN),
       .DBI(PALETTE_DATA_G_OUT)
+`ifdef ENABLE_SUPER_RES
+      ,
+      .ADR2(PALETTE_ADDR2),
+      .DBI2(PALETTE_DATA_G2_OUT)
+`endif
   );
 
   PALETTE U_PALETTE_MEM_B (
@@ -358,6 +373,11 @@ module VDP_REGISTER (
       .WE (PALETTEWE),
       .DBO(PALETTE_DATA_B_IN),
       .DBI(PALETTE_DATA_B_OUT)
+`ifdef ENABLE_SUPER_RES
+      ,
+      .ADR2(PALETTE_ADDR2),
+      .DBI2(PALETTE_DATA_B2_OUT)
+`endif
   );
 
   //------------------------------------------------------------------------
