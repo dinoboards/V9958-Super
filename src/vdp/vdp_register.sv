@@ -101,8 +101,9 @@ module VDP_REGISTER (
     output reg VDPCMDREGWRREQ,
     output reg VDPCMDTRCLRREQ,
     input wire [3:0] PALETTEADDR_OUT,
-    output wire [7:0] PALETTEDATARB_OUT,
-    output wire [7:0] PALETTEDATAG_OUT,
+    output wire [3:0] PALETTE_DATA_R_OUT,
+    output wire [3:0] PALETTE_DATA_B_OUT,
+    output wire [3:0] PALETTE_DATA_G_OUT,
     output reg CLR_VSYNC_INT,
     output reg CLR_HSYNC_INT,
     input wire REQ_VSYNC_INT_N,
@@ -183,10 +184,6 @@ module VDP_REGISTER (
   // IN EXTENDED MODE, 1 -> LOAD RED, 2 -> LOAD GREEN, 0 -> LOAD BLUE
   bit[1:0] VDP_PALETTE_LOADING_STATE;
 
-  bit[3:0] PALETTE_EXTENDED_RED_IN;
-  bit[3:0] PALETTE_EXTENDED_GREEN_IN;
-  bit[3:0] PALETTE_EXTENDED_BLUE_IN;
-
   wire [7:0] VDPP0DATA;
   reg [7:0] VDPP1DATA;
   reg [5:0] VDPREGPTR;
@@ -199,8 +196,9 @@ module VDP_REGISTER (
   reg VDPR17INCREGNUM;
   wire [3:0] PALETTEADDR;
   wire PALETTEWE;
-  reg [7:0] PALETTE_DATA_RB_IN;
-  reg [7:0] PALETTE_DATA_G_IN;
+  reg [3:0] PALETTE_DATA_R_IN;
+  reg [3:0] PALETTE_DATA_B_IN;
+  reg [3:0] PALETTE_DATA_G_IN;
   reg [3:0] PALETTE_WR_NUM;
   reg FF_PALETTE_WR_REQ;
   reg FF_PALETTE_WR_ACK;
@@ -338,20 +336,28 @@ module VDP_REGISTER (
     end
   end
 
-  PALETTE_RB U_PALETTEMEMRB (
+  PALETTE U_PALETTE_MEM_R (
       .ADR(PALETTEADDR),
       .CLK(CLK21M),
       .WE (PALETTEWE),
-      .DBO(PALETTE_DATA_RB_IN),
-      .DBI(PALETTEDATARB_OUT)
+      .DBO(PALETTE_DATA_R_IN),
+      .DBI(PALETTE_DATA_R_OUT)
   );
 
-  PALETTE_G U_PALETTEMEMG (
+  PALETTE U_PALETTE_MEM_G (
       .ADR(PALETTEADDR),
       .CLK(CLK21M),
       .WE (PALETTEWE),
       .DBO(PALETTE_DATA_G_IN),
-      .DBI(PALETTEDATAG_OUT)
+      .DBI(PALETTE_DATA_G_OUT)
+  );
+
+  PALETTE U_PALETTE_MEM_B (
+      .ADR(PALETTEADDR),
+      .CLK(CLK21M),
+      .WE (PALETTEWE),
+      .DBO(PALETTE_DATA_B_IN),
+      .DBI(PALETTE_DATA_B_OUT)
   );
 
   //------------------------------------------------------------------------
@@ -549,8 +555,9 @@ module VDP_REGISTER (
       VDPCMDTRCLRREQ <= 1'b0;
 
       // PALETTE
-      PALETTE_DATA_RB_IN <= 8'd0;
-      PALETTE_DATA_G_IN <= 8'd0;
+      PALETTE_DATA_R_IN <= 3'd0;
+      PALETTE_DATA_B_IN <= 3'd0;
+      PALETTE_DATA_G_IN <= 3'd0;
       FF_PALETTE_WR_REQ <= 1'b0;
       PALETTE_WR_NUM <= 4'd0;
 
@@ -636,16 +643,15 @@ module VDP_REGISTER (
 
             if (mode_extended_palette) begin
               if (VDP_PALETTE_LOADING_STATE == 1) begin
-                PALETTE_EXTENDED_RED_IN <= DBO[3:0];
+                PALETTE_DATA_R_IN <= DBO[3:0];
                 VDP_PALETTE_LOADING_STATE <= 2;
               end else begin
                 if (VDP_PALETTE_LOADING_STATE == 2) begin
-                  PALETTE_EXTENDED_GREEN_IN <= DBO[3:0];
+                  PALETTE_DATA_G_IN <= DBO[3:0];
                   VDP_PALETTE_LOADING_STATE <= 3;
                 end else begin
                   // PALETTE_EXTENDED_BLUE_IN <= DBO;
-                  PALETTE_DATA_RB_IN <= {PALETTE_EXTENDED_RED_IN[3:0], DBO[3:0]};
-                  PALETTE_DATA_G_IN <= {PALETTE_EXTENDED_GREEN_IN[3:0]};
+                  PALETTE_DATA_B_IN <= DBO[3:0];
                   PALETTE_WR_NUM <= VDP_R16_PAL_NUM;
                   FF_PALETTE_WR_REQ <= ~FF_PALETTE_WR_ACK;
                   VDP_PALETTE_LOADING_STATE <= 1;
@@ -655,10 +661,11 @@ module VDP_REGISTER (
 
             end else begin
               if (VDP_PALETTE_LOADING_STATE == 1) begin
-                PALETTE_DATA_RB_IN <= DBO;
+                PALETTE_DATA_R_IN <= {DBO[6:4], 1'b0};
+                PALETTE_DATA_B_IN <= {DBO[2:0], 1'b0};
                 VDP_PALETTE_LOADING_STATE   <= 0;
               end else begin
-                PALETTE_DATA_G_IN <= DBO;
+                PALETTE_DATA_G_IN <= {DBO[2:0], 1'b0};
                 PALETTE_WR_NUM <= VDP_R16_PAL_NUM;
                 FF_PALETTE_WR_REQ <= ~FF_PALETTE_WR_ACK;
                 VDP_PALETTE_LOADING_STATE <= 1;

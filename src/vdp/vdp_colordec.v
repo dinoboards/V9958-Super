@@ -61,8 +61,9 @@ module VDP_COLORDEC (
     input wire CLK21M,
     input wire [1:0] DOTSTATE,
     output wire [3:0] PPALETTEADDR_OUT,
-    input wire [7:0] PALETTEDATARB_OUT,
-    input wire [7:0] PALETTEDATAG_OUT,
+    input wire [3:0] PALETTE_DATA_R_OUT,
+    input wire [3:0] PALETTE_DATA_B_OUT,
+    input wire [3:0] PALETTE_DATA_G_OUT,
     input wire VDPMODETEXT1,
     input wire VDPMODETEXT1Q,
     input wire VDPMODETEXT2,
@@ -134,13 +135,13 @@ module VDP_COLORDEC (
         end else if ((VDPMODEGRAPHIC7 == 1'b0 || REG_R25_YJK == 1'b1)) begin
           //  PALETTE COLOR (NOT GRAPHIC7, SPRITE ON YJK MODE, YAE COLOR ON YJK MODE)
 `ifdef ENABLE_SUPER_RES
-          FF_VIDEO_R <= {PALETTEDATARB_OUT[7:4], 2'b00};
-          FF_VIDEO_G <= {PALETTEDATAG_OUT[3:0], 2'b00};
-          FF_VIDEO_B <= {PALETTEDATARB_OUT[3:0], 2'b00};
+          FF_VIDEO_R <= {PALETTE_DATA_R_OUT[3:0], 2'b00};
+          FF_VIDEO_G <= {PALETTE_DATA_G_OUT[3:0], 2'b00};
+          FF_VIDEO_B <= {PALETTE_DATA_B_OUT[3:0], 2'b00};
 `else
-          FF_VIDEO_R <= {PALETTEDATARB_OUT[6:4], 3'b000};
-          FF_VIDEO_G <= {PALETTEDATAG_OUT[2:0], 3'b000};
-          FF_VIDEO_B <= {PALETTEDATARB_OUT[2:0], 3'b000};
+          FF_VIDEO_R <= {PALETTE_DATA_R_OUT[2:0], 3'b000};
+          FF_VIDEO_G <= {PALETTE_DATA_G_OUT[2:0], 3'b000};
+          FF_VIDEO_B <= {PALETTE_DATA_B_OUT[2:0], 3'b000};
 `endif
         end else begin
           //  GRAPHIC7

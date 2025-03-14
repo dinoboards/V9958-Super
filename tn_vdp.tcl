@@ -2,8 +2,7 @@ add_file src\\clockdiv.v
 add_file src\\clocks.v
 add_file src\\audio.sv
 add_file src\\memory_controller.sv
-add_file src\\palette_g.v
-add_file src\\palette_rb.v
+add_file src\\palette.v
 add_file src\\ram.v
 add_file src\\sdram.v
 add_file src\\SPI_MCP3202.v

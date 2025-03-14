@@ -1,4 +1,4 @@
-// palette_rb.v
+// palette.v
 //   Revision 1.00
 //
 // Copyright (c) 2006 Kazuhiro Tsujikawa (ESE Artists' factory)
@@ -28,24 +28,24 @@
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-module PALETTE_RB (
+module PALETTE (
     input bit [3:0] ADR,
     input bit CLK,
     input bit WE,
-    input bit [7:0] DBO,
-    output bit [7:0] DBI
+    input bit [3:0] DBO,
+    output bit [3:0] DBI
 );
 
-  reg [7:0] blkram[0:15] = '{8'h00, 8'h00, 8'h11, 8'h33, 8'h26, 8'h37, 8'h52, 8'h27, 8'h62, 8'h63, 8'h52, 8'h63, 8'h11, 8'h55, 8'h55, 8'h77};
+  reg [7:0] blkram[0:15] = '{8'h00, 8'h00, 8'h05, 8'h06, 8'h02, 8'h03, 8'h02, 8'h06, 8'h02, 8'h03, 8'h05, 8'h06, 8'h04, 8'h02, 8'h05, 8'h07};
   reg [3:0] iadr;
 
   always @(posedge CLK) begin
     if (WE) begin
-      blkram[ADR] <= DBO;
+      blkram[ADR] <= {4'b0, DBO};
     end
     iadr <= ADR;
   end
 
-  assign DBI = blkram[iadr];
+  assign DBI = blkram[iadr][3:0];
 
 endmodule
