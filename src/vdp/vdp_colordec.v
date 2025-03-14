@@ -133,9 +133,15 @@ module VDP_COLORDEC (
           FF_VIDEO_B <= FF_YJK_B;
         end else if ((VDPMODEGRAPHIC7 == 1'b0 || REG_R25_YJK == 1'b1)) begin
           //  PALETTE COLOR (NOT GRAPHIC7, SPRITE ON YJK MODE, YAE COLOR ON YJK MODE)
+`ifdef ENABLE_SUPER_RES
+          FF_VIDEO_R <= {PALETTEDATARB_OUT[7:4], 2'b00};
+          FF_VIDEO_G <= {PALETTEDATAG_OUT[3:0], 2'b00};
+          FF_VIDEO_B <= {PALETTEDATARB_OUT[3:0], 2'b00};
+`else
           FF_VIDEO_R <= {PALETTEDATARB_OUT[6:4], 3'b000};
           FF_VIDEO_G <= {PALETTEDATAG_OUT[2:0], 3'b000};
           FF_VIDEO_B <= {PALETTEDATARB_OUT[2:0], 3'b000};
+`endif
         end else begin
           //  GRAPHIC7
           FF_VIDEO_R <= {FF_GRP7_COLOR_CODE[4:2], 3'b000};

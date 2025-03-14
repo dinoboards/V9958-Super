@@ -178,7 +178,15 @@ module VDP_REGISTER (
 
   reg FF_ACK;
   reg VDPP1IS1STBYTE;
-  reg VDPP2IS1STBYTE;
+
+  // IN STANDARD MODE, 1 -> LOAD RED/BLUE BYTE, 0 -> LOAD GREEN BYTE
+  // IN EXTENDED MODE, 1 -> LOAD RED, 2 -> LOAD GREEN, 0 -> LOAD BLUE
+  bit[1:0] VDP_PALETTE_LOADING_STATE;
+
+  bit[3:0] PALETTE_EXTENDED_RED_IN;
+  bit[3:0] PALETTE_EXTENDED_GREEN_IN;
+  bit[3:0] PALETTE_EXTENDED_BLUE_IN;
+
   wire [7:0] VDPP0DATA;
   reg [7:0] VDPP1DATA;
   reg [5:0] VDPREGPTR;
@@ -186,14 +194,14 @@ module VDP_REGISTER (
   reg [3:0] VDPR15STATUSREGNUM;
   wire VSYNCINTACK;
   wire HSYNCINTACK;
-  reg [3:0] VDPR16PALNUM;
+  reg [3:0] VDP_R16_PAL_NUM;
   reg [5:0] VDPR17REGNUM;
   reg VDPR17INCREGNUM;
   wire [3:0] PALETTEADDR;
   wire PALETTEWE;
-  reg [7:0] PALETTEDATARB_IN;
-  reg [7:0] PALETTEDATAG_IN;
-  reg [3:0] PALETTEWRNUM;
+  reg [7:0] PALETTE_DATA_RB_IN;
+  reg [7:0] PALETTE_DATA_G_IN;
+  reg [3:0] PALETTE_WR_NUM;
   reg FF_PALETTE_WR_REQ;
   reg FF_PALETTE_WR_ACK;
   reg FF_PALETTE_IN;
@@ -220,9 +228,11 @@ module VDP_REGISTER (
   bit super_rgb_loading;  // set if RGBs are being loaded into R#30
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
+  bit mode_extended_palette;
 
   assign mode_graphic_7_base = (({REG_R0_DISP_MODE, REG_R1_DISP_MODE[0], REG_R1_DISP_MODE[1]}) == 5'b11100);
   assign mode_graphic_super_base = FF_REG_R31[0];  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
+  assign mode_extended_palette = FF_REG_R31[3];  //if true, then we are in extended palette mode
 `endif
 
 
@@ -299,7 +309,7 @@ module VDP_REGISTER (
   //------------------------------------------------------------------------
   // PALETTE REGISTER
   //------------------------------------------------------------------------
-  assign PALETTEADDR = FF_PALETTE_IN ? PALETTEWRNUM : PALETTEADDR_OUT;
+  assign PALETTEADDR = FF_PALETTE_IN ? PALETTE_WR_NUM : PALETTEADDR_OUT;
   assign PALETTEWE = FF_PALETTE_IN;
   assign W_EVEN_DOTSTATE = (DOTSTATE == 2'b00 || DOTSTATE == 2'b11);
   always_ff @(posedge RESET, posedge CLK21M) begin
@@ -332,7 +342,7 @@ module VDP_REGISTER (
       .ADR(PALETTEADDR),
       .CLK(CLK21M),
       .WE (PALETTEWE),
-      .DBO(PALETTEDATARB_IN),
+      .DBO(PALETTE_DATA_RB_IN),
       .DBI(PALETTEDATARB_OUT)
   );
 
@@ -340,7 +350,7 @@ module VDP_REGISTER (
       .ADR(PALETTEADDR),
       .CLK(CLK21M),
       .WE (PALETTEWE),
-      .DBO(PALETTEDATAG_IN),
+      .DBO(PALETTE_DATA_G_IN),
       .DBI(PALETTEDATAG_OUT)
   );
 
@@ -493,7 +503,7 @@ module VDP_REGISTER (
     if (RESET) begin
       VDPP1DATA <= 8'd0;
       VDPP1IS1STBYTE <= 1'b1;
-      VDPP2IS1STBYTE <= 1'b1;
+      VDP_PALETTE_LOADING_STATE <= 1;
       VDPREGWRPULSE <= 1'b0;
       VDPREGPTR <= 6'd0;
       VDPVRAMWRREQ <= 1'b0;
@@ -520,7 +530,7 @@ module VDP_REGISTER (
       REG_R9_INTERLACE_MODE <= 1'b0;
       REG_R9_Y_DOTS <= 1'b0;
       VDPR15STATUSREGNUM <= 4'd0;
-      VDPR16PALNUM <= 0;
+      VDP_R16_PAL_NUM <= 0;
       VDPR17REGNUM <= 6'd0;
       VDPR17INCREGNUM <= 1'b0;
       REG_R18_VERT <= 4'd0;
@@ -539,10 +549,10 @@ module VDP_REGISTER (
       VDPCMDTRCLRREQ <= 1'b0;
 
       // PALETTE
-      PALETTEDATARB_IN <= 8'd0;
-      PALETTEDATAG_IN <= 8'd0;
+      PALETTE_DATA_RB_IN <= 8'd0;
+      PALETTE_DATA_G_IN <= 8'd0;
       FF_PALETTE_WR_REQ <= 1'b0;
-      PALETTEWRNUM <= 4'd0;
+      PALETTE_WR_NUM <= 4'd0;
 
 `ifdef ENABLE_SUPER_RES
       FF_REG_R31 <= 0;
@@ -620,18 +630,40 @@ module VDP_REGISTER (
             end
           end
           2'b10: begin  // PORT#2: PALETTE WRITE
-            if ((VDPP2IS1STBYTE == 1'b1)) begin
-              PALETTEDATARB_IN <= DBO;
-              VDPP2IS1STBYTE   <= 1'b0;
+
+  // if mode_extended_palette, then we expect 3 bytes, one for each R, G, B
+  // for moment, this maps into the exist 3 bit RGB palette
+
+            if (mode_extended_palette) begin
+              if (VDP_PALETTE_LOADING_STATE == 1) begin
+                PALETTE_EXTENDED_RED_IN <= DBO[3:0];
+                VDP_PALETTE_LOADING_STATE <= 2;
+              end else begin
+                if (VDP_PALETTE_LOADING_STATE == 2) begin
+                  PALETTE_EXTENDED_GREEN_IN <= DBO[3:0];
+                  VDP_PALETTE_LOADING_STATE <= 3;
+                end else begin
+                  // PALETTE_EXTENDED_BLUE_IN <= DBO;
+                  PALETTE_DATA_RB_IN <= {PALETTE_EXTENDED_RED_IN[3:0], DBO[3:0]};
+                  PALETTE_DATA_G_IN <= {PALETTE_EXTENDED_GREEN_IN[3:0]};
+                  PALETTE_WR_NUM <= VDP_R16_PAL_NUM;
+                  FF_PALETTE_WR_REQ <= ~FF_PALETTE_WR_ACK;
+                  VDP_PALETTE_LOADING_STATE <= 1;
+                  VDP_R16_PAL_NUM <= 4'(VDP_R16_PAL_NUM + 1);
+                end
+              end
+
             end else begin
-              // パレットはrgbのデータが揃った時に一度に書き換える。
-              // (実機で動作を確認した)
-              // (The palette is rewritten all at once when the rgb data is ready. Confirmed operation on the actual machine)
-              PALETTEDATAG_IN <= DBO;
-              PALETTEWRNUM <= VDPR16PALNUM;
-              FF_PALETTE_WR_REQ <= ~FF_PALETTE_WR_ACK;
-              VDPP2IS1STBYTE <= 1'b1;
-              VDPR16PALNUM <= 4'(VDPR16PALNUM + 1);
+              if (VDP_PALETTE_LOADING_STATE == 1) begin
+                PALETTE_DATA_RB_IN <= DBO;
+                VDP_PALETTE_LOADING_STATE   <= 0;
+              end else begin
+                PALETTE_DATA_G_IN <= DBO;
+                PALETTE_WR_NUM <= VDP_R16_PAL_NUM;
+                FF_PALETTE_WR_REQ <= ~FF_PALETTE_WR_ACK;
+                VDP_PALETTE_LOADING_STATE <= 1;
+                VDP_R16_PAL_NUM <= 4'(VDP_R16_PAL_NUM + 1);
+              end
             end
           end
           2'b11: begin  // PORT#3: INDIRECT REGISTER WRITE
@@ -714,8 +746,8 @@ module VDP_REGISTER (
               VDPR15STATUSREGNUM <= VDPP1DATA[3:0];
             end
             5'b10000: begin  // #16
-              VDPR16PALNUM   <= VDPP1DATA[3:0];
-              VDPP2IS1STBYTE <= 1'b1;
+              VDP_R16_PAL_NUM   <= VDPP1DATA[3:0];
+              VDP_PALETTE_LOADING_STATE <= 1;
             end
             5'b10001: begin  // #17
               VDPR17REGNUM <= VDPP1DATA[5:0];
