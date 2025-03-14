@@ -1,4 +1,4 @@
-// palette.v
+// vdp_palette.v
 //   Revision 1.00
 //
 // Copyright (c) 2006 Kazuhiro Tsujikawa (ESE Artists' factory)

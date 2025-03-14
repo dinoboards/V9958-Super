@@ -2,7 +2,6 @@ add_file src\\clockdiv.v
 add_file src\\clocks.v
 add_file src\\audio.sv
 add_file src\\memory_controller.sv
-add_file src\\palette.v
 add_file src\\ram.v
 add_file src\\sdram.v
 add_file src\\SPI_MCP3202.v
@@ -37,6 +36,7 @@ add_file src\\vdp\\vdp_hvcounter.v
 add_file src\\vdp\\vdp_interrupt.v
 add_file src\\vdp\\vdp_line_buffer.v
 add_file src\\vdp\\vdp_package.v
+add_file src\\vdp\\vdp_palette.v
 add_file src\\vdp\\vdp_register.sv
 add_file src\\vdp\\vdp_spinforam.v
 add_file src\\vdp\\vdp_sprite.v
