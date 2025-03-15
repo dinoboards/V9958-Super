@@ -37,8 +37,8 @@ module VDP_SUPER_RES (
   bit last_line;
   bit active_line;  // true if line is drawn from sdram, false if drawn from line buffer
   bit super_res_visible;
-  bit [31:0] line_buffer[`MAX_PIXEL_WIDTH];
-  bit [7:0] line_buffer_index;
+  bit [8:0] line_buffer[360];
+  bit [8:0] line_buffer_index;
 
   // pixel format for super_mid: RRRR RGGG GGGB BBBB
   // all red would be            1111 1000 0000 0000 -> 0xF800 (248, 0)
@@ -154,7 +154,13 @@ module VDP_SUPER_RES (
 
         727: begin  //cycle cx[1:0] == 2
           //LOAD PALETTE_ADDR2 for first pixel of each row
-          PALETTE_ADDR2 <= next_vram_data[3:0];
+          if (!active_line || last_line) begin
+            PALETTE_ADDR2 <= next_vram_data[3:0];
+            line_buffer[line_buffer_index] <= next_vram_data[7:0];
+          end else begin
+            PALETTE_ADDR2 <= line_buffer[line_buffer_index][3:0];
+          end
+          line_buffer_index <= 9'(line_buffer_index + 1);
           odd_phase <= 0;
         end
 
@@ -168,28 +174,54 @@ module VDP_SUPER_RES (
                 odd_phase, cx[1:0]
               })
                 3'b000: begin
-                  current_vram_data   <= REG_R1_DISP_ON ? next_vram_data : 0;
-                  super_res_vram_addr <= 17'(super_res_vram_addr + 1);
+                  if (active_line) begin
+                    current_vram_data   <= REG_R1_DISP_ON ? next_vram_data : 0;
+                    super_res_vram_addr <= 17'(super_res_vram_addr + 1);
+                  end
                 end
                 3'b001: begin
-                  PALETTE_ADDR2  <= next_vram_data[11:8];
-                  next_vram_data <= vrm_32;  //load next 4 bytes
+                  if (active_line) begin
+                    PALETTE_ADDR2 <= next_vram_data[11:8];
+                    line_buffer[line_buffer_index] <= next_vram_data[15:8];
+                    next_vram_data <= vrm_32;  //load next 4 bytes
+                  end else begin
+                    PALETTE_ADDR2 <= line_buffer[line_buffer_index][3:0];
+                  end
+                  line_buffer_index <= 9'(line_buffer_index + 1);
                 end
                 3'b010: begin
                 end
                 3'b011: begin
-                  PALETTE_ADDR2 <= current_vram_data[19:16];
+                  if (active_line) begin
+                    PALETTE_ADDR2 <= current_vram_data[19:16];
+                    line_buffer[line_buffer_index] <= current_vram_data[23:16];
+                  end else begin
+                    PALETTE_ADDR2 <= line_buffer[line_buffer_index][3:0];
+                  end
+                  line_buffer_index <= 9'(line_buffer_index + 1);
                   odd_phase <= 1;
                 end
                 3'b100: begin
                 end
                 3'b101: begin
-                  PALETTE_ADDR2 <= current_vram_data[27:24];
+                  if (active_line) begin
+                    PALETTE_ADDR2 <= current_vram_data[27:24];
+                    line_buffer[line_buffer_index] <= current_vram_data[31:24];
+                  end else begin
+                    PALETTE_ADDR2 <= line_buffer[line_buffer_index][3:0];
+                  end
+                  line_buffer_index <= 9'(line_buffer_index + 1);
                 end
                 3'b110: begin
                 end
                 3'b111: begin
-                  PALETTE_ADDR2 <= next_vram_data[3:0];
+                  if (active_line) begin
+                    PALETTE_ADDR2 <= next_vram_data[3:0];
+                    line_buffer[line_buffer_index] <= next_vram_data[7:0];
+                  end else begin
+                    PALETTE_ADDR2 <= line_buffer[line_buffer_index][3:0];
+                  end
+                  line_buffer_index <= 9'(line_buffer_index + 1);
                   odd_phase <= 0;
                 end
               endcase
