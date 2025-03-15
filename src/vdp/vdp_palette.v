@@ -28,33 +28,42 @@
 // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-module PALETTE (
-    input bit [3:0] ADR,
+module PALETTE #(
+     parameter [7:0] INIT_VALUES [0:15]
+     ) (
+    input bit [7:0] ADR,
     input bit CLK,
     input bit WE,
-    input bit [3:0] DBO,
-    output bit [3:0] DBI
+    input bit [7:0] DBO,
+    output bit [7:0] DBI
 
 `ifdef ENABLE_SUPER_RES
     ,
-    input bit [3:0] ADR2,
-    output bit [3:0] DBI2
+    input bit [7:0] ADR2,
+    output bit [7:0] DBI2
 `endif
 );
+  //GREEN INIT
+  reg [7:0] blkram[0:255];
+  reg [7:0] iadr;
+  reg [7:0] iadr2;
 
-  reg [7:0] blkram[0:15] = '{8'h00, 8'h00, 8'h05, 8'h06, 8'h02, 8'h03, 8'h02, 8'h06, 8'h02, 8'h03, 8'h05, 8'h06, 8'h04, 8'h02, 8'h05, 8'h07};
-  reg [3:0] iadr;
-  reg [3:0] iadr2;
+  integer i = 0;
+  initial begin
+    for (int i = 0; i < 16; i++) begin
+      blkram[i] = INIT_VALUES[i];
+    end
+  end
 
   always @(posedge CLK) begin
     if (WE) begin
-      blkram[ADR] <= {4'b0, DBO};
+      blkram[ADR] <= DBO;
     end
     iadr <= ADR;
     iadr2 <= ADR2;
   end
 
-  assign DBI = blkram[iadr][3:0];
-  assign DBI2 = blkram[iadr2][3:0];
+  assign DBI = blkram[iadr];
+  assign DBI2 = blkram[iadr2];
 
 endmodule

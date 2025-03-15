@@ -31,9 +31,9 @@ BIT 2:1: SUPER MODE TYPE:
 * 10 -> SUPER_RES:   1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
 
 BIT 3: EXTENDED PALETTE ACTIVE
- If set, then support for 4bit per colour palette (12bits in total)
+* If set, then support for 8bit per colour palette (24bits in total)
  each RGB is loaded into the palette data port one byte for each R, G, B
-
+* up to 256 palette entries for using in super modes only
 
 ### R#30
 

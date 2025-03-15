@@ -223,10 +223,10 @@ module VDP (
 `ifdef ENABLE_SUPER_RES
   bit         super_res_drawing;
   bit  [16:0] super_vram_addr;
-  bit [3:0] PALETTE_ADDR2;
-  bit[3:0] PALETTE_DATA_R2_OUT;
-  bit[3:0] PALETTE_DATA_G2_OUT;
-  bit[3:0] PALETTE_DATA_B2_OUT;
+  bit [7:0] PALETTE_ADDR2;
+  bit [7:0] PALETTE_DATA_R2_OUT;
+  bit [7:0] PALETTE_DATA_G2_OUT;
+  bit [7:0] PALETTE_DATA_B2_OUT;
 `endif
 
   // SPRITE
@@ -246,10 +246,10 @@ module VDP (
   wire        SPVDPS5RESETACK;
 
   // PALETTE REGISTERS
-  wire [ 3:0] PALETTEADDR_OUT;
-  wire [ 3:0] PALETTE_DATA_R_OUT;
-  wire [ 3:0] PALETTE_DATA_B_OUT;
-  wire [ 3:0] PALETTE_DATA_G_OUT;
+  bit [ 7:0] PALETTE_ADDR_OUT;
+  bit [ 7:0] PALETTE_DATA_R_OUT;
+  bit [ 7:0] PALETTE_DATA_B_OUT;
+  bit [ 7:0] PALETTE_DATA_G_OUT;
 
   // VDP COMMAND SIGNALS - CAN BE READ & SET BY CPU
   wire [ 7:0] VDPCMDCLR;  // R44, S#7
@@ -351,6 +351,7 @@ module VDP (
   always_comb begin
 `ifdef ENABLE_SUPER_RES
     if (vdp_super) begin
+      //full 8 bits of colour supported
       red   = high_res_red;
       green = high_res_green;
       blue  = high_res_blue;
@@ -621,7 +622,7 @@ module VDP (
       .RESET(RESET),
       .CLK21M(CLK21M),
       .DOTSTATE(DOTSTATE),
-      .PPALETTEADDR_OUT(PALETTEADDR_OUT),
+      .PPALETTE_ADDR_OUT(PALETTE_ADDR_OUT),
       .PALETTE_DATA_R_OUT(PALETTE_DATA_R_OUT),
       .PALETTE_DATA_G_OUT(PALETTE_DATA_G_OUT),
       .PALETTE_DATA_B_OUT(PALETTE_DATA_B_OUT),
@@ -823,7 +824,7 @@ module VDP (
       .VDPCMDREGDATA(VDPCMDREGDATA),
       .VDPCMDREGWRREQ(VDPCMDREGWRREQ),
       .VDPCMDTRCLRREQ(VDPCMDTRCLRREQ),
-      .PALETTEADDR_OUT(PALETTEADDR_OUT),
+      .PALETTE_ADDR_OUT(PALETTE_ADDR_OUT),
       .PALETTE_DATA_R_OUT(PALETTE_DATA_R_OUT),
       .PALETTE_DATA_G_OUT(PALETTE_DATA_G_OUT),
       .PALETTE_DATA_B_OUT(PALETTE_DATA_B_OUT),

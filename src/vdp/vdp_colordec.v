@@ -62,10 +62,10 @@ module VDP_COLORDEC (
     input wire RESET,
     input wire CLK21M,
     input wire [1:0] DOTSTATE,
-    output wire [3:0] PPALETTEADDR_OUT,
-    input wire [3:0] PALETTE_DATA_R_OUT,
-    input wire [3:0] PALETTE_DATA_B_OUT,
-    input wire [3:0] PALETTE_DATA_G_OUT,
+    output bit [7:0] PPALETTE_ADDR_OUT,
+    input wire [7:0] PALETTE_DATA_R_OUT,
+    input wire [7:0] PALETTE_DATA_B_OUT,
+    input wire [7:0] PALETTE_DATA_G_OUT,
     input wire VDPMODETEXT1,
     input wire VDPMODETEXT1Q,
     input wire VDPMODETEXT2,
@@ -115,7 +115,7 @@ module VDP_COLORDEC (
   wire [7:0] W_GRP7_COLOR;
   wire [3:0] W_PALETTE_ADDR;
 
-  assign PPALETTEADDR_OUT = (VDPMODEGRAPHIC5 == 1'b0) ? FF_PALETTE_ADDR : {2'b00, FF_PALETTE_ADDR_G5};
+  assign PPALETTE_ADDR_OUT = (VDPMODEGRAPHIC5 == 1'b0) ? {4'b0000, FF_PALETTE_ADDR} : {6'b000000, FF_PALETTE_ADDR_G5};
   assign PVIDEOR_VDP = FF_VIDEO_R;
   assign PVIDEOG_VDP = FF_VIDEO_G;
   assign PVIDEOB_VDP = FF_VIDEO_B;
@@ -137,13 +137,14 @@ module VDP_COLORDEC (
         end else if (VDPMODEGRAPHIC7 == 1'b0 || REG_R25_YJK == 1'b1) begin
           //  PALETTE COLOR (NOT GRAPHIC7, SPRITE ON YJK MODE, YAE COLOR ON YJK MODE)
 `ifdef ENABLE_SUPER_RES
-          FF_VIDEO_R <= {PALETTE_DATA_R_OUT[3:0], 2'b00};
-          FF_VIDEO_G <= {PALETTE_DATA_G_OUT[3:0], 2'b00};
-          FF_VIDEO_B <= {PALETTE_DATA_B_OUT[3:0], 2'b00};
+          // legacy screen modes only support 6 bits - at least for moment
+          FF_VIDEO_R <= {PALETTE_DATA_R_OUT[7:2]};
+          FF_VIDEO_G <= {PALETTE_DATA_G_OUT[7:2]};
+          FF_VIDEO_B <= {PALETTE_DATA_B_OUT[7:2]};
 `else
-          FF_VIDEO_R <= {PALETTE_DATA_R_OUT[2:0], 3'b000};
-          FF_VIDEO_G <= {PALETTE_DATA_G_OUT[2:0], 3'b000};
-          FF_VIDEO_B <= {PALETTE_DATA_B_OUT[2:0], 3'b000};
+          FF_VIDEO_R <= {PALETTE_DATA_R_OUT[7:5], 3'b000};
+          FF_VIDEO_G <= {PALETTE_DATA_G_OUT[7:5], 3'b000};
+          FF_VIDEO_B <= {PALETTE_DATA_B_OUT[7:5], 3'b000};
 `endif
         end else begin
           //  GRAPHIC7
@@ -201,7 +202,7 @@ module VDP_COLORDEC (
 
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      FF_PALETTE_ADDR_G5 <= {2{1'b0}};
+      FF_PALETTE_ADDR_G5 <= {2'b0};
     end else begin
       if ((W_EVEN_DOTSTATE == 1'b1)) begin
         if((WINDOW == 1'b0 || REG_R1_DISP_ON == 1'b0 || (DOTSTATE[1] == 1'b0 && W_FORE_COLOR[1:0] == 2'b00 && REG_R8_COL0_ON == 1'b0) || (DOTSTATE[1] == 1'b1 && W_FORE_COLOR[3:2] == 2'b00 && REG_R8_COL0_ON == 1'b0))) begin
