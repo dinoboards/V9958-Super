@@ -43,9 +43,6 @@ module MEM_CONTROLLER #(
 
     input bit [7:0] din8,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
 `ifdef ENABLE_SUPER_RES
-    input bit [1:0] word_wr_size,  //00 -> 8, 01 -> 16, 10 -> 32, 11 -> ??
-    input bit [15:0] din16,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
-    input logic [31:0] din32,  // The data to be written to the SDRAM when wdm is 00
     output bit [31:0] dout32,
     output bit [31:0] dout32B,  //2nd channel of 32 bit data - to avoid congestion???
 `endif
@@ -79,7 +76,6 @@ module MEM_CONTROLLER #(
   bit [3:0] wdm;
   bit [31:0] __din32;
 `ifdef ENABLE_SUPER_RES
-  bit [ 1:0] requested_word_wr_size;  // The word size captured at time operation initiated
   bit [31:0] data32;
   bit [31:0] data32B;
 `endif
@@ -105,52 +101,12 @@ module MEM_CONTROLLER #(
 `endif
   assign dout16 = data16;
 
-`ifdef ENABLE_SUPER_RES
-  always_ff @(posedge clk or negedge resetn) begin
-    if (~resetn) begin
-      requested_word_wr_size <= `MEMORY_WIDTH_16;
-
-    end else begin
-      if (write) begin
-        requested_word_wr_size <= word_wr_size;
-      end
-    end
-  end
-`endif
-
-`ifdef ENABLE_SUPER_RES
-  always_comb begin
-    __din32 = {32{1'bx}};
-    __wdm = 2'bxx;
-    wdm = 4'bxxxx;
-
-    case (requested_word_wr_size)
-      `MEMORY_WIDTH_8: begin
-        __din32 = {din8, din8, din8, din8};
-
-        __wdm = {~addr[0], addr[0]};
-        wdm = word_addr[0] == 1'd0 ? {2'b11, __wdm} : {__wdm, 2'b11};  // only write the correct byte
-      end
-
-      `MEMORY_WIDTH_16: begin
-        __din32 = {din16, din16};
-        wdm = word_addr[0] == 1'd0 ? {4'b1100} : {2'b0011};  // only write the correct word
-      end
-
-      `MEMORY_WIDTH_32: begin
-        __din32 = din32;
-        __wdm   = 2'b0000;
-      end
-    endcase
-  end
-`else
   always_comb begin
     __din32 = {din8, din8, din8, din8};
 
     __wdm = {~addr[0], addr[0]};
     wdm = word_addr[0] == 1'd0 ? {2'b11, __wdm} : {__wdm, 2'b11};  // only write the correct byte
   end
-`endif
 
   assign operation_write = busy ? MemWR : write;
   assign operation_read  = busy ? MemRD : read;

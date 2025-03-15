@@ -156,8 +156,6 @@ module VDP_REGISTER (
     output bit vdp_super,
     output bit super_mid,
     output bit super_res,
-    output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
-    output bit super_rgb_colour_reg_applied,
 
     input bit [3:0] PALETTE_ADDR2,
     output bit[3:0] PALETTE_DATA_R2_OUT,
@@ -243,8 +241,6 @@ module VDP_REGISTER (
 
 `ifdef ENABLE_SUPER_RES
   assign vdp_super = mode_graphic_super_base & mode_graphic_7_base;
-  assign super_rgb_colour_reg_applied = FF_REG_R30[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
-  assign super_rgb_loading = FF_REG_R30[7];  // active when RGBs are being loaded into R#30
   assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 1 byte per pixel into palette lookup 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
   assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
 `endif
@@ -427,15 +423,6 @@ module VDP_REGISTER (
               4'b1101: begin  //READ S#13
                 DBI <= 0;
               end
-`ifdef ENABLE_SUPER_RES
-              4'b1110: begin  //READ S#14
-                DBI <= super_rgb_colour_reg[23:16];
-              end
-
-              4'b1111: begin  //READ S#15
-                DBI <= 0;
-              end
-`endif
               default: begin
                 DBI <= 8'd255;
               end
@@ -449,7 +436,7 @@ module VDP_REGISTER (
           2'b11: begin  // PORT#3: 9B NOT SUPPORTED IN READ MODE
             case (VDPR17REGNUM)
               6'b011110: begin  // #30
-                DBI <= super_rgb_colour_reg[23:16];
+                DBI <= 0;
               end
               6'b011111: begin  // #31
                 DBI <= FF_REG_R31;
@@ -581,7 +568,6 @@ module VDP_REGISTER (
 
 `ifdef ENABLE_SUPER_RES
       FF_REG_R31 <= 0;
-      super_rgb_colour_reg <= 0;
 `endif
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
@@ -818,36 +804,13 @@ module VDP_REGISTER (
 */
 `ifdef ENABLE_SUPER_RES
             5'b11101: begin  // #29
-              if (super_rgb_loading) begin
-                case (super_rgb_loading_state)
-                  0: begin
-                    super_rgb_colour_reg[23:16] <= VDPP1DATA;
-                    super_rgb_loading_state <= 1;
-                  end
-                  1: begin
-                    super_rgb_colour_reg[15:8] <= VDPP1DATA;
-                    super_rgb_loading_state <= 2;
-                  end
-                  2: begin
-                    super_rgb_colour_reg[7:0] = VDPP1DATA;
-                    FF_REG_R30[6] <= 1;  // set bit to indicate 24 bit RGB loaded
-                    FF_REG_R30[7] <= 0;  // reset the loading flag
-                    super_rgb_loading_state <= 0;
-                  end
-                endcase
-              end
             end
 
             5'b11110: begin  //#30 - super control bits
               FF_REG_R30 <= VDPP1DATA;
-
-              if (VDPP1DATA[7] == 1) begin  //VDPP1DATA[7] is super_rgb_loading
-                super_rgb_loading_state <= 'b00;
-              end
             end
 
             5'b11111: begin  //#31 - special! - super res modes
-              FF_REG_R30 <= 0;
               FF_REG_R31 <= VDPP1DATA;
             end
 `endif

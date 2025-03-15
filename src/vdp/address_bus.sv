@@ -44,15 +44,9 @@ module ADDRESS_BUS #(
     input bit          vdp_cmd_vram_reading_ack,
 
 `ifdef ENABLE_SUPER_RES
-    input bit   [31:0] VDPCMDVRAMWRDATA_32,
-    input bit   [15:0] VDPCMDVRAMWRDATA_16,
-    input bit   [ 1:0] vdp_cmd_vram_wr_size,
     input bit          vdp_super,
     input logic [16:0] super_vram_addr,
     input bit super_res_drawing,
-    output bit [ 1:0] PRAM_WR_SIZE,
-    output logic [31:0] PRAMDBO_32,
-    output logic [15:0] PRAMDBO_16,
 `endif
 
     output bit        vdp_cmd_vram_wr_ack,
@@ -100,9 +94,6 @@ module ADDRESS_BUS #(
       IRAMADR <= {19{1'b1}};
       PRAMDBO_8 <= {8{1'bZ}};
       PRAMWE_N <= 1'b1;
-`ifdef ENABLE_SUPER_RES
-      PRAM_WR_SIZE <= `MEMORY_WIDTH_8;
-`endif
       VDPVRAMREADINGR <= 1'b0;
       VDPVRAMRDACK <= 1'b0;
       VDPVRAMWRACK <= 1'b0;
@@ -200,9 +191,6 @@ module ADDRESS_BUS #(
         end
         PRAMDBO_8 <= VDPVRAMACCESSDATA;
         PRAMWE_N <= 1'b0;
-`ifdef ENABLE_SUPER_RES
-        PRAM_WR_SIZE <= `MEMORY_WIDTH_8;  //write an 8 bit value
-`endif
         VDPVRAMWRACK <= ~VDPVRAMWRACK;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_CPUR)) begin
@@ -223,10 +211,6 @@ module ADDRESS_BUS #(
           VDPVRAMACCESSADDR <= 19'(VDPVRAMACCESSADDRV + 1);
         end
         PRAMDBO_8 <= 8'bZ;
-`ifdef ENABLE_SUPER_RES
-        PRAMDBO_32 <= 32'bZ;
-        PRAMDBO_16 <= 16'bZ;
-`endif
         PRAMWE_N <= 1'b1;
         VDPVRAMRDACK <= ~VDPVRAMRDACK;
         VDPVRAMREADINGR <= ~VDPVRAMREADINGA;
@@ -235,20 +219,11 @@ module ADDRESS_BUS #(
         IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO_8 <= VDP_CMD_VRAM_WR_DATA_8;
         PRAMWE_N <= 1'b0;
-`ifdef ENABLE_SUPER_RES
-        PRAMDBO_16 <= VDPCMDVRAMWRDATA_16;
-        PRAMDBO_32 <= VDPCMDVRAMWRDATA_32;
-        PRAM_WR_SIZE <= vdp_cmd_vram_wr_size;
-`endif
         vdp_cmd_vram_wr_ack <= ~vdp_cmd_vram_wr_ack;
 
       end else if ((VRAMACCESSSWITCH == VRAM_ACCESS_VDPR)) begin
         IRAMADR <= VDPCMDVRAMACCESSADDR;
         PRAMDBO_8 <= 8'bZ;
-`ifdef ENABLE_SUPER_RES
-        PRAMDBO_32 <= 32'bZ;
-        PRAMDBO_16 <= 16'bZ;
-`endif
         PRAMWE_N <= 1'b1;
         vdp_cmd_vram_reading_req <= ~vdp_cmd_vram_reading_ack;
 
@@ -257,10 +232,6 @@ module ADDRESS_BUS #(
         IRAMADR <= PRAMADRSPRITE;
         PRAMWE_N <= 1'b1;
         PRAMDBO_8 <= 8'bZ;
-`ifdef ENABLE_SUPER_RES
-        PRAMDBO_16 <= 8'bZ;
-        PRAMDBO_32 <= 32'bZ;
-`endif
       end else begin
         // VRAM_ACCESS_DRAW
         // VRAM READ FOR SCREEN DRAWING
@@ -269,19 +240,12 @@ module ADDRESS_BUS #(
         if (vdp_super) begin
           IRAMADR <= {__super_vram_addr, 2'b00};
           PRAMDBO_8 <= 8'bZ;
-`ifdef ENABLE_SUPER_RES
-          PRAMDBO_16 <= 8'bZ;
-          PRAMDBO_32 <= 32'bZ;
-`endif
           PRAMWE_N <= 1'b1;
         end else begin
 `endif
           case (DOTSTATE)
             2'b10: begin
               PRAMDBO_8  <= 8'bZ;
-`ifdef ENABLE_SUPER_RES
-              PRAMDBO_32 <= 32'bZ;
-`endif
               PRAMWE_N   <= 1'b1;
               if ((TEXT_MODE == 1'b1)) begin
                 IRAMADR <= PRAMADRT12;
@@ -293,9 +257,6 @@ module ADDRESS_BUS #(
             end
             2'b01: begin
               PRAMDBO_8  <= 8'bZ;
-`ifdef ENABLE_SUPER_RES
-              PRAMDBO_32 <= 32'bZ;
-`endif
               PRAMWE_N   <= 1'b1;
               if (((VDPMODEGRAPHIC6 == 1'b1) || (VDPMODEGRAPHIC7 == 1'b1))) begin
                 IRAMADR <= PRAMADRG4567;

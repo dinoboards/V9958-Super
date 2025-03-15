@@ -88,14 +88,9 @@ module VDP_COMMAND (
 
 `ifdef ENABLE_SUPER_RES
     ,
-    output bit [31:0] p_vram_wr_data_32,
-    output bit [15:0] p_vram_wr_data_16,
-    output bit [1:0] vram_wr_size,
     input bit mode_graphic_super_mid,
     input bit mode_graphic_super_res,
-    input bit [31:0] vram_rd_data_32,
-    input bit super_rgb_colour_reg_applied,
-    input bit [31:0] super_rgb_colour_reg
+    input bit [31:0] vram_rd_data_32
 `endif
 );
 
@@ -203,11 +198,7 @@ module VDP_COMMAND (
   assign current_command = CMR[7:4];
 
 `ifdef ENABLE_SUPER_RES
-  assign p_vram_wr_data_32 = vram_wr_data_32;
-  assign p_vram_wr_data_16 = vram_wr_data_16;
-
   assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_mid | mode_graphic_super_res;
-  assign vram_wr_size = mode_graphic_super_mid ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8;
 `else
   assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7;
 `endif
@@ -279,48 +270,6 @@ module VDP_COMMAND (
     endcase
   end
 
-`ifdef ENABLE_SUPER_RES
-  bit [31:0] logical_operation_dest_colour_32;
-  always_comb begin
-    // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
-    // ON THE POINT TO BE WRITTEN.
-
-    //enhanced 24 bit operations
-    if ((CMR[3] == 1'b0) || (vram_wr_data_32[23:0] != 24'b00000000)) begin
-      case (CMR[2:0])
-        IMPB210: logical_operation_dest_colour_32 = vram_wr_data_32;
-        ANDB210: logical_operation_dest_colour_32 = vram_wr_data_32 & rd_point_32;
-        ORB210:  logical_operation_dest_colour_32 = vram_wr_data_32 | rd_point_32;
-        EORB210: logical_operation_dest_colour_32 = vram_wr_data_32 ^ rd_point_32;
-        NOTB210: logical_operation_dest_colour_32 = ~vram_wr_data_32;
-        default: logical_operation_dest_colour_32 = rd_point_32;
-      endcase
-
-    end else begin
-      logical_operation_dest_colour_32 = rd_point_32;
-    end
-  end
-
-  bit [15:0] logical_operation_dest_colour_16;
-  always_comb begin
-    // PERFORM LOGICAL OPERATION ON MOST RECENTLY READ POINT AND
-    // ON THE POINT TO BE WRITTEN.
-
-    if ((CMR[3] == 1'b0) || (vram_wr_data_16 != 16'b00000000)) begin
-      case (CMR[2:0])
-        IMPB210: logical_operation_dest_colour_16 = vram_wr_data_16;
-        ANDB210: logical_operation_dest_colour_16 = vram_wr_data_16 & rd_point_16;
-        ORB210:  logical_operation_dest_colour_16 = vram_wr_data_16 | rd_point_16;
-        EORB210: logical_operation_dest_colour_16 = vram_wr_data_16 ^ rd_point_16;
-        NOTB210: logical_operation_dest_colour_16 = ~vram_wr_data_16;
-        default: logical_operation_dest_colour_16 = rd_point_16;
-      endcase
-
-    end else begin
-      logical_operation_dest_colour_16 = rd_point_16;
-    end
-  end
-`endif
 
   bit [7:0] logical_operation_dest_colour;
   always_comb begin
@@ -433,16 +382,17 @@ module VDP_COMMAND (
 
 `ifdef ENABLE_SUPER_RES
     end else if (mode_graphic_super_mid) begin
-      //2 bytes per pixel `GGGG GGRR RRRB BBBB` - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
+      //1 byte per pixel - colour from palette register - resolution of 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
       //x is 0 to 359, and y 0 to 187 or for 60hz mode y is 0 to 239
-      //addr = y * 360*2 + x*2
+      //addr = y * 360 + x
 
-      vram_access_addr = 19'((vram_access_y * 360 * 2) + (vram_access_x * 2)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
+      // vram_access_addr = 19'((vram_access_y * 180 * 2) + (vram_access_x)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
+      vram_access_addr = 19'((vram_access_y * 360) + (vram_access_x));
 
     end else if (mode_graphic_super_res) begin
-      //1 byte per pixel `GGGR RRBB` - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+      //1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
       //x is 0 to 719, and y 0 to 287 or for 60hz mode y is 0 to 479
-      //addr = y * 720*4 + x*4
+      //addr = y * 720 + x
 
       vram_access_addr = 19'((vram_access_y * 720) + (vram_access_x));
 `endif
@@ -451,30 +401,6 @@ module VDP_COMMAND (
       vram_access_addr = {vram_access_y[8:0], vram_access_x[7:0]};
     end
   end
-
-`ifdef ENABLE_SUPER_RES
-  bit [31:0] CLR32;
-  bit [15:0] CLR16;
-
-  always_comb begin
-    CLR32 = {32{1'bx}};
-    CLR16 = {16{1'bx}};
-
-    if (super_rgb_colour_reg_applied) begin
-      if (mode_graphic_super_mid) begin
-        // translate 24 bit RGB to R(5), G(6), B(5)
-        //super_mid: RRRR RGGG GGGB BBBB
-        CLR16 = {super_rgb_colour_reg[23:19], super_rgb_colour_reg[15:10], super_rgb_colour_reg[7:3]};
-      end
-
-    end else begin
-      if (mode_graphic_super_mid) begin
-        //super_mid: RRRR RGGG GGGB BBBB
-        CLR16 = {CLR[4:2], 2'b0, CLR[7:5], 3'b0, CLR[1:0], 3'b0};
-      end
-    end
-  end
-`endif
 
   always @(posedge reset, posedge clk) begin
     bit initializing;
@@ -704,10 +630,6 @@ module VDP_COMMAND (
                   2'b10: vram_wr_data_8 <= {vram_rd_data[7:4], logical_operation_dest_colour[1:0], vram_rd_data[1:0]};
                   2'b11: vram_wr_data_8 <= {vram_rd_data[7:2], logical_operation_dest_colour[1:0]};
                 endcase
-`ifdef ENABLE_SUPER_RES
-              end else if (mode_graphic_super_mid) begin
-                vram_wr_data_16 <= logical_operation_dest_colour_16;
-`endif
               end else begin
                 vram_wr_data_8 <= logical_operation_dest_colour;
               end
@@ -826,10 +748,6 @@ module VDP_COMMAND (
                 end
                 HMMV: begin
                   vram_wr_data_8 <= CLR;
-`ifdef ENABLE_SUPER_RES
-                  vram_wr_data_32 <= CLR32;
-                  vram_wr_data_16 <= CLR16;
-`endif
                   state <= WR_VRAM;
                 end
                 LMMC: begin
@@ -843,10 +761,6 @@ module VDP_COMMAND (
                 end
                 LMMV, LINE, PSET: begin
                   vram_wr_data_8 <= CLR;
-`ifdef ENABLE_SUPER_RES
-                  vram_wr_data_32 <= CLR32;
-                  vram_wr_data_16 <= CLR16;
-`endif
                   state <= PRE_RD_VRAM;
                 end
                 SRCH: begin

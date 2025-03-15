@@ -91,9 +91,6 @@ module VDP (
     ,
     input  bit   [31:0] PRAMDBI_32,
     input  bit   [31:0] PRAMDBI_32_B,
-    output bit   [ 1:0] PRAM_WR_SIZE,
-    output logic [31:0] PRAMDBO_32,
-    output logic [15:0] PRAMDBO_16,
     output bit vdp_super
 `endif
 );
@@ -300,17 +297,11 @@ module VDP (
   bit  [18:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
 `ifdef ENABLE_SUPER_RES
-  bit  [31:0] VDPCMDVRAMWRDATA_32;
-  bit  [15:0] VDPCMDVRAMWRDATA_16;
-
-  bit  [ 1:0] vdp_cmd_vram_wr_size;
   reg  [31:0] VDPCMDVRAMRDDATA_32;
   bit  [31:0] PRAMDAT_32;
   bit  [31:0] PRAMDAT_32_B;
 
-  // SUPER 24 bit RGB COLOUR
-  bit         super_rgb_colour_reg_applied;
-  bit  [31:0] super_rgb_colour_reg;
+  // SUPER RES MODES
   bit         super_mid;
   bit         super_res;
 `endif
@@ -606,15 +597,9 @@ module VDP (
       .PRAMADRG4567            (PRAMADRG4567),
       .vdp_cmd_vram_reading_ack(vdp_cmd_vram_reading_ack),
 `ifdef ENABLE_SUPER_RES
-      .VDPCMDVRAMWRDATA_32     (VDPCMDVRAMWRDATA_32),
-      .VDPCMDVRAMWRDATA_16     (VDPCMDVRAMWRDATA_16),
-      .vdp_cmd_vram_wr_size    (vdp_cmd_vram_wr_size),
       .vdp_super               (vdp_super),
       .super_vram_addr         (super_vram_addr),
       .super_res_drawing       (super_res_drawing),
-      .PRAM_WR_SIZE            (PRAM_WR_SIZE),
-      .PRAMDBO_32              (PRAMDBO_32),
-      .PRAMDBO_16              (PRAMDBO_16),
 `endif
       .vdp_cmd_vram_wr_ack     (vdp_cmd_vram_wr_ack),
       .vdp_cmd_vram_reading_req(vdp_cmd_vram_reading_req),
@@ -894,8 +879,6 @@ module VDP (
       .vdp_super(vdp_super),
       .super_mid(super_mid),
       .super_res(super_res),
-      .super_rgb_colour_reg(super_rgb_colour_reg),
-      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
       .PALETTE_ADDR2(PALETTE_ADDR2),
       .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
       .PALETTE_DATA_G2_OUT(PALETTE_DATA_G2_OUT),
@@ -936,14 +919,9 @@ module VDP (
       .current_command(CUR_VDP_COMMAND)
 `ifdef ENABLE_SUPER_RES
       ,
-      .p_vram_wr_data_32(VDPCMDVRAMWRDATA_32),
-      .p_vram_wr_data_16(VDPCMDVRAMWRDATA_16),
-      .vram_wr_size(vdp_cmd_vram_wr_size),
       .mode_graphic_super_mid(super_mid),
       .mode_graphic_super_res(super_res),
-      .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
-      .super_rgb_colour_reg_applied(super_rgb_colour_reg_applied),
-      .super_rgb_colour_reg(super_rgb_colour_reg)
+      .vram_rd_data_32(VDPCMDVRAMRDDATA_32)
 `endif
   );
 

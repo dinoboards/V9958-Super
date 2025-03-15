@@ -37,8 +37,9 @@ BIT 3: EXTENDED PALETTE ACTIVE
 
 ### R#30
 
-BIT 6: active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
-BIT 7: active when RGBs are being loaded into R#30
+<del>BIT 6: active indicates a valid 24 bit RGB colour in super_rgb_colour_reg</del>
+
+<del>BIT 7: active when RGBs are being loaded into R#30</del>
 
 
 ## Video Timing

@@ -117,9 +117,6 @@ module v9958_top (
   bit [18:0] VdpAdr;
   bit [ 7:0] VrmDbo_8;
 `ifdef ENABLE_SUPER_RES
-  bit [31:0] VrmDbo_32;
-  bit [15:0] VrmDbo_16;
-  bit [1:0] VdpDb_Wr_size;
   bit vdp_super;
   bit [31:0] VrmDbi_32;
   bit [31:0] VrmDbi_32_B;
@@ -157,11 +154,8 @@ module v9958_top (
       .addr({4'b0, VdpAdr}),
       .din8(VrmDbo_8),
 `ifdef ENABLE_SUPER_RES
-      .din32(VrmDbo_32),
-      .din16(VrmDbo_16),
       .dout32(VrmDbi_32),
       .dout32B(VrmDbi_32_B),
-      .word_wr_size(VdpDb_Wr_size),
 `endif
       .dout16(VrmDbi_16),
       .IO_sdram_dq(IO_sdram_dq),
@@ -236,12 +230,9 @@ module v9958_top (
       .PRAMWE_N    (WeVdp_n),
       .PRAMADR     (VdpAdr),
 `ifdef ENABLE_SUPER_RES
-      .PRAM_WR_SIZE(VdpDb_Wr_size),
       .vdp_super   (vdp_super),
       .PRAMDBI_32  (VrmDbi_32),
       .PRAMDBI_32_B(VrmDbi_32_B),
-      .PRAMDBO_16  (VrmDbo_16),
-      .PRAMDBO_32  (VrmDbo_32),
 `endif
       .PRAMDBI_16  (VrmDbi_16),
       .PRAMDBO_8   (VrmDbo_8),
