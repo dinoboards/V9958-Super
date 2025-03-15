@@ -88,7 +88,7 @@ module VDP_REGISTER (
     input wire [7:0] VDPCMDCLR,
     input wire [10:0] VDPCMDSXTMP,
     output reg [7:0] VDPVRAMACCESSDATA,
-    output reg [17:0] VDPVRAMACCESSADDRTMP,
+    output reg [18:0] VDPVRAMACCESSADDRTMP,
     output reg VDPVRAMADDRSETREQ,
     input wire VDPVRAMADDRSETACK,
     output reg VDPVRAMWRREQ,

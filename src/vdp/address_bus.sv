@@ -27,7 +27,7 @@ module ADDRESS_BUS #(
     input bit          VDPMODEISHIGHRES,          // TRUE WHEN MODE GRAPHIC5, 6
     input bit   [ 7:0] VDPVRAMACCESSDATA,
     input bit          VDPVRAMADDRSETREQ,
-    input bit   [17:0] VDPVRAMACCESSADDRTMP,
+    input bit   [18:0] VDPVRAMACCESSADDRTMP,
     input bit          VDPVRAMWRREQ,
     input bit          VDPVRAMRDREQ,
     input bit          VDP_COMMAND_ACTIVE,
@@ -93,7 +93,7 @@ module ADDRESS_BUS #(
 `endif
 
   always_ff @(posedge RESET, posedge CLK21M) begin : P1
-    bit [17:0] VDPVRAMACCESSADDRV;
+    bit [18:0] VDPVRAMACCESSADDRV;
     bit [31:0] VRAMACCESSSWITCH;
 
     if ((RESET == 1'b1)) begin
