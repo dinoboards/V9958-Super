@@ -16,9 +16,9 @@ module VDP_SUPER_RES (
     input bit [31:0] vrm_32,
 
     output bit [3:0] PALETTE_ADDR2,
-    input bit[3:0] PALETTE_DATA_R2_OUT,
-    input bit[3:0] PALETTE_DATA_G2_OUT,
-    input bit[3:0] PALETTE_DATA_B2_OUT,
+    input  bit [3:0] PALETTE_DATA_R2_OUT,
+    input  bit [3:0] PALETTE_DATA_G2_OUT,
+    input  bit [3:0] PALETTE_DATA_B2_OUT,
 
     output logic [16:0] super_res_vram_addr,
     output bit [7:0] high_res_red,
@@ -29,6 +29,7 @@ module VDP_SUPER_RES (
 
   import custom_timings::*;
 
+  bit odd_phase;
   bit [31:0] current_vram_data;
   bit [31:0] next_vram_data;
   bit super_high_res_visible_x;
@@ -117,6 +118,7 @@ module VDP_SUPER_RES (
       next_vram_data <= '{default: 0};
       current_vram_data <= '{default: 0};
       line_buffer_index <= 0;
+      odd_phase <= 0;
 
     end else begin
       case (cx)
@@ -153,6 +155,7 @@ module VDP_SUPER_RES (
         727: begin  //cycle cx[1:0] == 2
           //LOAD PALETTE_ADDR2 for first pixel of each row
           PALETTE_ADDR2 <= next_vram_data[3:0];
+          odd_phase <= 0;
         end
 
         default begin
@@ -160,57 +163,67 @@ module VDP_SUPER_RES (
             current_vram_data <= {8'd0, 8'd0, 8'd0, 8'd0};
 
           end else begin
-            case (cx[1:0])
-              // During clock cycle 0:
-              //   super_res: PALETTE_ADDR2 is loaded pixel indexes [1, 5, 9, 13, ...]
-              0: begin
-                if (active_line) begin
-                  line_buffer[line_buffer_index] <= REG_R1_DISP_ON ? next_vram_data : 0;
-                  current_vram_data <= REG_R1_DISP_ON ? next_vram_data : 0;
-                  PALETTE_ADDR2 <= next_vram_data[11:8];
-
-                end else begin
-                  current_vram_data <= line_buffer[line_buffer_index];
-                end
-
-                line_buffer_index <= 8'(line_buffer_index + 1);
-
-                if (active_line) begin
+            if (super_mid) begin
+              case ({
+                odd_phase, cx[1:0]
+              })
+                3'b000: begin
+                  current_vram_data   <= REG_R1_DISP_ON ? next_vram_data : 0;
                   super_res_vram_addr <= 17'(super_res_vram_addr + 1);
                 end
-              end
-
-              // During clock cycle 1:
-              //   super_res: PALETTE_ADDR2 is loaded pixel indexes [2, 6, 10, 14, ...]
-              // Request for next double word is initiated at during this clock cycle (next_vram_data)
-              1: begin
-                if(super_res) begin
+                3'b001: begin
+                  PALETTE_ADDR2  <= next_vram_data[11:8];
+                  next_vram_data <= vrm_32;  //load next 4 bytes
+                end
+                3'b010: begin
+                end
+                3'b011: begin
                   PALETTE_ADDR2 <= current_vram_data[19:16];
+                  odd_phase <= 1;
                 end
-                if (active_line) begin
-                  next_vram_data <= vrm_32; //load next 4 bytes
+                3'b100: begin
                 end
-              end
-
-              // During clock cycle 2:
-              //   super_res: PALETTE_ADDR2 is loaded pixel indexes [3, 7, 11, 15, ...]
-              2: begin
-                if(super_res) begin
+                3'b101: begin
                   PALETTE_ADDR2 <= current_vram_data[27:24];
                 end
-                if (super_mid) begin
-                  current_vram_data <= {16'b0, current_vram_data[31:16]};
+                3'b110: begin
                 end
-              end
+                3'b111: begin
+                  PALETTE_ADDR2 <= next_vram_data[3:0];
+                  odd_phase <= 0;
+                end
+              endcase
+            end else if (super_res) begin
+              case (cx[1:0])
+                // During clock cycle 0:
+                //   super_res: PALETTE_ADDR2 is loaded pixel indexes [1, 5, 9, 13, ...]
+                0: begin
+                  current_vram_data <= REG_R1_DISP_ON ? next_vram_data : 0;
+                  PALETTE_ADDR2 <= next_vram_data[11:8];
+                  super_res_vram_addr <= 17'(super_res_vram_addr + 1);
+                end
 
-              // During clock cycle 3:
-              //   super_res: PALETTE_ADDR2 is loaded pixel indexes [4, 8, 12, 16, ...]
-              3: begin
-                if(super_res) begin
+                // During clock cycle 1:
+                //   super_res: PALETTE_ADDR2 is loaded pixel indexes [2, 6, 10, 14, ...]
+                // Request for next double word is initiated at during this clock cycle (next_vram_data)
+                1: begin
+                  PALETTE_ADDR2  <= current_vram_data[19:16];
+                  next_vram_data <= vrm_32;  //load next 4 bytes
+                end
+
+                // During clock cycle 2:
+                //   super_res: PALETTE_ADDR2 is loaded pixel indexes [3, 7, 11, 15, ...]
+                2: begin
+                  PALETTE_ADDR2 <= current_vram_data[27:24];
+                end
+
+                // During clock cycle 3:
+                //   super_res: PALETTE_ADDR2 is loaded pixel indexes [4, 8, 12, 16, ...]
+                3: begin
                   PALETTE_ADDR2 <= next_vram_data[3:0];
                 end
-              end
-            endcase
+              endcase
+            end
           end
         end
       endcase
