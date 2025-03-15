@@ -91,7 +91,6 @@ module VDP_COMMAND (
     output bit [31:0] p_vram_wr_data_32,
     output bit [15:0] p_vram_wr_data_16,
     output bit [1:0] vram_wr_size,
-    input bit mode_graphic_super_colour,
     input bit mode_graphic_super_mid,
     input bit mode_graphic_super_res,
     input bit [31:0] vram_rd_data_32,
@@ -207,8 +206,8 @@ module VDP_COMMAND (
   assign p_vram_wr_data_32 = vram_wr_data_32;
   assign p_vram_wr_data_16 = vram_wr_data_16;
 
-  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_colour | mode_graphic_super_mid | mode_graphic_super_res;
-  assign vram_wr_size = mode_graphic_super_colour ? `MEMORY_WIDTH_32 : mode_graphic_super_mid ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8;
+  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_mid | mode_graphic_super_res;
+  assign vram_wr_size = mode_graphic_super_mid ? `MEMORY_WIDTH_16 : `MEMORY_WIDTH_8;
 `else
   assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7;
 `endif
@@ -250,12 +249,6 @@ module VDP_COMMAND (
         2'b11: RDPOINT = {6'b000000, vram_rd_data[1:0]};
       endcase
 `ifdef ENABLE_SUPER_RES
-    end else if (mode_graphic_super_colour) begin
-      //vram_rd_data_32 has the 24 bit RGB colour codes
-      //RDPOINT has 8 bit RGB (GGGR RRBB)
-      //need to convert that to the 8 bit colour code
-      RDPOINT = {vram_rd_data_32[15:13], vram_rd_data_32[23:21], vram_rd_data_32[7:6]};
-
     end else if (mode_graphic_super_mid) begin
       //rd_point_16 has the 16 bit RGB (RRRR RGGG GGGB BBBB) colour codes 15:11 Red, 10:5 Green, 4:0 - blue
       //RDPOINT has 8 bit RGB (GGGR RRBB)
@@ -356,9 +349,7 @@ module VDP_COMMAND (
     case (CMR[7:4])
       LINE: begin
 `ifdef ENABLE_SUPER_RES
-        if (mode_graphic_super_colour) begin
-          nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd180;
-        end else if (mode_graphic_super_mid) begin
+        if (mode_graphic_super_mid) begin
           nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd360;
         end else if (mode_graphic_super_res) begin
           nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd720;
@@ -372,9 +363,7 @@ module VDP_COMMAND (
 
       HMMV, HMMC, LMMV, LMMC: begin
 `ifdef ENABLE_SUPER_RES
-        if (mode_graphic_super_colour) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd180;
-        end else if (mode_graphic_super_mid) begin
+        if (mode_graphic_super_mid) begin
           nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd360;
         end else if (mode_graphic_super_res) begin
           nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd720;
@@ -443,12 +432,6 @@ module VDP_COMMAND (
       vram_access_addr = {vram_access_y[8:0], vram_access_x[8:1]};
 
 `ifdef ENABLE_SUPER_RES
-    end else if (mode_graphic_super_colour) begin
-      //resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
-      //x is 0 to 179, and y 0 to 143
-      //addr = 180*2*y + x*2
-      vram_access_addr = 19'((vram_access_y * 180 * 4) + (vram_access_x * 4)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
-
     end else if (mode_graphic_super_mid) begin
       //2 bytes per pixel `GGGG GGRR RRRB BBBB` - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
       //x is 0 to 359, and y 0 to 187 or for 60hz mode y is 0 to 239
@@ -478,18 +461,14 @@ module VDP_COMMAND (
     CLR16 = {16{1'bx}};
 
     if (super_rgb_colour_reg_applied) begin
-      if (mode_graphic_super_colour) begin
-        CLR32 = super_rgb_colour_reg;
-      end else if (mode_graphic_super_mid) begin
+      if (mode_graphic_super_mid) begin
         // translate 24 bit RGB to R(5), G(6), B(5)
         //super_mid: RRRR RGGG GGGB BBBB
         CLR16 = {super_rgb_colour_reg[23:19], super_rgb_colour_reg[15:10], super_rgb_colour_reg[7:3]};
       end
 
     end else begin
-      if (mode_graphic_super_colour) begin
-        CLR32 = {8'b0, CLR[4:2], 5'b0, CLR[7:5], 5'b0, CLR[1:0], 6'b0};
-      end else if (mode_graphic_super_mid) begin
+      if (mode_graphic_super_mid) begin
         //super_mid: RRRR RGGG GGGB BBBB
         CLR16 = {CLR[4:2], 2'b0, CLR[7:5], 3'b0, CLR[1:0], 3'b0};
       end
@@ -726,9 +705,6 @@ module VDP_COMMAND (
                   2'b11: vram_wr_data_8 <= {vram_rd_data[7:2], logical_operation_dest_colour[1:0]};
                 endcase
 `ifdef ENABLE_SUPER_RES
-              end else if (mode_graphic_super_colour) begin
-                vram_wr_data_32 <= logical_operation_dest_colour_32;
-
               end else if (mode_graphic_super_mid) begin
                 vram_wr_data_16 <= logical_operation_dest_colour_16;
 `endif

@@ -154,7 +154,6 @@ module VDP_REGISTER (
 `ifdef ENABLE_SUPER_RES
     ,
     output bit vdp_super,
-    output bit super_color,
     output bit super_mid,
     output bit super_res,
     output bit [31:0] super_rgb_colour_reg,  // 24bit colour register
@@ -246,8 +245,7 @@ module VDP_REGISTER (
   assign vdp_super = mode_graphic_super_base & mode_graphic_7_base;
   assign super_rgb_colour_reg_applied = FF_REG_R30[6];  // active indicates a valid 24 bit RGB colour in super_rgb_colour_reg
   assign super_rgb_loading = FF_REG_R30[7];  // active when RGBs are being loaded into R#30
-  assign super_color = vdp_super && FF_REG_R31[2:1] == 0; // 8 bit RGB colours - 4 bytes per pixel (RGB, the 4th byte is not used) - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
-  assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 2 bytes per pixel gggg ggrr rrrb bbbb - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
+  assign super_mid = vdp_super && FF_REG_R31[2:1] == 1;  // 1 byte per pixel into palette lookup 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
   assign super_res = vdp_super && FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
 `endif
 

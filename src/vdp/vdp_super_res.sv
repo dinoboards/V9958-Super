@@ -5,7 +5,6 @@ module VDP_SUPER_RES (
     input bit reset,
     input bit clk,
     input bit vdp_super,
-    input bit super_color,
     input bit super_mid,
     input bit super_res,
     input bit [10:0] cx,
@@ -40,11 +39,6 @@ module VDP_SUPER_RES (
   bit [8:0] line_buffer[360];
   bit [8:0] line_buffer_index;
 
-  // pixel format for super_mid: RRRR RGGG GGGB BBBB
-  // all red would be            1111 1000 0000 0000 -> 0xF800 (248, 0)
-  // all green would be          0000 0111 1110 0000 -> 0x07E0 (7, 224)
-  // all blue would be           0000 0000 0001 1111 -> 0x001F (0, 31)
-
   bit [4:0] high_mid_pixel_red;
   bit [5:0] high_mid_pixel_green;
   bit [4:0] high_mid_pixel_blue;
@@ -53,18 +47,12 @@ module VDP_SUPER_RES (
   assign high_mid_pixel_green = current_vram_data[10:5];
   assign high_mid_pixel_blue = current_vram_data[4:0];
 
-  // assign PALETTE_ADDR2 = current_vram_data[3:0];
-
   assign high_res_red = {PALETTE_DATA_R2_OUT, 4'b0};
   assign high_res_green = {PALETTE_DATA_G2_OUT, 4'b0};
   assign high_res_blue = {PALETTE_DATA_B2_OUT, 4'b0};
 
-  // assign high_res_red = {current_vram_data[7:5], 5'b0};
-  // assign high_res_green = {current_vram_data[4:2], 5'b0};
-  // assign high_res_blue = {current_vram_data[1:0], 6'b0};
-
   assign super_res_visible = super_high_res_visible_x & super_high_res_visible_y;
-  assign active_line = (super_color && cy[1:0] == 2'b00) || (super_mid && cy[0] == 0) || super_res;
+  assign active_line = (super_mid && cy[0] == 0) || super_res;
   assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
 
   // cx > 720 and cx < 840 - turn on @700, off @ 180
@@ -154,7 +142,7 @@ module VDP_SUPER_RES (
 
         727: begin  //cycle cx[1:0] == 2
           //LOAD PALETTE_ADDR2 for first pixel of each row
-          if(super_res) begin
+          if (super_res) begin
             PALETTE_ADDR2 <= next_vram_data[3:0];
           end else begin
             if (!active_line || last_line) begin

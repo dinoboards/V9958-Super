@@ -311,7 +311,6 @@ module VDP (
   // SUPER 24 bit RGB COLOUR
   bit         super_rgb_colour_reg_applied;
   bit  [31:0] super_rgb_colour_reg;
-  bit         super_color;
   bit         super_mid;
   bit         super_res;
 `endif
@@ -893,7 +892,6 @@ module VDP (
 `ifdef ENABLE_SUPER_RES
       ,
       .vdp_super(vdp_super),
-      .super_color(super_color),
       .super_mid(super_mid),
       .super_res(super_res),
       .super_rgb_colour_reg(super_rgb_colour_reg),
@@ -941,7 +939,6 @@ module VDP (
       .p_vram_wr_data_32(VDPCMDVRAMWRDATA_32),
       .p_vram_wr_data_16(VDPCMDVRAMWRDATA_16),
       .vram_wr_size(vdp_cmd_vram_wr_size),
-      .mode_graphic_super_colour(super_color),
       .mode_graphic_super_mid(super_mid),
       .mode_graphic_super_res(super_res),
       .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
@@ -968,7 +965,6 @@ module VDP (
       .reset(RESET),
       .clk(CLK21M),
       .vdp_super(vdp_super),
-      .super_color(super_color),
       .super_mid(super_mid),
       .super_res(super_res),
       .cx(CX),
