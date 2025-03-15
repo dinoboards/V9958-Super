@@ -764,7 +764,15 @@ module VDP_REGISTER (
               REG_R13_BLINK_PERIOD <= VDPP1DATA;
             end
             5'b01110: begin  // #14
+`ifdef ENABLE_SUPER_RES
+              if (vdp_super) begin
+                VDPVRAMACCESSADDRTMP[18:14] <= VDPP1DATA[4:0];
+              end else begin
+                VDPVRAMACCESSADDRTMP[16:14] <= VDPP1DATA[2:0];
+              end
+`else
               VDPVRAMACCESSADDRTMP[16:14] <= VDPP1DATA[2:0];
+`endif
               VDPVRAMADDRSETREQ <= ~VDPVRAMADDRSETACK;
             end
             5'b01111: begin  // #15
