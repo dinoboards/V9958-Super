@@ -26,9 +26,9 @@ BIT 5:1 - VDP ID
 BIT 0: When in GRAPHICS MODE 7 (SCREEN 8), and this bit set, then SUPER MODE active
 
 BIT 2:1: SUPER MODE TYPE:
-  00 -> SUPER_COLOR: 4 bytes per pixel (RGB, the 4th byte is not used) - 8 bit RGB colours - - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
-  01 -> SUPER_MID:   2 bytes per pixel - RRRR RGGG GGGB BBBB - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
-  10 -> SUPER_RES:   1 byte per pixel GGGRRBB 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+* 00 -> SUPER_COLOR: 1 byte per pixel - colour from palette register - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
+* 01 -> SUPER_MID:   1 byte per pixel - colour from palette register - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
+* <del>10 -> SUPER_RES:   1 byte per pixel GGGRRBB 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)</del>
 
 BIT 3: EXTENDED PALETTE ACTIVE
  If set, then support for 4bit per colour palette (12bits in total)

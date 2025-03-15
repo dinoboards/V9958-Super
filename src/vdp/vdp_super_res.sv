@@ -154,14 +154,18 @@ module VDP_SUPER_RES (
 
         727: begin  //cycle cx[1:0] == 2
           //LOAD PALETTE_ADDR2 for first pixel of each row
-          if (!active_line || last_line) begin
+          if(super_res) begin
             PALETTE_ADDR2 <= next_vram_data[3:0];
-            line_buffer[line_buffer_index] <= next_vram_data[7:0];
           end else begin
-            PALETTE_ADDR2 <= line_buffer[line_buffer_index][3:0];
+            if (!active_line || last_line) begin
+              PALETTE_ADDR2 <= next_vram_data[3:0];
+              line_buffer[line_buffer_index] <= next_vram_data[7:0];
+            end else begin
+              PALETTE_ADDR2 <= line_buffer[line_buffer_index][3:0];
+            end
+            line_buffer_index <= 9'(line_buffer_index + 1);
+            odd_phase <= 0;
           end
-          line_buffer_index <= 9'(line_buffer_index + 1);
-          odd_phase <= 0;
         end
 
         default begin
