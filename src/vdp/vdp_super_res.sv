@@ -1,6 +1,25 @@
 `define DISPLAYED_PIXEL_WIDTH 720
 `define DISPLAYED_PIXEL_HEIGHT PIXEL_HEIGHT(pal_mode)
 
+/*
+
+REG_R9_Y_DOTS: 1
+ super res @50hz 720x576
+ super res @60hz 720x480
+
+ super mid @50hz 360x288
+ super mid @60hz 360x240
+
+REG_R9_Y_DOTS: 0
+ super res @50hz 640x480 (offsets: 40, 48)
+ super res @60hz 640x400 (offsets: 40, 0)
+
+ super mid @50hz 320x200 (offsets: 15, 40)
+ super mid @60hz 320x166 (offsets: 15, 37)
+
+*/
+
+
 module VDP_SUPER_RES (
     input bit reset,
     input bit clk,
@@ -53,8 +72,13 @@ module VDP_SUPER_RES (
     if (reset | ~vdp_super) begin
       super_res_drawing_x <= 0;
     end else begin
-      if (cx == ENABLE_DRAW_ACCESS_AT_X(pal_mode)) super_res_drawing_x <= 1;
-      else if (cx == DISABLE_DRAW_ACCESS_AT_X(pal_mode)) super_res_drawing_x <= 0;
+
+      if (cx == ENABLE_DRAW_ACCESS_AT_X(pal_mode))
+          super_res_drawing_x <= 1;
+
+      else if ((active_line && cx == DISABLE_DRAW_ACCESS_AT_X(pal_mode))
+           || (!active_line && cx == 8))
+          super_res_drawing_x <= 0;
     end
   end
 
@@ -72,7 +96,7 @@ module VDP_SUPER_RES (
   // send a signal when cpu and vdp can do memory operations
   // as such, super_res_drawing is not precisely when we are drawing, but rather
   // a little overlap to ensure operations have time to complete
-  assign super_res_drawing = (super_res_drawing_x && super_res_drawing_y && active_line);
+  assign super_res_drawing = (super_res_drawing_x && super_res_drawing_y);
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
