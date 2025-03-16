@@ -72,6 +72,9 @@ module VDP_SUPER_RES (
     end
   end
 
+// send a signal when cpu and vdp can do memory operations
+// as such, super_res_drawing is not precisely when we are drawing, but rather
+// a little overlap to ensure operations have time to complete
   assign super_res_drawing = (super_res_drawing_x & super_res_drawing_y && active_line);
 
   always_ff @(posedge reset or posedge clk) begin
@@ -135,7 +138,7 @@ module VDP_SUPER_RES (
         727: begin  //cycle cx[1:0] == 2
           //LOAD PALETTE_ADDR2 for first pixel of each row
           if (super_res) begin
-            PALETTE_ADDR2 <= next_vram_data[3:0];
+            PALETTE_ADDR2 <= next_vram_data[7:0];
           end else begin
             if (!active_line || last_line) begin
               PALETTE_ADDR2 <= next_vram_data[7:0];
@@ -214,7 +217,7 @@ module VDP_SUPER_RES (
                 // During clock cycle 0:
                 //   super_res: PALETTE_ADDR2 is loaded pixel indexes [1, 5, 9, 13, ...]
                 0: begin
-                  current_vram_data <= REG_R1_DISP_ON ? next_vram_data : 0;
+                  current_vram_data <= next_vram_data;
                   PALETTE_ADDR2 <= next_vram_data[15:8];
                   super_res_vram_addr <= 17'(super_res_vram_addr + 1);
                 end
@@ -224,7 +227,6 @@ module VDP_SUPER_RES (
                 // Request for next double word is initiated at during this clock cycle (next_vram_data)
                 1: begin
                   PALETTE_ADDR2  <= current_vram_data[23:16];
-                  next_vram_data <= vrm_32;  //load next 4 bytes
                 end
 
                 // During clock cycle 2:
@@ -236,7 +238,8 @@ module VDP_SUPER_RES (
                 // During clock cycle 3:
                 //   super_res: PALETTE_ADDR2 is loaded pixel indexes [4, 8, 12, 16, ...]
                 3: begin
-                  PALETTE_ADDR2 <= next_vram_data[7:0];
+                  next_vram_data <= vrm_32;  //load next 4 bytes
+                  PALETTE_ADDR2 <= vrm_32[7:0];
                 end
               endcase
             end

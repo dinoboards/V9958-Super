@@ -101,7 +101,7 @@ set_option -rpt_auto_place_io_info 1
 # fanout to reduce fanout and get better timing results, and default is 0.
 # 0: Disable
 # 1: Enable
-set_option -replicate_resources 0
+set_option -replicate_resources 1
 set_option -ireg_in_iob 0
 set_option -oreg_in_iob 0
 set_option -ioreg_in_iob 0
