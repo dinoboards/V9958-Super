@@ -47,17 +47,14 @@ module VDP_SUPER_RES (
   assign active_line = (super_mid && cy[0] == 0) || super_res;
   assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
 
-  // cx > 720 and cx < 840 - turn on @700, off @ 180
-  // cy > 620 and cy < 576
-
   bit super_res_drawing_x;
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
       super_res_drawing_x <= 0;
     end else begin
-      if (cx == 840) super_res_drawing_x <= 1;
-      else if (cx == 720) super_res_drawing_x <= 0;
+      if (cx == ENABLE_DRAW_ACCESS_AT_X(pal_mode)) super_res_drawing_x <= 1;
+      else if (cx == DISABLE_DRAW_ACCESS_AT_X(pal_mode)) super_res_drawing_x <= 0;
     end
   end
 
@@ -67,15 +64,15 @@ module VDP_SUPER_RES (
     if (reset | ~vdp_super) begin
       super_res_drawing_y <= 0;
     end else begin
-      if (cy == 620) super_res_drawing_y <= 1;
-      else if (cy == 576) super_res_drawing_y <= 0;
+      if (cy == ENABLE_DRAW_ACCESS_AT_Y(pal_mode)) super_res_drawing_y <= 1;
+      else if (cy == DISABLE_DRAW_ACCESS_AT_Y(pal_mode)) super_res_drawing_y <= 0;
     end
   end
 
-// send a signal when cpu and vdp can do memory operations
-// as such, super_res_drawing is not precisely when we are drawing, but rather
-// a little overlap to ensure operations have time to complete
-  assign super_res_drawing = (super_res_drawing_x & super_res_drawing_y && active_line);
+  // send a signal when cpu and vdp can do memory operations
+  // as such, super_res_drawing is not precisely when we are drawing, but rather
+  // a little overlap to ensure operations have time to complete
+  assign super_res_drawing = (super_res_drawing_x && super_res_drawing_y && active_line);
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
@@ -226,7 +223,7 @@ module VDP_SUPER_RES (
                 //   super_res: PALETTE_ADDR2 is loaded pixel indexes [2, 6, 10, 14, ...]
                 // Request for next double word is initiated at during this clock cycle (next_vram_data)
                 1: begin
-                  PALETTE_ADDR2  <= current_vram_data[23:16];
+                  PALETTE_ADDR2 <= current_vram_data[23:16];
                 end
 
                 // During clock cycle 2:
@@ -239,7 +236,7 @@ module VDP_SUPER_RES (
                 //   super_res: PALETTE_ADDR2 is loaded pixel indexes [4, 8, 12, 16, ...]
                 3: begin
                   next_vram_data <= vrm_32;  //load next 4 bytes
-                  PALETTE_ADDR2 <= vrm_32[7:0];
+                  PALETTE_ADDR2  <= vrm_32[7:0];
                 end
               endcase
             end
