@@ -42,8 +42,8 @@ module hdmi_output #(
     // All outputs below this line stay inside the FPGA
     // They are used (by you) to pick the color each pixel should have
     // i.e. always_ff @(posedge pixel_clk) rgb <= {8'd0, 8'(cx), 8'(cy)};
-    output logic [10:0] cx,
-    output logic [ 9:0] cy
+    output logic [9:0] cx,
+    output logic [9:0] cy
 );
 
   hdmi #(

@@ -23,16 +23,16 @@ module hdmi_selection #(
     output logic [ 9:0] cy
 );
 
-  logic [10:0] cx_ntsc;
-  logic [ 9:0] cy_ntsc;
-  logic [10:0] cx_pal;
-  logic [ 9:0] cy_pal;
-  logic [10:0] nx_ntsc;
-  logic [ 9:0] ny_ntsc;
-  logic [10:0] nx_pal;
-  logic [ 9:0] ny_pal;
-  logic [ 9:0] tmds_channels_ntsc[NUM_CHANNELS-1:0];
-  logic [ 9:0] tmds_channels_pal [NUM_CHANNELS-1:0];
+  logic [9:0] cx_ntsc;
+  logic [9:0] cy_ntsc;
+  logic [9:0] cx_pal;
+  logic [9:0] cy_pal;
+  logic [9:0] nx_ntsc;
+  logic [9:0] ny_ntsc;
+  logic [9:0] nx_pal;
+  logic [9:0] ny_pal;
+  logic [9:0] tmds_channels_ntsc[NUM_CHANNELS-1:0];
+  logic [9:0] tmds_channels_pal [NUM_CHANNELS-1:0];
 
   hdmi_output #(
       .VIDEO_ID_CODE(2)
