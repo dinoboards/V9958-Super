@@ -63,7 +63,7 @@
 module VDP_HVCOUNTER (
     input bit RESET,
     input bit CLK21M,
-    input bit [10:0] cx,
+    input bit [9:0] cx,
     input bit [9:0] cy,
     output bit [9:0] V_CNT_IN_FIELD,
     input bit [9:0] V_CNT_IN_FRAME,

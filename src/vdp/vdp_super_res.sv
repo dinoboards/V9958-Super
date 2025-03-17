@@ -26,7 +26,7 @@ module VDP_SUPER_RES (
     input bit vdp_super,
     input bit super_mid,
     input bit super_res,
-    input bit [10:0] cx,
+    input bit [9:0] cx,
     input bit [9:0] cy,
     input bit pal_mode,
     input bit REG_R1_DISP_ON,
@@ -73,12 +73,9 @@ module VDP_SUPER_RES (
       super_res_drawing_x <= 0;
     end else begin
 
-      if (cx == ENABLE_DRAW_ACCESS_AT_X(pal_mode))
-          super_res_drawing_x <= 1;
+      if (cx == ENABLE_DRAW_ACCESS_AT_X(pal_mode)) super_res_drawing_x <= 1;
 
-      else if ((active_line && cx == DISABLE_DRAW_ACCESS_AT_X(pal_mode))
-           || (!active_line && cx == 8))
-          super_res_drawing_x <= 0;
+      else if ((active_line && cx == DISABLE_DRAW_ACCESS_AT_X(pal_mode)) || (!active_line && cx == 8)) super_res_drawing_x <= 0;
     end
   end
 

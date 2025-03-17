@@ -61,7 +61,7 @@
 module VDP_INTERRUPT (
     input wire RESET,
     input wire CLK21M,
-    input bit [10:0] cx,
+    input bit [9:0] cx,
     input bit [9:0] cy,
     input wire [7:0] Y_CNT,
     input wire ACTIVE_LINE,
@@ -107,7 +107,7 @@ module VDP_INTERRUPT (
     if ((RESET == 1'b1)) begin
       FF_HSYNC_INT_N <= 1'b1;
     end else begin
-      if((CLR_HSYNC_INT == 1'b1 || (W_VSYNC_INTR_TIMING == 1'b1 && V_BLANKING_START == 1'b1))) begin
+      if ((CLR_HSYNC_INT == 1'b1 || (W_VSYNC_INTR_TIMING == 1'b1 && V_BLANKING_START == 1'b1))) begin
         // H-BLANKING INTERRUPT CLEAR
         FF_HSYNC_INT_N <= 1'b1;
       end else if ((ACTIVE_LINE == 1'b1 && Y_CNT == REG_R19_HSYNC_INT_LINE)) begin

@@ -18,9 +18,9 @@ module hdmi_selection #(
     input logic [AUDIO_BIT_WIDTH-1:0] audio_sample_word[1:0],
     input logic pal_mode,
 
-    output logic [ 2:0] tmds,
-    output logic [10:0] cx,
-    output logic [ 9:0] cy
+    output logic [2:0] tmds,
+    output logic [9:0] cx,
+    output logic [9:0] cy
 );
 
   logic [9:0] cx_ntsc;

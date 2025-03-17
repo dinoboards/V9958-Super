@@ -79,7 +79,7 @@ module VDP (
     output wire         PVIDEODLCLK,
     output wire         PAL_MODE,
     input  wire         SPMAXSPR,
-    input  wire  [10:0] CX,
+    input  wire  [9:0] CX,
     input  wire  [ 9:0] CY,
     input  bit          scanlin,
 

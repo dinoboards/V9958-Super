@@ -59,7 +59,7 @@
 module VDP_SSG (
     input wire RESET,
     input wire CLK21M,
-    input bit [10:0] cx,
+    input bit [9:0] cx,
     input bit [9:0] cy,
     output wire [1:0] DOTSTATE,
     output wire [2:0] EIGHTDOTSTATE,

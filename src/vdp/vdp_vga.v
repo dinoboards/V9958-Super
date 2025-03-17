@@ -62,7 +62,7 @@
 module VDP_VGA (
     input wire CLK21M,
     input wire RESET,
-    input [10:0] cx,
+    input [9:0] cx,
     input [9:0] cy,
     input wire [5:0] VIDEORIN,
     input wire [5:0] VIDEOGIN,

@@ -87,9 +87,9 @@ module v9958_top (
 
   always_ff @(posedge clk or negedge reset_n) begin
     if (reset_n == 0) begin
-        _bus_clk <= 1'b0;
+      _bus_clk <= 1'b0;
     end else begin
-        _bus_clk <= ~_bus_clk;
+      _bus_clk <= ~_bus_clk;
     end
   end
   assign bus_clk = _bus_clk;
@@ -123,7 +123,7 @@ module v9958_top (
 `endif
   bit [15:0] VrmDbi_16;
 
-  logic [10:0] cx;
+  logic [9:0] cx;
   logic [9:0] cy;
 
   bit ram_fail;
@@ -236,7 +236,7 @@ module v9958_top (
 `endif
       .PRAMDBI_16  (VrmDbi_16),
       .PRAMDBO_8   (VrmDbo_8),
-      .VDPSPEEDMODE(1'b1),           // for V9958 MSX2+/tR VDP
+      .VDPSPEEDMODE(1'b1),          // for V9958 MSX2+/tR VDP
       .PVIDEODHCLK (VideoDHClk),
       .PVIDEODLCLK (VideoDLClk),
       .PAL_MODE    (pal_mode),
