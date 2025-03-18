@@ -170,11 +170,12 @@ module v9958_top (
       .O_sdram_dqm(O_sdram_dqm)
   );
 
+`ifdef ENABLE_WS2812
   bit ws2812_io_req;
   bit ws2812_io_wr;
   bit [7:0] ws2812_data_in;
   bit [7:0] ws2812_data_out;
-
+`endif
   CPU_IO cpu_io (
       .clk(clk_w),
       .reset_n(reset_n_w),
@@ -189,15 +190,16 @@ module v9958_top (
       .vdp_io_wr(vdp_io_wr),
       .vdp_data_in(vdp_data_in),
       .vdp_data_out(vdp_data_out),
-
+`ifdef ENABLE_WS2812
       .ws2812_io_req(ws2812_io_req),
       .ws2812_io_wr(ws2812_io_wr),
       .ws2812_data_in(ws2812_data_in),
       .ws2812_data_out(ws2812_data_out),
-
+`endif
       .cs_n(cs_n)
   );
 
+`ifdef ENABLE_WS2812
   WS2812 ws2812 (
       .clk(clk_w),
       .reset_n(reset_n),
@@ -209,6 +211,9 @@ module v9958_top (
       .ws2812_data_in(ws2812_data_in),
       .ws2812_data_out(ws2812_data_out)
   );
+`else
+  assign led_ws2812 = 1'bz;
+`endif
 
   bit       pal_mode;
   bit       scanlin;

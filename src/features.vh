@@ -1,1 +1,2 @@
 `define ENABLE_SUPER_RES 1
+// `define ENABLE_WS2812 1
