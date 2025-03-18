@@ -35,12 +35,47 @@ BIT 3: EXTENDED PALETTE ACTIVE
  each RGB is loaded into the palette data port one byte for each R, G, B
 * up to 256 palette entries for using in super modes only
 
-### R#30
+### R#29
 
-<del>BIT 6: active indicates a valid 24 bit RGB colour in super_rgb_colour_reg</del>
+Index to use for writing to the super extended register
 
-<del>BIT 7: active when RGBs are being loaded into R#30</del>
+### R30
 
+Assigns to current extended register value
+
+## Extended Register
+
+### EXTR#0 & EXTR#1 (BUS_ARB_50HZ_START_X - #0 LSB, #1 MSB - 10 bits)
+
+Bus arbitration enable X index for 50hz.  Default 859.
+
+### EXTR#2 & EXTR#3 (BUS_ARB_50HZ_END_X - #2 LSB, #3 MSB - 10 bits)
+
+Bus arbitration disable X index for 50hz.  Default 720.
+
+### EXTR#4 & EXTR#5 (BUS_ARB_50HZ_START_Y - #4 LSB, #5 MSB - 10 bits)
+
+Bus arbitration enable Y index for 50hz.  Default 620.
+
+### EXTR#6 & EXTR#7 (BUS_ARB_50HZ_END_Y - #6 LSB, #7 MSB - 10 bits)
+
+Bus arbitration disable Y index for 50hz.  Default 576.
+
+### EXTR#8 & EXTR#9 (BUS_ARB_60HZ_START_X - #8 LSB, #9 MSB - 10 bits)
+
+Bus arbitration enable X index for 60hz.  Default 853.
+
+### EXTR#10 & EXTR#11 (BUS_ARB_60HZ_END_X - #10 LSB, #11 MSB - 10 bits)
+
+Bus arbitration disable X index for 60hz.  Default 720.
+
+### EXTR#12 & EXTR#13 (BUS_ARB_60HZ_START_Y - #12 LSB, #13 MSB - 10 bits)
+
+Bus arbitration enable Y index for 60hz.  Default 520.
+
+### EXTR#14 & EXTR#15 (BUS_ARB_60HZ_END_Y - #14 LSB, #15 MSB - 10 bits)
+
+Bus arbitration disable Y index for 60hz.  Default 480.
 
 ## Video Timing
 

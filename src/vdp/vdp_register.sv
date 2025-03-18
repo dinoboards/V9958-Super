@@ -160,7 +160,16 @@ module VDP_REGISTER (
     input bit [7:0] PALETTE_ADDR2,
     output bit[7:0] PALETTE_DATA_R2_OUT,
     output bit[7:0] PALETTE_DATA_G2_OUT,
-    output bit[7:0] PALETTE_DATA_B2_OUT
+    output bit[7:0] PALETTE_DATA_B2_OUT,
+
+    output bit[9:0] ext_reg_bus_arb_50hz_start_x,
+    output bit[9:0] ext_reg_bus_arb_50hz_end_x,
+    output bit[9:0] ext_reg_bus_arb_50hz_start_y,
+    output bit[9:0] ext_reg_bus_arb_50hz_end_y,
+    output bit[9:0] ext_reg_bus_arb_60hz_start_x,
+    output bit[9:0] ext_reg_bus_arb_60hz_end_x,
+    output bit[9:0] ext_reg_bus_arb_60hz_start_y,
+    output bit[9:0] ext_reg_bus_arb_60hz_end_y
 `endif
 );
 
@@ -221,11 +230,43 @@ module VDP_REGISTER (
   wire W_IS_BITMAP_MODE;
 
 `ifdef ENABLE_SUPER_RES
-  bit [7:0] FF_REG_R30;
   bit [7:0] FF_REG_R31;
-  bit [1:0] super_rgb_loading_state;  // state to indicate which RGB colour is to be stored for R#30
 
-  bit super_rgb_loading;  // set if RGBs are being loaded into R#30
+  bit [5:0] extended_reg_index;
+  bit [7:0] extended_super_regs[64] = '{
+      0: 8'h5B, // BUS_ARB_50HZ_START_X  Low  byte 859 (0x35B)
+      1: 8'h03, // BUS_ARB_50HZ_START_X  High byte 859 (0x35B)
+      2: 8'hD0, // BUS_ARB_50HZ_END_X    Low  byte 720 (0x2D0)
+      3: 8'h02, // BUS_ARB_50HZ_END_X    High byte 720 (0x2D0)
+
+      4: 8'h6C, // BUS_ARB_50HZ_START_Y  Low  byte 620 (0x26C)
+      5: 8'h02, // BUS_ARB_50HZ_START_Y  High byte 620 (0x26C)
+      6: 8'h40, // BUS_ARB_50HZ_END_Y    Low  byte 576 (0x240)
+      7: 8'h02, // BUS_ARB_50HZ_END_Y    High byte 576 (0x240)
+
+      8: 8'h55, // BUS_ARB_60HZ_START_X  Low  byte 853 (0x355)
+      9: 8'h03, // BUS_ARB_60HZ_START_X  High byte 853 (0x355)
+      10: 8'hD0, // BUS_ARB_60HZ_END_X   Low  byte 720 (0x2D0)
+      11: 8'h02, // BUS_ARB_60HZ_END_X   High byte 720 (0x2D0)
+
+      12: 8'h08, // BUS_ARB_60HZ_START_Y Low  byte 520 (0x208)
+      13: 8'h02, // BUS_ARB_60HZ_START_Y High byte 520 (0x208)
+      14: 8'hE0, // BUS_ARB_60HZ_END_Y   Low  byte 480 (0x1E0)
+      15: 8'h01, // BUS_ARB_60HZ_END_Y   High byte 480 (0x1E0)
+
+      default: 8'h00  // All other registers initialized to 0
+  };
+
+  assign ext_reg_bus_arb_50hz_start_x = {extended_super_regs[1][1:0], extended_super_regs[0]};
+  assign ext_reg_bus_arb_50hz_end_x = {extended_super_regs[3][1:0], extended_super_regs[2]};
+  assign ext_reg_bus_arb_50hz_start_y = {extended_super_regs[5][1:0], extended_super_regs[4]};
+  assign ext_reg_bus_arb_50hz_end_y = {extended_super_regs[7][1:0], extended_super_regs[6]};
+  assign ext_reg_bus_arb_60hz_start_x = {extended_super_regs[9][1:0], extended_super_regs[8]};
+  assign ext_reg_bus_arb_60hz_end_x = {extended_super_regs[11][1:0], extended_super_regs[10]};
+  assign ext_reg_bus_arb_60hz_start_y = {extended_super_regs[13][1:0], extended_super_regs[12]};
+  assign ext_reg_bus_arb_60hz_end_y = {extended_super_regs[15][1:0], extended_super_regs[14]};
+
+
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
   bit mode_extended_palette;
@@ -574,6 +615,7 @@ module VDP_REGISTER (
 
 `ifdef ENABLE_SUPER_RES
       FF_REG_R31 <= 0;
+      extended_reg_index <= 0;
 `endif
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
@@ -805,18 +847,14 @@ module VDP_REGISTER (
               REG_R27_H_SCROLL <= VDPP1DATA[2:0];
             end
 
-            /*
-  set bit 7 of R#30
-  write 3 bytes to R#29
-  R#30 bit 7 get auto cleared after three bytes received
-  if bit 7 cleared, system reset and does not load RGB
-*/
 `ifdef ENABLE_SUPER_RES
             5'b11101: begin  // #29
+              extended_reg_index  <= VDPP1DATA[5:0];
             end
 
-            5'b11110: begin  //#30 - super control bits
-              FF_REG_R30 <= VDPP1DATA;
+            5'b11110: begin  //#30
+              extended_super_regs[extended_reg_index] <= VDPP1DATA;
+              extended_reg_index = 6'(extended_reg_index + 1);
             end
 
             5'b11111: begin  //#31 - special! - super res modes

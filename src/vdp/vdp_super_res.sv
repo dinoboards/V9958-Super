@@ -42,7 +42,16 @@ module VDP_SUPER_RES (
     output bit [7:0] high_res_red,
     output bit [7:0] high_res_green,
     output bit [7:0] high_res_blue,
-    output bit super_res_drawing
+    output bit super_res_drawing,
+
+    input bit [9:0] ext_reg_bus_arb_50hz_start_x,
+    input bit [9:0] ext_reg_bus_arb_50hz_end_x,
+    input bit [9:0] ext_reg_bus_arb_50hz_start_y,
+    input bit [9:0] ext_reg_bus_arb_50hz_end_y,
+    input bit [9:0] ext_reg_bus_arb_60hz_start_x,
+    input bit [9:0] ext_reg_bus_arb_60hz_end_x,
+    input bit [9:0] ext_reg_bus_arb_60hz_start_y,
+    input bit [9:0] ext_reg_bus_arb_60hz_end_y
 );
 
   import custom_timings::*;
@@ -72,10 +81,11 @@ module VDP_SUPER_RES (
     if (reset | ~vdp_super) begin
       super_res_drawing_x <= 0;
     end else begin
-
-      if (cx == ENABLE_DRAW_ACCESS_AT_X(pal_mode)) super_res_drawing_x <= 1;
-
-      else if ((active_line && cx == DISABLE_DRAW_ACCESS_AT_X(pal_mode)) || (!active_line && cx == 8)) super_res_drawing_x <= 0;
+      if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x) super_res_drawing_x <= 1;
+      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_start_x) super_res_drawing_x <= 1;
+      else if (pal_mode && cx == ext_reg_bus_arb_50hz_end_x) super_res_drawing_x <= 0;
+      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_end_x) super_res_drawing_x <= 0;
+      else if (!active_line && cx == 8) super_res_drawing_x <= 0;
     end
   end
 
@@ -85,8 +95,10 @@ module VDP_SUPER_RES (
     if (reset | ~vdp_super) begin
       super_res_drawing_y <= 0;
     end else begin
-      if (cy == ENABLE_DRAW_ACCESS_AT_Y(pal_mode)) super_res_drawing_y <= 1;
-      else if (cy == DISABLE_DRAW_ACCESS_AT_Y(pal_mode)) super_res_drawing_y <= 0;
+      if (pal_mode && cy == ext_reg_bus_arb_50hz_start_y) super_res_drawing_y <= 1;
+      else if (!pal_mode && cy == ext_reg_bus_arb_60hz_start_y) super_res_drawing_y <= 1;
+      else if (pal_mode && cy == ext_reg_bus_arb_50hz_end_y) super_res_drawing_y <= 0;
+      else if (!pal_mode && cy == ext_reg_bus_arb_60hz_end_y) super_res_drawing_y <= 0;
     end
   end
 

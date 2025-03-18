@@ -304,13 +304,22 @@ module VDP (
   // SUPER RES MODES
   bit         super_mid;
   bit         super_res;
+
+  bit[9:0] ext_reg_bus_arb_50hz_start_x;
+  bit[9:0] ext_reg_bus_arb_50hz_end_x;
+  bit[9:0] ext_reg_bus_arb_50hz_start_y;
+  bit[9:0] ext_reg_bus_arb_50hz_end_y;
+  bit[9:0] ext_reg_bus_arb_60hz_start_x;
+  bit[9:0] ext_reg_bus_arb_60hz_end_x;
+  bit[9:0] ext_reg_bus_arb_60hz_start_y;
+  bit[9:0] ext_reg_bus_arb_60hz_end_y;
+
 `endif
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
 
   wire        ENAHSYNC;
   wire        FF_BWINDOW_Y_DL;
-
 
   parameter VRAM_ACCESS_IDLE = 0;
   parameter VRAM_ACCESS_DRAW = 1;
@@ -883,7 +892,17 @@ module VDP (
       .PALETTE_ADDR2(PALETTE_ADDR2),
       .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
       .PALETTE_DATA_G2_OUT(PALETTE_DATA_G2_OUT),
-      .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT)
+      .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT),
+
+      .ext_reg_bus_arb_50hz_start_x(ext_reg_bus_arb_50hz_start_x),
+      .ext_reg_bus_arb_50hz_end_x(ext_reg_bus_arb_50hz_end_x),
+      .ext_reg_bus_arb_50hz_start_y(ext_reg_bus_arb_50hz_start_y),
+      .ext_reg_bus_arb_50hz_end_y(ext_reg_bus_arb_50hz_end_y),
+      .ext_reg_bus_arb_60hz_start_x(ext_reg_bus_arb_60hz_start_x),
+      .ext_reg_bus_arb_60hz_end_x(ext_reg_bus_arb_60hz_end_x),
+      .ext_reg_bus_arb_60hz_start_y(ext_reg_bus_arb_60hz_start_y),
+      .ext_reg_bus_arb_60hz_end_y(ext_reg_bus_arb_60hz_end_y)
+
 `endif
 
   );
@@ -959,10 +978,17 @@ module VDP (
       .PALETTE_ADDR2(PALETTE_ADDR2),
       .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
       .PALETTE_DATA_G2_OUT(PALETTE_DATA_G2_OUT),
-      .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT)
+      .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT),
 
+      .ext_reg_bus_arb_50hz_start_x(ext_reg_bus_arb_50hz_start_x),
+      .ext_reg_bus_arb_50hz_end_x(ext_reg_bus_arb_50hz_end_x),
+      .ext_reg_bus_arb_50hz_start_y(ext_reg_bus_arb_50hz_start_y),
+      .ext_reg_bus_arb_50hz_end_y(ext_reg_bus_arb_50hz_end_y),
+      .ext_reg_bus_arb_60hz_start_x(ext_reg_bus_arb_60hz_start_x),
+      .ext_reg_bus_arb_60hz_end_x(ext_reg_bus_arb_60hz_end_x),
+      .ext_reg_bus_arb_60hz_start_y(ext_reg_bus_arb_60hz_start_y),
+      .ext_reg_bus_arb_60hz_end_y(ext_reg_bus_arb_60hz_end_y)
   );
 `endif
-
 
 endmodule
