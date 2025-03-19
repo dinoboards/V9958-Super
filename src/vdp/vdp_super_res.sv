@@ -51,7 +51,11 @@ module VDP_SUPER_RES (
     input bit [9:0] ext_reg_bus_arb_60hz_start_x,
     input bit [9:0] ext_reg_bus_arb_60hz_end_x,
     input bit [9:0] ext_reg_bus_arb_60hz_start_y,
-    input bit [9:0] ext_reg_bus_arb_60hz_end_y
+    input bit [9:0] ext_reg_bus_arb_60hz_end_y,
+    input bit[9:0] ext_reg_view_port_50hz_start_x,
+    input bit[9:0] ext_reg_view_port_50hz_end_x,
+    input bit[9:0] ext_reg_view_port_60hz_start_x,
+    input bit[9:0] ext_reg_view_port_60hz_end_x
 );
 
   import custom_timings::*;
@@ -111,8 +115,10 @@ module VDP_SUPER_RES (
     if (reset | ~vdp_super) begin
       super_high_res_visible_x <= 0;
     end else begin
-      if (cx == FRAME_WIDTH(pal_mode) - 1) super_high_res_visible_x <= 1;
-      else if (cx == `DISPLAYED_PIXEL_WIDTH - 1) super_high_res_visible_x <= 0;
+      if (pal_mode && cx == ext_reg_view_port_50hz_start_x) super_high_res_visible_x <= 1;
+      else if (!pal_mode && cx == ext_reg_view_port_60hz_start_x) super_high_res_visible_x <= 1;
+      else if (pal_mode && cx == ext_reg_view_port_50hz_end_x ) super_high_res_visible_x <= 0;
+      else if (!pal_mode && cx == ext_reg_view_port_50hz_end_x ) super_high_res_visible_x <= 0;
     end
   end
 
@@ -184,6 +190,7 @@ module VDP_SUPER_RES (
         default begin
           if (~super_res_visible) begin
             current_vram_data <= {8'd0, 8'd0, 8'd0, 8'd0};
+            PALETTE_ADDR2 <= 0;
 
           end else begin
             if (super_mid) begin

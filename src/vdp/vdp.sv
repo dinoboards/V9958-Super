@@ -313,6 +313,13 @@ module VDP (
   bit[9:0] ext_reg_bus_arb_60hz_end_x;
   bit[9:0] ext_reg_bus_arb_60hz_start_y;
   bit[9:0] ext_reg_bus_arb_60hz_end_y;
+    bit[9:0] ext_reg_view_port_50hz_start_x;
+    bit[9:0] ext_reg_view_port_50hz_end_x;
+    bit[9:0] ext_reg_view_port_60hz_start_x;
+    bit[9:0] ext_reg_view_port_60hz_end_x;
+
+    bit[9:0] ext_reg_low_res_width;
+    bit[9:0] ext_reg_high_res_width;
 
 `endif
   wire        XRAMSEL;
@@ -901,7 +908,15 @@ module VDP (
       .ext_reg_bus_arb_60hz_start_x(ext_reg_bus_arb_60hz_start_x),
       .ext_reg_bus_arb_60hz_end_x(ext_reg_bus_arb_60hz_end_x),
       .ext_reg_bus_arb_60hz_start_y(ext_reg_bus_arb_60hz_start_y),
-      .ext_reg_bus_arb_60hz_end_y(ext_reg_bus_arb_60hz_end_y)
+      .ext_reg_bus_arb_60hz_end_y(ext_reg_bus_arb_60hz_end_y),
+
+      .ext_reg_view_port_50hz_start_x(ext_reg_view_port_50hz_start_x),
+      .ext_reg_view_port_50hz_end_x(ext_reg_view_port_50hz_end_x),
+      .ext_reg_view_port_60hz_start_x(ext_reg_view_port_60hz_start_x),
+      .ext_reg_view_port_60hz_end_x(ext_reg_view_port_60hz_end_x),
+
+      .ext_reg_low_res_width(ext_reg_low_res_width),
+      .ext_reg_high_res_width(ext_reg_high_res_width)
 
 `endif
 
@@ -941,7 +956,10 @@ module VDP (
       ,
       .mode_graphic_super_mid(super_mid),
       .mode_graphic_super_res(super_res),
-      .vram_rd_data_32(VDPCMDVRAMRDDATA_32)
+      .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
+
+      .ext_reg_low_res_width(ext_reg_low_res_width),
+      .ext_reg_high_res_width(ext_reg_high_res_width)
 `endif
   );
 
@@ -987,7 +1005,13 @@ module VDP (
       .ext_reg_bus_arb_60hz_start_x(ext_reg_bus_arb_60hz_start_x),
       .ext_reg_bus_arb_60hz_end_x(ext_reg_bus_arb_60hz_end_x),
       .ext_reg_bus_arb_60hz_start_y(ext_reg_bus_arb_60hz_start_y),
-      .ext_reg_bus_arb_60hz_end_y(ext_reg_bus_arb_60hz_end_y)
+      .ext_reg_bus_arb_60hz_end_y(ext_reg_bus_arb_60hz_end_y),
+
+      .ext_reg_view_port_50hz_start_x(ext_reg_view_port_50hz_start_x),
+      .ext_reg_view_port_50hz_end_x(ext_reg_view_port_50hz_end_x),
+      .ext_reg_view_port_60hz_start_x(ext_reg_view_port_60hz_start_x),
+      .ext_reg_view_port_60hz_end_x(ext_reg_view_port_60hz_end_x)
+
   );
 `endif
 

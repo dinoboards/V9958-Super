@@ -90,7 +90,11 @@ module VDP_COMMAND (
     ,
     input bit mode_graphic_super_mid,
     input bit mode_graphic_super_res,
-    input bit [31:0] vram_rd_data_32
+    input bit [31:0] vram_rd_data_32,
+
+    input bit[9:0] ext_reg_low_res_width,
+    input bit[9:0] ext_reg_high_res_width
+
 `endif
 );
 
@@ -387,14 +391,14 @@ module VDP_COMMAND (
       //addr = y * 360 + x
 
       // vram_access_addr = 19'((vram_access_y * 180 * 2) + (vram_access_x)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
-      vram_access_addr = 19'((vram_access_y * 360) + (vram_access_x));
+      vram_access_addr = 19'((vram_access_y * ext_reg_low_res_width) + (vram_access_x));
 
     end else if (mode_graphic_super_res) begin
       //1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
       //x is 0 to 719, and y 0 to 287 or for 60hz mode y is 0 to 479
       //addr = y * 720 + x
 
-      vram_access_addr = 19'((vram_access_y * 720) + (vram_access_x));
+      vram_access_addr = 19'((vram_access_y * ext_reg_high_res_width) + (vram_access_x));
 `endif
 
     end else begin
