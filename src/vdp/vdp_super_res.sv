@@ -67,7 +67,6 @@ module VDP_SUPER_RES (
   bit super_high_res_visible_y;
   bit last_line;
   bit active_line;  // true if line is drawn from sdram, false if drawn from line buffer
-  bit super_res_visible;
   bit [7:0] line_buffer[360];
   bit [8:0] line_buffer_index;
 
@@ -75,7 +74,6 @@ module VDP_SUPER_RES (
   assign high_res_green = PALETTE_DATA_G2_OUT;
   assign high_res_blue = PALETTE_DATA_B2_OUT;
 
-  assign super_res_visible = super_high_res_visible_x & super_high_res_visible_y;
   assign active_line = (super_mid && cy[0] == 0) || super_res;
   assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
 
@@ -111,23 +109,42 @@ module VDP_SUPER_RES (
   // a little overlap to ensure operations have time to complete
   assign super_res_drawing = (super_res_drawing_x && super_res_drawing_y);
 
-  always_ff @(posedge reset or posedge clk) begin
-    if (reset | ~vdp_super) begin
-      super_high_res_visible_x <= 0;
-    end else begin
-      if (pal_mode && cx == ext_reg_view_port_50hz_start_x) super_high_res_visible_x <= 1;
-      else if (!pal_mode && cx == ext_reg_view_port_60hz_start_x) super_high_res_visible_x <= 1;
-      else if (pal_mode && cx == ext_reg_view_port_50hz_end_x ) super_high_res_visible_x <= 0;
-      else if (!pal_mode && cx == ext_reg_view_port_50hz_end_x ) super_high_res_visible_x <= 0;
-    end
-  end
+  // assign super_res_visible = super_high_res_visible_x & super_high_res_visible_y;
+  bit super_res_visible;
+  bit super_res_visible_switched_on;
+  bit super_res_visible_switched_off;
+  bit on_a_visible_line;
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
-      super_high_res_visible_y <= 0;
+      super_res_visible <= 0;
+      on_a_visible_line <= 0;
+      super_res_visible_switched_off <= 0;
+      super_res_visible_switched_on <= 0;
     end else begin
-      if (cx == (FRAME_WIDTH(pal_mode) - 1) && last_line) super_high_res_visible_y <= 1;
-      else if (cy == (`DISPLAYED_PIXEL_HEIGHT - 1) && cx == (`DISPLAYED_PIXEL_WIDTH)) super_high_res_visible_y <= 0;
+
+      super_res_visible_switched_off <= 0;
+      super_res_visible_switched_on <= 0;
+
+      //cy == start_y-1
+      if ((cx == FRAME_WIDTH(pal_mode)-2) && cy == FRAME_HEIGHT(pal_mode)-1)
+        on_a_visible_line <= 1;
+
+      //cy == start_end-1
+      else if (cx == (FRAME_WIDTH(pal_mode)-2) && cy == PIXEL_HEIGHT(pal_mode)-1)
+        on_a_visible_line <= 0;
+
+      //cx == start_x - 1 (with wrap around)
+      if ((cx == FRAME_WIDTH(pal_mode)-1) && on_a_visible_line ) begin
+        super_res_visible <= 1;
+        super_res_visible_switched_on <= 1;
+
+      //cx == end_x - 1
+      end else if ((cx == (`DISPLAYED_PIXEL_WIDTH-1)) && on_a_visible_line ) begin
+        super_res_visible <= 0;
+        super_res_visible_switched_off <= 1;
+      end
+
     end
   end
 
@@ -188,9 +205,10 @@ module VDP_SUPER_RES (
         end
 
         default begin
-          if (~super_res_visible) begin
-            current_vram_data <= {8'd0, 8'd0, 8'd0, 8'd0};
-            PALETTE_ADDR2 <= 0;
+          if (!super_res_visible) begin
+            if (super_res_visible_switched_off) begin
+              PALETTE_ADDR2 <= 1; //TODO: make this the default background colour index
+            end
 
           end else begin
             if (super_mid) begin
