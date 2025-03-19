@@ -16,7 +16,6 @@ REG_R9_Y_DOTS: 0
 
  super mid @50hz 320x200 (offsets: 15, 40)
  super mid @60hz 320x166 (offsets: 15, 37)
-
 */
 
 
@@ -77,43 +76,35 @@ module VDP_SUPER_RES (
   assign active_line = (super_mid && cy[0] == 0) || super_res;
   assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
 
-  bit super_res_drawing_x;
+  bit on_a_visible_line;
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
-      super_res_drawing_x <= 0;
+      super_res_drawing <= 1;
     end else begin
-      if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x) super_res_drawing_x <= 1;
-      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_start_x) super_res_drawing_x <= 1;
-      else if (pal_mode && cx == ext_reg_bus_arb_50hz_end_x) super_res_drawing_x <= 0;
-      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_end_x) super_res_drawing_x <= 0;
-      else if (!active_line && cx == 8) super_res_drawing_x <= 0;
+      if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x && on_a_visible_line)
+        super_res_drawing <= 1;
+
+      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_start_x && on_a_visible_line)
+        super_res_drawing <= 1;
+
+      else if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x && cy == ext_reg_bus_arb_50hz_start_y)
+        super_res_drawing <= 1;
+
+      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_start_x && cy == ext_reg_bus_arb_60hz_start_y)
+        super_res_drawing <= 1;
+
+      else if (pal_mode && cx == ext_reg_bus_arb_50hz_end_x && on_a_visible_line)
+        super_res_drawing <= 0;
+
+      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_end_x && on_a_visible_line)
+        super_res_drawing <= 0;
     end
   end
 
-  bit super_res_drawing_y;
-
-  always_ff @(posedge reset or posedge clk) begin
-    if (reset | ~vdp_super) begin
-      super_res_drawing_y <= 0;
-    end else begin
-      if (pal_mode && cy == ext_reg_bus_arb_50hz_start_y) super_res_drawing_y <= 1;
-      else if (!pal_mode && cy == ext_reg_bus_arb_60hz_start_y) super_res_drawing_y <= 1;
-      else if (pal_mode && cy == ext_reg_bus_arb_50hz_end_y) super_res_drawing_y <= 0;
-      else if (!pal_mode && cy == ext_reg_bus_arb_60hz_end_y) super_res_drawing_y <= 0;
-    end
-  end
-
-  // send a signal when cpu and vdp can do memory operations
-  // as such, super_res_drawing is not precisely when we are drawing, but rather
-  // a little overlap to ensure operations have time to complete
-  assign super_res_drawing = (super_res_drawing_x && super_res_drawing_y);
-
-  // assign super_res_visible = super_high_res_visible_x & super_high_res_visible_y;
   bit super_res_visible;
   bit super_res_visible_switched_on;
   bit super_res_visible_switched_off;
-  bit on_a_visible_line;
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
