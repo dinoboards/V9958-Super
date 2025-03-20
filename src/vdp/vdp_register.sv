@@ -246,7 +246,7 @@ module VDP_REGISTER (
 `ifdef ENABLE_SUPER_RES
   bit [7:0] FF_REG_R31;
 
-  bit [5:0] extended_reg_index;
+  bit [7:0] extended_reg_index;
   bit [7:0] extended_super_regs[64];
 
   assign ext_reg_bus_arb_50hz_start_x = {extended_super_regs[1][1:0], extended_super_regs[0]};
@@ -897,12 +897,43 @@ module VDP_REGISTER (
 
 `ifdef ENABLE_SUPER_RES
             5'b11101: begin  // #29
-              extended_reg_index  <= VDPP1DATA[5:0];
+              extended_reg_index  <= VDPP1DATA;
             end
 
             5'b11110: begin  //#30
-              extended_super_regs[extended_reg_index] <= VDPP1DATA;
-              extended_reg_index = 6'(extended_reg_index + 1);
+              if (extended_reg_index[7:6] == 0)
+                extended_super_regs[extended_reg_index[5:0]] <= VDPP1DATA;
+              else
+              if (extended_reg_index == 8'd255) begin
+                // command register
+
+                if (VDPP1DATA[0] == 1) begin //reset 50HZ mode
+                  extended_super_regs[0] <= 8'h5B; // BUS_ARB_50HZ_START_X     Low  byte 859 (0x35B)
+                  extended_super_regs[1] <= 8'h03; // BUS_ARB_50HZ_START_X     High byte 859 (0x35B)
+                  extended_super_regs[2] <= 8'hD0; // BUS_ARB_50HZ_END_X       Low  byte 720 (0x2D0)
+                  extended_super_regs[3] <= 8'h02; // BUS_ARB_50HZ_END_X       High byte 720 (0x2D0)
+                  extended_super_regs[4] <= 8'h6C; // BUS_ARB_50HZ_START_Y     Low  byte 620 (0x26C)
+                  extended_super_regs[5] <= 8'h02; // BUS_ARB_50HZ_START_Y     High byte 620 (0x26C)
+                  extended_super_regs[6] <= 8'h40; // BUS_ARB_50HZ_END_Y       Low  byte 576 (0x240)
+                  extended_super_regs[7] <= 8'h02; // BUS_ARB_50HZ_END_Y       High byte 576 (0x240)
+
+                  extended_super_regs[16] <= 8'h5F; // VIEW_PORT_50HZ_START_X  Low  byte 864-1 (0x35F)
+                  extended_super_regs[17] <= 8'h03; // VIEW_PORT_50HZ_START_X  High byte 864-1 (0x35F)
+                  extended_super_regs[18] <= 8'hCF; // VIEW_PORT_50HZ_END_X    Low  byte 720-1 (0x2CF)
+                  extended_super_regs[19] <= 8'h02; // VIEW_PORT_50HZ_END_X    High byte 720-1 (0x2CF)
+                  extended_super_regs[20] <= 8'h70; // VIEW_PORT_50HZ_START_Y  Low  byte 625-1 (0x270)
+                  extended_super_regs[21] <= 8'h02; // VIEW_PORT_50HZ_START_Y  High byte 625-1 (0x270)
+                  extended_super_regs[22] <= 8'h3F; // VIEW_PORT_50HZ_END_Y    Low  byte 576-1 (0x23F)
+                  extended_super_regs[23] <= 8'h02; // VIEW_PORT_50HZ_END_Y    High byte 576-1 (0x23F)
+
+                  extended_super_regs[32] <= 8'h68; // LOW_RES_ROW_50HZ_WIDTH  Low  Byte 360 (0x168)
+                  extended_super_regs[33] <= 8'h01; // LOW_RES_ROW_50HZ_WIDTH  High Byte 360 (0x168)
+                  extended_super_regs[34] <= 8'hD0; // HIGH_RES_ROW_50HZ_WIDTH Low  Byte 720 (0x2D0)
+                  extended_super_regs[35] <= 8'h02; // HIGH_RES_ROW_50HZ_WIDTH High Byte 720 (0x2D0)
+                end
+              end
+
+              extended_reg_index = 8'(extended_reg_index + 1);
             end
 
             5'b11111: begin  //#31 - special! - super res modes
