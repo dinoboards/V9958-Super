@@ -180,8 +180,10 @@ module VDP_REGISTER (
     output bit[9:0] ext_reg_view_port_60hz_start_y,
     output bit[9:0] ext_reg_view_port_60hz_end_y,
 
-    output bit[9:0] ext_reg_low_res_width,
-    output bit[9:0] ext_reg_high_res_width
+    output bit[9:0] ext_reg_low_res_50hz_width,
+    output bit[9:0] ext_reg_high_res_50hz_width,
+    output bit[9:0] ext_reg_low_res_60hz_width,
+    output bit[9:0] ext_reg_high_res_60hz_width
 `endif
 );
 
@@ -265,8 +267,10 @@ module VDP_REGISTER (
   assign ext_reg_view_port_60hz_start_y = {extended_super_regs[29][1:0], extended_super_regs[28]};
   assign ext_reg_view_port_60hz_end_y = {extended_super_regs[31][1:0], extended_super_regs[30]};
 
-  assign ext_reg_low_res_width = {extended_super_regs[33][1:0], extended_super_regs[32]};
-  assign ext_reg_high_res_width = {extended_super_regs[35][1:0], extended_super_regs[34]};
+  assign ext_reg_low_res_50hz_width = {extended_super_regs[33][1:0], extended_super_regs[32]};
+  assign ext_reg_high_res_50hz_width = {extended_super_regs[35][1:0], extended_super_regs[34]};
+  assign ext_reg_low_res_60hz_width = {extended_super_regs[37][1:0], extended_super_regs[36]};
+  assign ext_reg_high_res_60hz_width = {extended_super_regs[39][1:0], extended_super_regs[38]};
 
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
@@ -649,10 +653,16 @@ module VDP_REGISTER (
       extended_super_regs[29] <= 8'h02; // VIEW_PORT_60HZ_START_Y  High byte 525-1 (0x20C)
       extended_super_regs[30] <= 8'hDF; // VIEW_PORT_60HZ_END_Y    Low  byte 480-1 (0x1DF)
       extended_super_regs[31] <= 8'h01; // VIEW_PORT_60HZ_END_Y    High byte 480-1 (0x1DF)
-      extended_super_regs[32] <= 8'h68; // LOW_RES_ROW_WIDTH Low   Byte 360 (0x168)
-      extended_super_regs[33] <= 8'h01; // LOW_RES_ROW_WIDTH High  Byte 360 (0x168)
-      extended_super_regs[34] <= 8'hD0; // HIGH_RES_ROW_WIDTH Low  Byte 720 (0x2D0)
-      extended_super_regs[35] <= 8'h02; // HIGH_RES_ROW_WIDTH High Byte 720 (0x2D0)
+
+      extended_super_regs[32] <= 8'h68; // LOW_RES_ROW_50HZ_WIDTH  Low  Byte 360 (0x168)
+      extended_super_regs[33] <= 8'h01; // LOW_RES_ROW_50HZ_WIDTH  High Byte 360 (0x168)
+      extended_super_regs[34] <= 8'hD0; // HIGH_RES_ROW_50HZ_WIDTH Low  Byte 720 (0x2D0)
+      extended_super_regs[35] <= 8'h02; // HIGH_RES_ROW_50HZ_WIDTH High Byte 720 (0x2D0)
+
+      extended_super_regs[36] <= 8'h68; // LOW_RES_ROW_60HZ_WIDTH  Low  Byte 360 (0x168)
+      extended_super_regs[37] <= 8'h01; // LOW_RES_ROW_60HZ_WIDTH  High Byte 360 (0x168)
+      extended_super_regs[38] <= 8'hD0; // HIGH_RES_ROW_60HZ_WIDTH Low  Byte 720 (0x2D0)
+      extended_super_regs[39] <= 8'h02; // HIGH_RES_ROW_60HZ_WIDTH High Byte 720 (0x2D0)
 
 `endif
     end else begin

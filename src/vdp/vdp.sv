@@ -323,8 +323,10 @@ module VDP (
   bit  [ 9:0] ext_reg_view_port_60hz_start_y;
   bit  [ 9:0] ext_reg_view_port_60hz_end_y;
 
-  bit  [ 9:0] ext_reg_low_res_width;
-  bit  [ 9:0] ext_reg_high_res_width;
+  bit  [ 9:0] ext_reg_low_res_50hz_width;
+  bit  [ 9:0] ext_reg_high_res_50hz_width;
+  bit  [ 9:0] ext_reg_low_res_60hz_width;
+  bit  [ 9:0] ext_reg_high_res_60hz_width;
 
 `endif
   wire        XRAMSEL;
@@ -918,8 +920,10 @@ module VDP (
       .ext_reg_view_port_60hz_start_y(ext_reg_view_port_60hz_start_y),
       .ext_reg_view_port_60hz_end_y(ext_reg_view_port_60hz_end_y),
 
-      .ext_reg_low_res_width (ext_reg_low_res_width),
-      .ext_reg_high_res_width(ext_reg_high_res_width)
+      .ext_reg_low_res_50hz_width (ext_reg_low_res_50hz_width),
+      .ext_reg_high_res_50hz_width(ext_reg_high_res_50hz_width),
+      .ext_reg_low_res_60hz_width (ext_reg_low_res_60hz_width),
+      .ext_reg_high_res_60hz_width(ext_reg_high_res_60hz_width)
 
 `endif
 
@@ -961,8 +965,11 @@ module VDP (
       .mode_graphic_super_res(super_res),
       .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
 
-      .ext_reg_low_res_width (ext_reg_low_res_width),
-      .ext_reg_high_res_width(ext_reg_high_res_width)
+      .pal_mode(PAL_MODE),
+      .ext_reg_low_res_50hz_width (ext_reg_low_res_50hz_width),
+      .ext_reg_high_res_50hz_width(ext_reg_high_res_50hz_width),
+      .ext_reg_low_res_60hz_width (ext_reg_low_res_60hz_width),
+      .ext_reg_high_res_60hz_width(ext_reg_high_res_60hz_width)
 `endif
   );
 

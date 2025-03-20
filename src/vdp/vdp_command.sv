@@ -91,9 +91,11 @@ module VDP_COMMAND (
     input bit mode_graphic_super_mid,
     input bit mode_graphic_super_res,
     input bit [31:0] vram_rd_data_32,
-
-    input bit[9:0] ext_reg_low_res_width,
-    input bit[9:0] ext_reg_high_res_width
+    input bit[9:0] ext_reg_low_res_50hz_width,
+    input bit[9:0] ext_reg_high_res_50hz_width,
+    input bit[9:0] ext_reg_low_res_60hz_width,
+    input bit[9:0] ext_reg_high_res_60hz_width,
+    input bit pal_mode
 
 `endif
 );
@@ -372,6 +374,22 @@ module VDP_COMMAND (
         XCOUNTDELTA = DIX ? 11'b11111111111  /*-1*/ : 11'b00000000001;  /*+1*/
       end
     endcase
+  end
+
+  bit[9:0] ext_reg_low_res_width;
+  bit[9:0] ext_reg_high_res_width;
+
+  always_ff @(posedge reset, posedge clk) begin
+    if (reset) begin
+    end else begin
+      if (pal_mode) begin
+        ext_reg_low_res_width <= ext_reg_low_res_50hz_width;
+        ext_reg_high_res_width <= ext_reg_high_res_50hz_width;
+      end else begin
+        ext_reg_low_res_width <= ext_reg_low_res_60hz_width;
+        ext_reg_high_res_width <= ext_reg_high_res_60hz_width;
+      end
+    end
   end
 
   always_comb begin
