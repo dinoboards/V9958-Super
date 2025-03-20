@@ -86,26 +86,19 @@ module VDP_SUPER_RES (
     if (reset | ~vdp_super) begin
       super_res_drawing <= 1;
     end else begin
-      if (last_line && cx==710)
-        super_res_drawing <= 1;
+      if (last_line && cx == 710) super_res_drawing <= 1;
 
-      if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x && on_a_visible_line)
-        super_res_drawing <= 1;
+      if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x && on_a_visible_line) super_res_drawing <= 1;
 
-      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_start_x && on_a_visible_line)
-        super_res_drawing <= 1;
+      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_start_x && on_a_visible_line) super_res_drawing <= 1;
 
-      else if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x && cy == ext_reg_bus_arb_50hz_start_y)
-        super_res_drawing <= 1;
+      else if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x && cy == ext_reg_bus_arb_50hz_start_y) super_res_drawing <= 1;
 
-      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_start_x && cy == ext_reg_bus_arb_60hz_start_y)
-        super_res_drawing <= 1;
+      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_start_x && cy == ext_reg_bus_arb_60hz_start_y) super_res_drawing <= 1;
 
-      else if (pal_mode && cx == ext_reg_bus_arb_50hz_end_x && on_a_visible_line)
-        super_res_drawing <= 0;
+      else if (pal_mode && cx == ext_reg_bus_arb_50hz_end_x && on_a_visible_line) super_res_drawing <= 0;
 
-      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_end_x && on_a_visible_line)
-        super_res_drawing <= 0;
+      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_end_x && on_a_visible_line) super_res_drawing <= 0;
     end
   end
 
@@ -118,10 +111,8 @@ module VDP_SUPER_RES (
       view_port_start_x <= 0;
 
     end else begin
-      if (pal_mode)
-        view_port_start_x <= ext_reg_view_port_50hz_start_x;
-      else
-        view_port_start_x <= ext_reg_view_port_60hz_start_x;
+      if (pal_mode) view_port_start_x <= ext_reg_view_port_50hz_start_x;
+      else view_port_start_x <= ext_reg_view_port_60hz_start_x;
     end
   end
 
@@ -158,7 +149,7 @@ module VDP_SUPER_RES (
       super_res_vram_addr <= 0;
       next_vram_data <= '{default: 0};
       current_vram_data <= '{default: 0};
-      first_col_palett_addr<= '{default: 0};
+      first_col_palett_addr <= '{default: 0};
       line_buffer_index <= 0;
       odd_phase <= 0;
 
@@ -168,12 +159,12 @@ module VDP_SUPER_RES (
           if (last_line) begin
             super_res_vram_addr <= 0;
           end
+          line_buffer_index <= 0;
         end
 
         //721: super_res_vram_addr will be latched into VRAM access by `ADDRESS_BUS
 
         722: begin
-          line_buffer_index <= 0;
         end
 
         //723 VRAM refreshing
@@ -185,7 +176,6 @@ module VDP_SUPER_RES (
         end
 
         725: begin  //cycle cx[1:0] == 1
-          // super_res_vram_addr will be latched into VRAM access by `ADDRESS_BUS
           if (last_line) begin
             next_vram_data <= vrm_32;
           end
@@ -194,7 +184,7 @@ module VDP_SUPER_RES (
         726: begin  //cycle cx[1:0] == 2
         end
 
-        727: begin  //cycle cx[1:0] == 2
+        857: begin  //cycle cx[1:0] == 2
           //LOAD PALETTE_ADDR2 for first pixel of each row
           if (super_res) begin
             PALETTE_ADDR2 <= next_vram_data[7:0];
@@ -216,13 +206,12 @@ module VDP_SUPER_RES (
         end
 
         view_port_start_x: begin
-          if (on_a_visible_line)
-            PALETTE_ADDR2 <= first_col_palett_addr;
+          if (on_a_visible_line) PALETTE_ADDR2 <= first_col_palett_addr;
         end
 
         default begin
           if (!super_res_visible) begin
-              PALETTE_ADDR2 <= 2;  //TODO: make this the default background colour index
+            PALETTE_ADDR2 <= 2;  //TODO: make this the default background colour index
 
           end else begin
             if (super_mid) begin
