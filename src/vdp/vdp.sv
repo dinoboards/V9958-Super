@@ -61,27 +61,27 @@
 `include "vdp_constants.vh"
 
 module VDP (
-    input  wire         CLK21M,
-    input  wire         RESET,
-    input  wire         REQ,
-    output wire         ACK,
-    input  wire         WRT,
-    input  wire  [ 1:0] mode,
-    output wire  [ 7:0] DBI,
-    input  wire  [ 7:0] DBO,
-    output wire         INT_N,
-    output reg          PRAMWE_N,
-    output bit   [18:0] PRAMADR,
-    input  bit   [15:0] PRAMDBI_16,
-    output reg   [ 7:0] PRAMDBO_8,
-    input  wire         VDPSPEEDMODE,
-    output wire         PVIDEODHCLK,
-    output wire         PVIDEODLCLK,
-    output wire         PAL_MODE,
-    input  wire         SPMAXSPR,
-    input  wire  [9:0] CX,
-    input  wire  [ 9:0] CY,
-    input  bit          scanlin,
+    input  wire        CLK21M,
+    input  wire        RESET,
+    input  wire        REQ,
+    output wire        ACK,
+    input  wire        WRT,
+    input  wire [ 1:0] mode,
+    output wire [ 7:0] DBI,
+    input  wire [ 7:0] DBO,
+    output wire        INT_N,
+    output reg         PRAMWE_N,
+    output bit  [18:0] PRAMADR,
+    input  bit  [15:0] PRAMDBI_16,
+    output reg  [ 7:0] PRAMDBO_8,
+    input  wire        VDPSPEEDMODE,
+    output wire        PVIDEODHCLK,
+    output wire        PVIDEODLCLK,
+    output wire        PAL_MODE,
+    input  wire        SPMAXSPR,
+    input  wire [ 9:0] CX,
+    input  wire [ 9:0] CY,
+    input  bit         scanlin,
 
     output bit [7:0] red,
     output bit [7:0] green,
@@ -89,8 +89,8 @@ module VDP (
 
 `ifdef ENABLE_SUPER_RES
     ,
-    input  bit   [31:0] PRAMDBI_32,
-    input  bit   [31:0] PRAMDBI_32_B,
+    input bit [31:0] PRAMDBI_32,
+    input bit [31:0] PRAMDBI_32_B,
     output bit vdp_super
 `endif
 );
@@ -223,10 +223,10 @@ module VDP (
 `ifdef ENABLE_SUPER_RES
   bit         super_res_drawing;
   bit  [16:0] super_vram_addr;
-  bit [7:0] PALETTE_ADDR2;
-  bit [7:0] PALETTE_DATA_R2_OUT;
-  bit [7:0] PALETTE_DATA_G2_OUT;
-  bit [7:0] PALETTE_DATA_B2_OUT;
+  bit  [ 7:0] PALETTE_ADDR2;
+  bit  [ 7:0] PALETTE_DATA_R2_OUT;
+  bit  [ 7:0] PALETTE_DATA_G2_OUT;
+  bit  [ 7:0] PALETTE_DATA_B2_OUT;
 `endif
 
   // SPRITE
@@ -246,10 +246,10 @@ module VDP (
   wire        SPVDPS5RESETACK;
 
   // PALETTE REGISTERS
-  bit [ 7:0] PALETTE_ADDR_OUT;
-  bit [ 7:0] PALETTE_DATA_R_OUT;
-  bit [ 7:0] PALETTE_DATA_B_OUT;
-  bit [ 7:0] PALETTE_DATA_G_OUT;
+  bit  [ 7:0] PALETTE_ADDR_OUT;
+  bit  [ 7:0] PALETTE_DATA_R_OUT;
+  bit  [ 7:0] PALETTE_DATA_B_OUT;
+  bit  [ 7:0] PALETTE_DATA_G_OUT;
 
   // VDP COMMAND SIGNALS - CAN BE READ & SET BY CPU
   wire [ 7:0] VDPCMDCLR;  // R44, S#7
@@ -305,21 +305,26 @@ module VDP (
   bit         super_mid;
   bit         super_res;
 
-  bit[9:0] ext_reg_bus_arb_50hz_start_x;
-  bit[9:0] ext_reg_bus_arb_50hz_end_x;
-  bit[9:0] ext_reg_bus_arb_50hz_start_y;
-  bit[9:0] ext_reg_bus_arb_50hz_end_y;
-  bit[9:0] ext_reg_bus_arb_60hz_start_x;
-  bit[9:0] ext_reg_bus_arb_60hz_end_x;
-  bit[9:0] ext_reg_bus_arb_60hz_start_y;
-  bit[9:0] ext_reg_bus_arb_60hz_end_y;
-    bit[9:0] ext_reg_view_port_50hz_start_x;
-    bit[9:0] ext_reg_view_port_50hz_end_x;
-    bit[9:0] ext_reg_view_port_60hz_start_x;
-    bit[9:0] ext_reg_view_port_60hz_end_x;
+  bit  [ 9:0] ext_reg_bus_arb_50hz_start_x;
+  bit  [ 9:0] ext_reg_bus_arb_50hz_end_x;
+  bit  [ 9:0] ext_reg_bus_arb_50hz_start_y;
+  bit  [ 9:0] ext_reg_bus_arb_50hz_end_y;
+  bit  [ 9:0] ext_reg_bus_arb_60hz_start_x;
+  bit  [ 9:0] ext_reg_bus_arb_60hz_end_x;
+  bit  [ 9:0] ext_reg_bus_arb_60hz_start_y;
+  bit  [ 9:0] ext_reg_bus_arb_60hz_end_y;
 
-    bit[9:0] ext_reg_low_res_width;
-    bit[9:0] ext_reg_high_res_width;
+  bit  [ 9:0] ext_reg_view_port_50hz_start_x;
+  bit  [ 9:0] ext_reg_view_port_50hz_end_x;
+  bit  [ 9:0] ext_reg_view_port_50hz_start_y;
+  bit  [ 9:0] ext_reg_view_port_50hz_end_y;
+  bit  [ 9:0] ext_reg_view_port_60hz_start_x;
+  bit  [ 9:0] ext_reg_view_port_60hz_end_x;
+  bit  [ 9:0] ext_reg_view_port_60hz_start_y;
+  bit  [ 9:0] ext_reg_view_port_60hz_end_y;
+
+  bit  [ 9:0] ext_reg_low_res_width;
+  bit  [ 9:0] ext_reg_high_res_width;
 
 `endif
   wire        XRAMSEL;
@@ -671,12 +676,6 @@ module VDP (
       .REG_R7_FRAME_COL(REG_R7_FRAME_COL),
       .REG_R8_COL0_ON(REG_R8_COL0_ON),
       .REG_R25_YJK(REG_R25_YJK)
-
-// `ifdef ENABLE_SUPER_RES
-//     ,
-//     .super_res(super_res),
-//     .super_res_color_code(super_res_color_code)
-// `endif
   );
 
   //---------------------------------------------------------------------------
@@ -902,20 +901,24 @@ module VDP (
       .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT),
 
       .ext_reg_bus_arb_50hz_start_x(ext_reg_bus_arb_50hz_start_x),
-      .ext_reg_bus_arb_50hz_end_x(ext_reg_bus_arb_50hz_end_x),
+      .ext_reg_bus_arb_50hz_end_x  (ext_reg_bus_arb_50hz_end_x),
       .ext_reg_bus_arb_50hz_start_y(ext_reg_bus_arb_50hz_start_y),
-      .ext_reg_bus_arb_50hz_end_y(ext_reg_bus_arb_50hz_end_y),
+      .ext_reg_bus_arb_50hz_end_y  (ext_reg_bus_arb_50hz_end_y),
       .ext_reg_bus_arb_60hz_start_x(ext_reg_bus_arb_60hz_start_x),
-      .ext_reg_bus_arb_60hz_end_x(ext_reg_bus_arb_60hz_end_x),
+      .ext_reg_bus_arb_60hz_end_x  (ext_reg_bus_arb_60hz_end_x),
       .ext_reg_bus_arb_60hz_start_y(ext_reg_bus_arb_60hz_start_y),
-      .ext_reg_bus_arb_60hz_end_y(ext_reg_bus_arb_60hz_end_y),
+      .ext_reg_bus_arb_60hz_end_y  (ext_reg_bus_arb_60hz_end_y),
 
       .ext_reg_view_port_50hz_start_x(ext_reg_view_port_50hz_start_x),
       .ext_reg_view_port_50hz_end_x(ext_reg_view_port_50hz_end_x),
+      .ext_reg_view_port_50hz_start_y(ext_reg_view_port_50hz_start_y),
+      .ext_reg_view_port_50hz_end_y(ext_reg_view_port_50hz_end_y),
       .ext_reg_view_port_60hz_start_x(ext_reg_view_port_60hz_start_x),
       .ext_reg_view_port_60hz_end_x(ext_reg_view_port_60hz_end_x),
+      .ext_reg_view_port_60hz_start_y(ext_reg_view_port_60hz_start_y),
+      .ext_reg_view_port_60hz_end_y(ext_reg_view_port_60hz_end_y),
 
-      .ext_reg_low_res_width(ext_reg_low_res_width),
+      .ext_reg_low_res_width (ext_reg_low_res_width),
       .ext_reg_high_res_width(ext_reg_high_res_width)
 
 `endif
@@ -958,7 +961,7 @@ module VDP (
       .mode_graphic_super_res(super_res),
       .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
 
-      .ext_reg_low_res_width(ext_reg_low_res_width),
+      .ext_reg_low_res_width (ext_reg_low_res_width),
       .ext_reg_high_res_width(ext_reg_high_res_width)
 `endif
   );
@@ -999,19 +1002,22 @@ module VDP (
       .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT),
 
       .ext_reg_bus_arb_50hz_start_x(ext_reg_bus_arb_50hz_start_x),
-      .ext_reg_bus_arb_50hz_end_x(ext_reg_bus_arb_50hz_end_x),
+      .ext_reg_bus_arb_50hz_end_x  (ext_reg_bus_arb_50hz_end_x),
       .ext_reg_bus_arb_50hz_start_y(ext_reg_bus_arb_50hz_start_y),
-      .ext_reg_bus_arb_50hz_end_y(ext_reg_bus_arb_50hz_end_y),
+      .ext_reg_bus_arb_50hz_end_y  (ext_reg_bus_arb_50hz_end_y),
       .ext_reg_bus_arb_60hz_start_x(ext_reg_bus_arb_60hz_start_x),
-      .ext_reg_bus_arb_60hz_end_x(ext_reg_bus_arb_60hz_end_x),
+      .ext_reg_bus_arb_60hz_end_x  (ext_reg_bus_arb_60hz_end_x),
       .ext_reg_bus_arb_60hz_start_y(ext_reg_bus_arb_60hz_start_y),
-      .ext_reg_bus_arb_60hz_end_y(ext_reg_bus_arb_60hz_end_y),
+      .ext_reg_bus_arb_60hz_end_y  (ext_reg_bus_arb_60hz_end_y),
 
       .ext_reg_view_port_50hz_start_x(ext_reg_view_port_50hz_start_x),
       .ext_reg_view_port_50hz_end_x(ext_reg_view_port_50hz_end_x),
+      .ext_reg_view_port_50hz_start_y(ext_reg_view_port_50hz_start_y),
+      .ext_reg_view_port_50hz_end_y(ext_reg_view_port_50hz_end_y),
       .ext_reg_view_port_60hz_start_x(ext_reg_view_port_60hz_start_x),
-      .ext_reg_view_port_60hz_end_x(ext_reg_view_port_60hz_end_x)
-
+      .ext_reg_view_port_60hz_end_x(ext_reg_view_port_60hz_end_x),
+      .ext_reg_view_port_60hz_start_y(ext_reg_view_port_60hz_start_y),
+      .ext_reg_view_port_60hz_end_y(ext_reg_view_port_60hz_end_y)
   );
 `endif
 

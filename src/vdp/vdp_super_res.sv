@@ -51,10 +51,14 @@ module VDP_SUPER_RES (
     input bit [9:0] ext_reg_bus_arb_60hz_end_x,
     input bit [9:0] ext_reg_bus_arb_60hz_start_y,
     input bit [9:0] ext_reg_bus_arb_60hz_end_y,
-    input bit[9:0] ext_reg_view_port_50hz_start_x,
-    input bit[9:0] ext_reg_view_port_50hz_end_x,
-    input bit[9:0] ext_reg_view_port_60hz_start_x,
-    input bit[9:0] ext_reg_view_port_60hz_end_x
+    input bit [9:0] ext_reg_view_port_50hz_start_x,
+    input bit [9:0] ext_reg_view_port_50hz_end_x,
+    input bit [9:0] ext_reg_view_port_50hz_start_y,
+    input bit [9:0] ext_reg_view_port_50hz_end_y,
+    input bit [9:0] ext_reg_view_port_60hz_start_x,
+    input bit [9:0] ext_reg_view_port_60hz_end_x,
+    input bit [9:0] ext_reg_view_port_60hz_start_y,
+    input bit [9:0] ext_reg_view_port_60hz_end_y
 );
 
   import custom_timings::*;
@@ -105,6 +109,19 @@ module VDP_SUPER_RES (
   bit super_res_visible;
   bit super_res_visible_switched_on;
   bit super_res_visible_switched_off;
+  bit [9:0] view_port_start_x;
+
+  always_ff @(posedge reset or posedge clk) begin
+    if (reset | ~vdp_super) begin
+      view_port_start_x <= 0;
+
+    end else begin
+      if (pal_mode)
+        view_port_start_x <= ext_reg_view_port_50hz_start_x;
+      else
+        view_port_start_x <= ext_reg_view_port_60hz_start_x;
+    end
+  end
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
@@ -112,26 +129,25 @@ module VDP_SUPER_RES (
       on_a_visible_line <= 0;
       super_res_visible_switched_off <= 0;
       super_res_visible_switched_on <= 0;
+
     end else begin
-
       super_res_visible_switched_off <= 0;
-      super_res_visible_switched_on <= 0;
+      super_res_visible_switched_on  <= 0;
 
-      //cy == start_y-1
-      if ((cx == FRAME_WIDTH(pal_mode)-2) && cy == FRAME_HEIGHT(pal_mode)-1)
-        on_a_visible_line <= 1;
+      //cy == start_y-1 P(625-1) , N(525-1)
+      if ((cx == FRAME_WIDTH(pal_mode) - 2) && pal_mode && cy == ext_reg_view_port_50hz_start_y) on_a_visible_line <= 1;
 
-      //cy == start_end-1
-      else if (cx == (FRAME_WIDTH(pal_mode)-2) && cy == PIXEL_HEIGHT(pal_mode)-1)
-        on_a_visible_line <= 0;
+      if ((cx == FRAME_WIDTH(pal_mode) - 2) && !pal_mode && cy == ext_reg_view_port_60hz_start_y) on_a_visible_line <= 1;
 
-      //cx == start_x - 1 (with wrap around)
-      if ((cx == FRAME_WIDTH(pal_mode)-1) && on_a_visible_line ) begin
+      if ((cx == FRAME_WIDTH(pal_mode) - 2) && pal_mode && cy == ext_reg_view_port_50hz_end_y) on_a_visible_line <= 0;
+
+      if ((cx == FRAME_WIDTH(pal_mode) - 2) && !pal_mode && cy == ext_reg_view_port_60hz_end_y) on_a_visible_line <= 0;
+
+      if (((pal_mode && cx == ext_reg_view_port_50hz_start_x) && on_a_visible_line) || ((!pal_mode && cx == ext_reg_view_port_60hz_start_x) && on_a_visible_line)) begin
         super_res_visible <= 1;
         super_res_visible_switched_on <= 1;
 
-      //cx == end_x - 1
-      end else if ((cx == (`DISPLAYED_PIXEL_WIDTH-1)) && on_a_visible_line ) begin
+      end else if (((pal_mode && cx == ext_reg_view_port_50hz_end_x) && on_a_visible_line) || ((!pal_mode && cx == ext_reg_view_port_60hz_end_x) && on_a_visible_line)) begin
         super_res_visible <= 0;
         super_res_visible_switched_off <= 1;
       end
@@ -139,11 +155,14 @@ module VDP_SUPER_RES (
     end
   end
 
+  bit [7:0] first_col_palett_addr;
+
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
       super_res_vram_addr <= 0;
       next_vram_data <= '{default: 0};
       current_vram_data <= '{default: 0};
+      first_col_palett_addr<= '{default: 0};
       line_buffer_index <= 0;
       odd_phase <= 0;
 
@@ -183,23 +202,34 @@ module VDP_SUPER_RES (
           //LOAD PALETTE_ADDR2 for first pixel of each row
           if (super_res) begin
             PALETTE_ADDR2 <= next_vram_data[7:0];
+            first_col_palett_addr <= next_vram_data[7:0];
           end else begin
             if (!active_line || last_line) begin
               PALETTE_ADDR2 <= next_vram_data[7:0];
+              first_col_palett_addr <= next_vram_data[7:0];
+
               line_buffer[line_buffer_index] <= next_vram_data[7:0];
             end else begin
               PALETTE_ADDR2 <= line_buffer[line_buffer_index];
+              first_col_palett_addr <= line_buffer[line_buffer_index];
+
             end
             line_buffer_index <= 9'(line_buffer_index + 1);
             odd_phase <= 0;
           end
         end
 
+        view_port_start_x: begin
+          if (on_a_visible_line)
+            PALETTE_ADDR2 <= first_col_palett_addr;
+        end
+
         default begin
+            // if (super_res_visible_switched_off) begin
+              // PALETTE_ADDR2 <= 1;  //TODO: make this the default background colour index
+            // end
           if (!super_res_visible) begin
-            if (super_res_visible_switched_off) begin
-              PALETTE_ADDR2 <= 1; //TODO: make this the default background colour index
-            end
+              PALETTE_ADDR2 <= 2;  //TODO: make this the default background colour index
 
           end else begin
             if (super_mid) begin

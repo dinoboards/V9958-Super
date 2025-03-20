@@ -170,10 +170,15 @@ module VDP_REGISTER (
     output bit[9:0] ext_reg_bus_arb_60hz_end_x,
     output bit[9:0] ext_reg_bus_arb_60hz_start_y,
     output bit[9:0] ext_reg_bus_arb_60hz_end_y,
+
     output bit[9:0] ext_reg_view_port_50hz_start_x,
     output bit[9:0] ext_reg_view_port_50hz_end_x,
+    output bit[9:0] ext_reg_view_port_50hz_start_y,
+    output bit[9:0] ext_reg_view_port_50hz_end_y,
     output bit[9:0] ext_reg_view_port_60hz_start_x,
     output bit[9:0] ext_reg_view_port_60hz_end_x,
+    output bit[9:0] ext_reg_view_port_60hz_start_y,
+    output bit[9:0] ext_reg_view_port_60hz_end_y,
 
     output bit[9:0] ext_reg_low_res_width,
     output bit[9:0] ext_reg_high_res_width
@@ -241,40 +246,50 @@ module VDP_REGISTER (
 
   bit [5:0] extended_reg_index;
   bit [7:0] extended_super_regs[64] = '{
-      0: 8'h5B, // BUS_ARB_50HZ_START_X  Low  byte 859 (0x35B)
-      1: 8'h03, // BUS_ARB_50HZ_START_X  High byte 859 (0x35B)
-      2: 8'hD0, // BUS_ARB_50HZ_END_X    Low  byte 720 (0x2D0)
-      3: 8'h02, // BUS_ARB_50HZ_END_X    High byte 720 (0x2D0)
+      0: 8'h5B, // BUS_ARB_50HZ_START_X     Low  byte 859 (0x35B)
+      1: 8'h03, // BUS_ARB_50HZ_START_X     High byte 859 (0x35B)
+      2: 8'hD0, // BUS_ARB_50HZ_END_X       Low  byte 720 (0x2D0)
+      3: 8'h02, // BUS_ARB_50HZ_END_X       High byte 720 (0x2D0)
 
-      4: 8'h6C, // BUS_ARB_50HZ_START_Y  Low  byte 620 (0x26C)
-      5: 8'h02, // BUS_ARB_50HZ_START_Y  High byte 620 (0x26C)
-      6: 8'h40, // BUS_ARB_50HZ_END_Y    Low  byte 576 (0x240)
-      7: 8'h02, // BUS_ARB_50HZ_END_Y    High byte 576 (0x240)
+      4: 8'h6C, // BUS_ARB_50HZ_START_Y     Low  byte 620 (0x26C)
+      5: 8'h02, // BUS_ARB_50HZ_START_Y     High byte 620 (0x26C)
+      6: 8'h40, // BUS_ARB_50HZ_END_Y       Low  byte 576 (0x240)
+      7: 8'h02, // BUS_ARB_50HZ_END_Y       High byte 576 (0x240)
 
-      8: 8'h55, // BUS_ARB_60HZ_START_X  Low  byte 853 (0x355)
-      9: 8'h03, // BUS_ARB_60HZ_START_X  High byte 853 (0x355)
-      10: 8'hD0, // BUS_ARB_60HZ_END_X   Low  byte 720 (0x2D0)
-      11: 8'h02, // BUS_ARB_60HZ_END_X   High byte 720 (0x2D0)
+      8: 8'h55, // BUS_ARB_60HZ_START_X     Low  byte 853 (0x355)
+      9: 8'h03, // BUS_ARB_60HZ_START_X     High byte 853 (0x355)
+      10: 8'hD0, // BUS_ARB_60HZ_END_X      Low  byte 720 (0x2D0)
+      11: 8'h02, // BUS_ARB_60HZ_END_X      High byte 720 (0x2D0)
 
-      12: 8'h08, // BUS_ARB_60HZ_START_Y Low  byte 520 (0x208)
-      13: 8'h02, // BUS_ARB_60HZ_START_Y High byte 520 (0x208)
-      14: 8'hE0, // BUS_ARB_60HZ_END_Y   Low  byte 480 (0x1E0)
-      15: 8'h01, // BUS_ARB_60HZ_END_Y   High byte 480 (0x1E0)
+      12: 8'h08, // BUS_ARB_60HZ_START_Y    Low  byte 520 (0x208)
+      13: 8'h02, // BUS_ARB_60HZ_START_Y    High byte 520 (0x208)
+      14: 8'hE0, // BUS_ARB_60HZ_END_Y      Low  byte 480 (0x1E0)
+      15: 8'h01, // BUS_ARB_60HZ_END_Y      High byte 480 (0x1E0)
 
-      16: 8'h5F, // VIEW_PORT_50HZ_START_X Low  byte 864-1 (0x35F)
-      17: 8'h03, // VIEW_PORT_50HZ_START_X High  byte 864-1 (0x35F)
-      18: 8'hCF, // VIEW_PORT_50HZ_END_X   Low  byte 720-1 (0x2CF)
-      19: 8'h02, // VIEW_PORT_50HZ_END_X   High byte 720-1 (0x2CF)
+      16: 8'h5F, // VIEW_PORT_50HZ_START_X  Low  byte 864-1 (0x35F)
+      17: 8'h03, // VIEW_PORT_50HZ_START_X  High byte 864-1 (0x35F)
+      18: 8'hCF, // VIEW_PORT_50HZ_END_X    Low  byte 720-1 (0x2CF)
+      19: 8'h02, // VIEW_PORT_50HZ_END_X    High byte 720-1 (0x2CF)
 
-      20: 8'h59, // VIEW_PORT_60HZ_START_X Low  byte 858-1 (0x359)
-      21: 8'h03, // VIEW_PORT_60HZ_START_X High byte 858-1 (0x359)
-      22: 8'hCF, // VIEW_PORT_60HZ_END_X   Low  byte 720-1 (0x2CF)
-      23: 8'h02, // VIEW_PORT_60HZ_END_X   High byte 720-1 (0x2CF)
+      20: 8'h70, // VIEW_PORT_50HZ_START_Y  Low  byte 625-1 (0x270)
+      21: 8'h02, // VIEW_PORT_50HZ_START_Y  High byte 625-1 (0x270)
+      22: 8'h3F, // VIEW_PORT_50HZ_END_Y    Low  byte 576-1 (0x23F)
+      23: 8'h02, // VIEW_PORT_50HZ_END_Y    High byte 576-1 (0x23F)
 
-      24: 8'h68, // LOW_RES_ROW_WIDTH Low Byte 360 (0x168)
-      25: 8'h01, // LOW_RES_ROW_WIDTH Low Byte 360 (0x168)
-      26: 8'hD0, // HIGH_RES_ROW_WIDTH Low Byte 720 (0x2D0)
-      27: 8'h02, // HIGH_RES_ROW_WIDTH Low Byte 720 (0x2D0)
+      24: 8'h59, // VIEW_PORT_60HZ_START_X  Low  byte 858-1 (0x359)
+      25: 8'h03, // VIEW_PORT_60HZ_START_X  High byte 858-1 (0x359)
+      26: 8'hCF, // VIEW_PORT_60HZ_END_X    Low  byte 720-1 (0x2CF)
+      27: 8'h02, // VIEW_PORT_60HZ_END_X    High byte 720-1 (0x2CF)
+
+      28: 8'h0C, // VIEW_PORT_60HZ_START_Y  Low  byte 525-1 (0x20C)
+      29: 8'h02, // VIEW_PORT_60HZ_START_Y  High byte 525-1 (0x20C)
+      30: 8'hDF, // VIEW_PORT_60HZ_END_Y    Low  byte 480-1 (0x1DF)
+      31: 8'h01, // VIEW_PORT_60HZ_END_Y    High byte 480-1 (0x1DF)
+
+      32: 8'h68, // LOW_RES_ROW_WIDTH Low   Byte 360 (0x168)
+      33: 8'h01, // LOW_RES_ROW_WIDTH High  Byte 360 (0x168)
+      34: 8'hD0, // HIGH_RES_ROW_WIDTH Low  Byte 720 (0x2D0)
+      35: 8'h02, // HIGH_RES_ROW_WIDTH High Byte 720 (0x2D0)
 
       default: 8'h00  // All other registers initialized to 0
   };
@@ -290,16 +305,15 @@ module VDP_REGISTER (
 
   assign ext_reg_view_port_50hz_start_x = {extended_super_regs[17][1:0], extended_super_regs[16]};
   assign ext_reg_view_port_50hz_end_x = {extended_super_regs[19][1:0], extended_super_regs[18]};
-  assign ext_reg_view_port_60hz_start_x = {extended_super_regs[21][1:0], extended_super_regs[20]};
-  assign ext_reg_view_port_60hz_end_x = {extended_super_regs[23][1:0], extended_super_regs[22]};
+  assign ext_reg_view_port_50hz_start_y = {extended_super_regs[21][1:0], extended_super_regs[20]};
+  assign ext_reg_view_port_50hz_end_y = {extended_super_regs[23][1:0], extended_super_regs[22]};
+  assign ext_reg_view_port_60hz_start_x = {extended_super_regs[25][1:0], extended_super_regs[24]};
+  assign ext_reg_view_port_60hz_end_x = {extended_super_regs[27][1:0], extended_super_regs[26]};
+  assign ext_reg_view_port_60hz_start_y = {extended_super_regs[29][1:0], extended_super_regs[28]};
+  assign ext_reg_view_port_60hz_end_y = {extended_super_regs[31][1:0], extended_super_regs[30]};
 
-  // ext_reg_view_port_50hz_start_y //625-1
-  // ext_reg_view_port_50hz_end_y //576
-  // ext_reg_view_port_60hz_start_y //525-1
-  // ext_reg_view_port_60hz_end_y //480
-
-  assign ext_reg_low_res_width = {extended_super_regs[25][1:0], extended_super_regs[24]};
-  assign ext_reg_high_res_width = {extended_super_regs[27][1:0], extended_super_regs[26]};
+  assign ext_reg_low_res_width = {extended_super_regs[33][1:0], extended_super_regs[32]};
+  assign ext_reg_high_res_width = {extended_super_regs[35][1:0], extended_super_regs[34]};
 
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
