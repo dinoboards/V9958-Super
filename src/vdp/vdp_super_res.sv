@@ -108,7 +108,6 @@ module VDP_SUPER_RES (
 
   bit super_res_visible;
   bit super_res_visible_switched_on;
-  bit super_res_visible_switched_off;
   bit [9:0] view_port_start_x;
 
   always_ff @(posedge reset or posedge clk) begin
@@ -127,12 +126,8 @@ module VDP_SUPER_RES (
     if (reset | ~vdp_super) begin
       super_res_visible <= 0;
       on_a_visible_line <= 0;
-      super_res_visible_switched_off <= 0;
-      super_res_visible_switched_on <= 0;
 
     end else begin
-      super_res_visible_switched_off <= 0;
-      super_res_visible_switched_on  <= 0;
 
       //cy == start_y-1 P(625-1) , N(525-1)
       if ((cx == FRAME_WIDTH(pal_mode) - 2) && pal_mode && cy == ext_reg_view_port_50hz_start_y) on_a_visible_line <= 1;
@@ -145,11 +140,9 @@ module VDP_SUPER_RES (
 
       if (((pal_mode && cx == ext_reg_view_port_50hz_start_x) && on_a_visible_line) || ((!pal_mode && cx == ext_reg_view_port_60hz_start_x) && on_a_visible_line)) begin
         super_res_visible <= 1;
-        super_res_visible_switched_on <= 1;
 
       end else if (((pal_mode && cx == ext_reg_view_port_50hz_end_x) && on_a_visible_line) || ((!pal_mode && cx == ext_reg_view_port_60hz_end_x) && on_a_visible_line)) begin
         super_res_visible <= 0;
-        super_res_visible_switched_off <= 1;
       end
 
     end
@@ -225,9 +218,6 @@ module VDP_SUPER_RES (
         end
 
         default begin
-            // if (super_res_visible_switched_off) begin
-              // PALETTE_ADDR2 <= 1;  //TODO: make this the default background colour index
-            // end
           if (!super_res_visible) begin
               PALETTE_ADDR2 <= 2;  //TODO: make this the default background colour index
 
