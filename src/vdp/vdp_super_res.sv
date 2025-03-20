@@ -86,6 +86,9 @@ module VDP_SUPER_RES (
     if (reset | ~vdp_super) begin
       super_res_drawing <= 1;
     end else begin
+      if (last_line && cx==710)
+        super_res_drawing <= 1;
+
       if (pal_mode && cx == ext_reg_bus_arb_50hz_start_x && on_a_visible_line)
         super_res_drawing <= 1;
 
