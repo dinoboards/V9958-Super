@@ -89,7 +89,6 @@ module VDP (
 
 `ifdef ENABLE_SUPER_RES
     ,
-    input bit [31:0] PRAMDBI_32,
     input bit [31:0] PRAMDBI_32_B,
     output bit vdp_super
 `endif
@@ -297,8 +296,6 @@ module VDP (
   bit  [18:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
 `ifdef ENABLE_SUPER_RES
-  reg  [31:0] VDPCMDVRAMRDDATA_32;
-  bit  [31:0] PRAMDAT_32;
   bit  [31:0] PRAMDAT_32_B;
 
   // SUPER RES MODES
@@ -351,7 +348,6 @@ module VDP (
   assign XRAMSEL = IRAMADR[0];
   assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
 `ifdef ENABLE_SUPER_RES
-  assign PRAMDAT_32 = PRAMDBI_32;
   assign PRAMDAT_32_B = PRAMDBI_32_B;
 `endif
   assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
@@ -558,18 +554,12 @@ module VDP (
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       VDPCMDVRAMRDDATA <= 8'b0;
-`ifdef ENABLE_SUPER_RES
-      VDPCMDVRAMRDDATA_32 <= 32'b0;
-`endif
       vdp_cmd_vram_rd_ack <= 1'b0;
       vdp_cmd_vram_reading_ack <= 1'b0;
     end else begin
       if (DOTSTATE == 2'b01) begin
         if (vdp_cmd_vram_reading_req != vdp_cmd_vram_reading_ack) begin
           VDPCMDVRAMRDDATA <= PRAMDAT;
-`ifdef ENABLE_SUPER_RES
-          VDPCMDVRAMRDDATA_32 <= PRAMDAT_32;
-`endif
           vdp_cmd_vram_rd_ack <= ~vdp_cmd_vram_rd_ack;
           vdp_cmd_vram_reading_ack <= ~vdp_cmd_vram_reading_ack;
         end
@@ -963,7 +953,6 @@ module VDP (
       ,
       .mode_graphic_super_mid(super_mid),
       .mode_graphic_super_res(super_res),
-      .vram_rd_data_32(VDPCMDVRAMRDDATA_32),
 
       .pal_mode(PAL_MODE),
       .ext_reg_low_res_50hz_width (ext_reg_low_res_50hz_width),

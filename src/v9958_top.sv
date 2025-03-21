@@ -118,7 +118,6 @@ module v9958_top (
   bit [ 7:0] VrmDbo_8;
 `ifdef ENABLE_SUPER_RES
   bit vdp_super;
-  bit [31:0] VrmDbi_32;
   bit [31:0] VrmDbi_32_B;
 `endif
   bit [15:0] VrmDbi_16;
@@ -154,7 +153,6 @@ module v9958_top (
       .addr({4'b0, VdpAdr}),
       .din8(VrmDbo_8),
 `ifdef ENABLE_SUPER_RES
-      .dout32(VrmDbi_32),
       .dout32B(VrmDbi_32_B),
 `endif
       .dout16(VrmDbi_16),
@@ -236,7 +234,6 @@ module v9958_top (
       .PRAMADR     (VdpAdr),
 `ifdef ENABLE_SUPER_RES
       .vdp_super   (vdp_super),
-      .PRAMDBI_32  (VrmDbi_32),
       .PRAMDBI_32_B(VrmDbi_32_B),
 `endif
       .PRAMDBI_16  (VrmDbi_16),

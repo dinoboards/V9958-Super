@@ -90,7 +90,6 @@ module VDP_COMMAND (
     ,
     input bit mode_graphic_super_mid,
     input bit mode_graphic_super_res,
-    input bit [31:0] vram_rd_data_32,
     input bit[9:0] ext_reg_low_res_50hz_width,
     input bit[9:0] ext_reg_high_res_50hz_width,
     input bit[9:0] ext_reg_low_res_60hz_width,
@@ -223,17 +222,8 @@ module VDP_COMMAND (
   bit [1:0] MAXXMASK;
   assign MAXXMASK = mode_high_res ? 2'b10 : 2'b01;  // GRAPHIC 5,6
 
-`ifdef ENABLE_SUPER_RES
-  bit [31:0] rd_point_32;
-  bit [15:0] rd_point_16;
-  assign rd_point_16 = vram_access_addr[1] ? vram_rd_data_32[31:16] : vram_rd_data_32[15:0];
-`endif
-
   bit [ 7:0] RDPOINT;
   always_comb begin
-`ifdef ENABLE_SUPER_RES
-    rd_point_32 = vram_rd_data_32;
-`endif
     // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
     if (graphic_4_or_6) begin
       RDPOINT = rd_x_low[0] ? {4'b0000, vram_rd_data[3:0]} : {4'b0000, vram_rd_data[7:4]};
@@ -245,13 +235,6 @@ module VDP_COMMAND (
         2'b10: RDPOINT = {6'b000000, vram_rd_data[3:2]};
         2'b11: RDPOINT = {6'b000000, vram_rd_data[1:0]};
       endcase
-`ifdef ENABLE_SUPER_RES
-    end else if (mode_graphic_super_mid) begin
-      //rd_point_16 has the 16 bit RGB (RRRR RGGG GGGB BBBB) colour codes 15:11 Red, 10:5 Green, 4:0 - blue
-      //RDPOINT has 8 bit RGB (GGGR RRBB)
-      //need to convert from the 16 bit view to the 8 bit value
-      RDPOINT = {rd_point_16[10:8], rd_point_16[15:13], rd_point_16[4:3]};
-`endif
     end else begin
       RDPOINT = vram_rd_data;
     end
