@@ -184,7 +184,7 @@ module VDP_SUPER_RES (
         726: begin  //cycle cx[1:0] == 2
         end
 
-        857: begin  //cycle cx[1:0] == 2
+        856: begin  //cycle cx[1:0] == 2
           //LOAD PALETTE_ADDR2 for first pixel of each row
           if (super_res) begin
             PALETTE_ADDR2 <= next_vram_data[7:0];
