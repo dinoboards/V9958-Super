@@ -165,9 +165,7 @@ module VDP_REGISTER (
     output bit[9:0] ext_reg_bus_arb_start_x,
     output bit[9:0] ext_reg_bus_arb_end_x,
     output bit[9:0] ext_reg_bus_arb_50hz_start_y,
-    output bit[9:0] ext_reg_bus_arb_50hz_end_y, //not used
     output bit[9:0] ext_reg_bus_arb_60hz_start_y,
-    output bit[9:0] ext_reg_bus_arb_60hz_end_y, //not used
 
     output bit[9:0] ext_reg_view_port_start_x,
     output bit[9:0] ext_reg_view_port_end_x,
@@ -248,14 +246,12 @@ module VDP_REGISTER (
   bit [9:0] _ext_reg_view_port_end_y;
 
   assign ext_reg_bus_arb_50hz_start_y = {extended_super_regs[5][1:0], extended_super_regs[4]};
-  assign ext_reg_bus_arb_50hz_end_y = {extended_super_regs[7][1:0], extended_super_regs[6]};//not used
   assign _ext_reg_view_port_start_x = {extended_super_regs[9][1:0], extended_super_regs[8]};
   assign _ext_reg_view_port_end_x = {extended_super_regs[11][1:0], extended_super_regs[10]};
   assign _ext_reg_view_port_start_y = {extended_super_regs[13][1:0], extended_super_regs[12]};
   assign _ext_reg_view_port_end_y = {extended_super_regs[15][1:0], extended_super_regs[14]};
 
   assign ext_reg_bus_arb_60hz_start_y = {extended_super_regs[25][1:0], extended_super_regs[24]};
-  assign ext_reg_bus_arb_60hz_end_y = {extended_super_regs[27][1:0], extended_super_regs[26]}; //not used
 
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
@@ -607,8 +603,6 @@ module VDP_REGISTER (
       extended_reg_index <= 0;
       extended_super_regs[4] <= 8'h6C; // BUS_ARB_50HZ_START_Y     Low  byte 620 (0x26C)
       extended_super_regs[5] <= 8'h02; // BUS_ARB_50HZ_START_Y     High byte 620 (0x26C)
-      extended_super_regs[6] <= 8'h40; // BUS_ARB_50HZ_END_Y       Low  byte 576 (0x240)
-      extended_super_regs[7] <= 8'h02; // BUS_ARB_50HZ_END_Y       High byte 576 (0x240)
       extended_super_regs[8] <= 8'h00; // VIEW_PORT__START_X       Low  byte   0 (0x000)
       extended_super_regs[9] <= 8'h00; // VIEW_PORT__START_X       High byte   0 (0x000)
       extended_super_regs[10] <= 8'hD0; // VIEW_PORT_END_X         Low  byte 720 (0x2D0)
@@ -620,8 +614,6 @@ module VDP_REGISTER (
 
       extended_super_regs[24] <= 8'h08; // BUS_ARB_60HZ_START_Y    Low  byte 520 (0x208)
       extended_super_regs[25] <= 8'h02; // BUS_ARB_60HZ_START_Y    High byte 520 (0x208)
-      extended_super_regs[26] <= 8'hE0; // BUS_ARB_60HZ_END_Y      Low  byte 480 (0x1E0)
-      extended_super_regs[27] <= 8'h01; // BUS_ARB_60HZ_END_Y      High byte 480 (0x1E0)
 
 `endif
     end else begin
@@ -869,8 +861,6 @@ module VDP_REGISTER (
                 if (VDPP1DATA[0]) begin //reset 50HZ mode
                   extended_super_regs[4] <= 8'h6C; // BUS_ARB_50HZ_START_Y     Low  byte 620 (0x26C)
                   extended_super_regs[5] <= 8'h02; // BUS_ARB_50HZ_START_Y     High byte 620 (0x26C)
-                  extended_super_regs[6] <= 8'h40; // BUS_ARB_50HZ_END_Y       Low  byte 576 (0x240)
-                  extended_super_regs[7] <= 8'h02; // BUS_ARB_50HZ_END_Y       High byte 576 (0x240)
                   extended_super_regs[8] <= 8'h00;  // VIEW_PORT_START_X       Low  byte   0 (0x000)
                   extended_super_regs[9] <= 8'h00;  // VIEW_PORT_START_X       High byte   0 (0x000)
                   extended_super_regs[10] <= 8'hD0; // VIEW_PORT_END_X         Low  byte 720 (0x2D0)
@@ -884,8 +874,6 @@ module VDP_REGISTER (
                 if (VDPP1DATA[1]) begin //reset 60HZ mode
                   extended_super_regs[24] <= 8'h08; // BUS_ARB_60HZ_START_Y    Low  byte 520 (0x208)
                   extended_super_regs[25] <= 8'h02; // BUS_ARB_60HZ_START_Y    High byte 520 (0x208)
-                  extended_super_regs[26] <= 8'hE0; // BUS_ARB_60HZ_END_Y      Low  byte 480 (0x1E0)
-                  extended_super_regs[27] <= 8'h01; // BUS_ARB_60HZ_END_Y      High byte 480 (0x1E0)
                 end
               end
 
