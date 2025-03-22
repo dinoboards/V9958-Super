@@ -244,10 +244,10 @@ module VDP_REGISTER (
   bit [9:0] _ext_reg_view_port_start_y;
   bit [9:0] _ext_reg_view_port_end_y;
 
-  assign _ext_reg_view_port_start_x = {extended_super_regs[9][1:0], extended_super_regs[8]};
-  assign _ext_reg_view_port_end_x = {extended_super_regs[11][1:0], extended_super_regs[10]};
-  assign _ext_reg_view_port_start_y = {extended_super_regs[13][1:0], extended_super_regs[12]};
-  assign _ext_reg_view_port_end_y = {extended_super_regs[15][1:0], extended_super_regs[14]};
+  assign _ext_reg_view_port_start_x = {extended_super_regs[1][1:0], extended_super_regs[0]};
+  assign _ext_reg_view_port_end_x = {extended_super_regs[3][1:0], extended_super_regs[2]};
+  assign _ext_reg_view_port_start_y = {extended_super_regs[5][1:0], extended_super_regs[4]};
+  assign _ext_reg_view_port_end_y = {extended_super_regs[7][1:0], extended_super_regs[6]};
 
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
@@ -597,14 +597,14 @@ module VDP_REGISTER (
 `ifdef ENABLE_SUPER_RES
       FF_REG_R31 <= 0;
       extended_reg_index <= 0;
-      extended_super_regs[8] <= 8'h00;  // VIEW_PORT_START_X       Low  byte   0 (0x000)
-      extended_super_regs[9] <= 8'h00;  // VIEW_PORT_START_X       High byte   0 (0x000)
-      extended_super_regs[10] <= 8'hD0; // VIEW_PORT_END_X         Low  byte 720 (0x2D0)
-      extended_super_regs[11] <= 8'h02; // VIEW_PORT_END_X         High byte 720 (0x2D0)
-      extended_super_regs[12] <= 8'h00; // VIEW_PORT_START_Y       Low  byte   0 (0x000)
-      extended_super_regs[13] <= 8'h00; // VIEW_PORT_START_Y       High byte   0 (0x000)
-      extended_super_regs[14] <= 8'hFF; // VIEW_PORT_END_Y         Low  byte  -1 (0xFFF)
-      extended_super_regs[15] <= 8'hFF; // VIEW_PORT_END_Y         High byte  -1 (0xFFF)
+      extended_super_regs[0] <= 8'h00; // VIEW_PORT_START_X       Low  byte   0 (0x000)
+      extended_super_regs[1] <= 8'h00; // VIEW_PORT_START_X       High byte   0 (0x000)
+      extended_super_regs[2] <= 8'hD0; // VIEW_PORT_END_X         Low  byte 720 (0x2D0)
+      extended_super_regs[3] <= 8'h02; // VIEW_PORT_END_X         High byte 720 (0x2D0)
+      extended_super_regs[4] <= 8'h00; // VIEW_PORT_START_Y       Low  byte   0 (0x000)
+      extended_super_regs[5] <= 8'h00; // VIEW_PORT_START_Y       High byte   0 (0x000)
+      extended_super_regs[6] <= 8'hFF; // VIEW_PORT_END_Y         Low  byte  -1 (0xFFF)
+      extended_super_regs[7] <= 8'hFF; // VIEW_PORT_END_Y         High byte  -1 (0xFFF)
 
 `endif
     end else begin
@@ -850,14 +850,14 @@ module VDP_REGISTER (
                 // command register
 
                 if (VDPP1DATA[0]) begin //reset viewport
-                  extended_super_regs[8] <= 8'h00;  // VIEW_PORT_START_X       Low  byte   0 (0x000)
-                  extended_super_regs[9] <= 8'h00;  // VIEW_PORT_START_X       High byte   0 (0x000)
-                  extended_super_regs[10] <= 8'hD0; // VIEW_PORT_END_X         Low  byte 720 (0x2D0)
-                  extended_super_regs[11] <= 8'h02; // VIEW_PORT_END_X         High byte 720 (0x2D0)
-                  extended_super_regs[12] <= 8'h00; // VIEW_PORT_START_Y       Low  byte   0 (0x000)
-                  extended_super_regs[13] <= 8'h00; // VIEW_PORT_START_Y       High byte   0 (0x000)
-                  extended_super_regs[14] <= 8'hFF; // VIEW_PORT_END_Y         Low  byte  -1 (0xFFF)
-                  extended_super_regs[15] <= 8'hFF; // VIEW_PORT_END_Y         High byte  -1 (0xFFF)
+                  extended_super_regs[0] <= 8'h00; // VIEW_PORT_START_X       Low  byte   0 (0x000)
+                  extended_super_regs[1] <= 8'h00; // VIEW_PORT_START_X       High byte   0 (0x000)
+                  extended_super_regs[2] <= 8'hD0; // VIEW_PORT_END_X         Low  byte 720 (0x2D0)
+                  extended_super_regs[3] <= 8'h02; // VIEW_PORT_END_X         High byte 720 (0x2D0)
+                  extended_super_regs[4] <= 8'h00; // VIEW_PORT_START_Y       Low  byte   0 (0x000)
+                  extended_super_regs[5] <= 8'h00; // VIEW_PORT_START_Y       High byte   0 (0x000)
+                  extended_super_regs[6] <= 8'hFF; // VIEW_PORT_END_Y         Low  byte  -1 (0xFFF)
+                  extended_super_regs[7] <= 8'hFF; // VIEW_PORT_END_Y         High byte  -1 (0xFFF)
                 end
               end
 
