@@ -942,8 +942,6 @@ module VDP_REGISTER (
   bit [9:0] view_port_end_y_minus_one;
   bit view_port_start_y_wrap;
   bit view_port_end_y_wrap;
-  bit [9:0] __ext_reg_view_port_start_y;
-  bit [9:0] __ext_reg_view_port_end_y;
   bit [9:0] arb_start_minus_5_wrapped;
   bit [9:0] view_port_start_x_minus_5;
   bit arb_start_has_wrapped;
@@ -958,8 +956,6 @@ module VDP_REGISTER (
       view_port_start_y_minus_one <= 0;
       view_port_start_y_wrap <= 1;
       view_port_end_y_wrap <= 1;
-      __ext_reg_view_port_start_y <= 0;
-      __ext_reg_view_port_end_y <= 0;
 
     end else begin
       // STAGE 0
@@ -977,10 +973,6 @@ module VDP_REGISTER (
       view_port_end_y_wrap <= _ext_reg_view_port_end_y == 10'b1111111111;
 
     // STAGE 1
-      __ext_reg_view_port_start_y <= view_port_start_y_wrap ? frame_height_minus_one : view_port_start_y_minus_one;
-      __ext_reg_view_port_end_y <= view_port_end_y_wrap ? pixel_height_minus_one : view_port_end_y_minus_one;
-
-      //863 - (5 - 0)
       arb_start_minus_5_wrapped <= frame_width_minus_one - (10'd5 - _ext_reg_view_port_start_x);
 
       view_port_start_x_minus_5 <= _ext_reg_view_port_start_x - 10'd6;
@@ -995,8 +987,8 @@ module VDP_REGISTER (
       ext_reg_view_port_start_x <= _ext_reg_view_port_start_x == 0 ? frame_width_minus_one : view_port_start_x_minus_one;
       ext_reg_view_port_end_x <= 10'(_ext_reg_view_port_end_x - 10'd1);
 
-      ext_reg_view_port_start_y <= __ext_reg_view_port_start_y;
-      ext_reg_view_port_end_y <= __ext_reg_view_port_end_y;
+      ext_reg_view_port_start_y <= view_port_start_y_wrap ? frame_height_minus_one : view_port_start_y_minus_one;;
+      ext_reg_view_port_end_y <= view_port_end_y_wrap ? pixel_height_minus_one : view_port_end_y_minus_one;;
 
       ext_reg_bus_arb_start_x <= arb_start_has_wrapped ? arb_start_minus_5_wrapped : view_port_start_x_minus_5;
     end
