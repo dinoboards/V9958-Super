@@ -44,10 +44,9 @@ module VDP_SUPER_RES (
     output bit super_res_drawing,
 
     input bit [9:0] ext_reg_bus_arb_start_x,
-    input bit [9:0] ext_reg_bus_arb_50hz_end_x,
+    input bit [9:0] ext_reg_bus_arb_end_x,
     input bit [9:0] ext_reg_bus_arb_50hz_start_y,
     input bit [9:0] ext_reg_bus_arb_50hz_end_y,
-    input bit [9:0] ext_reg_bus_arb_60hz_end_x,
     input bit [9:0] ext_reg_bus_arb_60hz_start_y,
     input bit [9:0] ext_reg_bus_arb_60hz_end_y,
     input bit [9:0] ext_reg_view_port_start_x,
@@ -89,9 +88,7 @@ module VDP_SUPER_RES (
 
       else if (!pal_mode && cx == ext_reg_bus_arb_start_x && cy == ext_reg_bus_arb_60hz_start_y) super_res_drawing <= 1;
 
-      else if (pal_mode && cx == ext_reg_bus_arb_50hz_end_x && on_a_visible_line) super_res_drawing <= 0;
-
-      else if (!pal_mode && cx == ext_reg_bus_arb_60hz_end_x && on_a_visible_line) super_res_drawing <= 0;
+      else if (cx == ext_reg_bus_arb_end_x && on_a_visible_line) super_res_drawing <= 0;
     end
   end
 
