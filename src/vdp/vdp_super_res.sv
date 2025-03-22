@@ -51,12 +51,10 @@ module VDP_SUPER_RES (
     input bit [9:0] ext_reg_bus_arb_60hz_end_x,
     input bit [9:0] ext_reg_bus_arb_60hz_start_y,
     input bit [9:0] ext_reg_bus_arb_60hz_end_y,
-    input bit [9:0] ext_reg_view_port_50hz_start_x,
-    input bit [9:0] ext_reg_view_port_50hz_end_x,
+    input bit [9:0] ext_reg_view_port_start_x,
+    input bit [9:0] ext_reg_view_port_end_x,
     input bit [9:0] ext_reg_view_port_50hz_start_y,
     input bit [9:0] ext_reg_view_port_50hz_end_y,
-    input bit [9:0] ext_reg_view_port_60hz_start_x,
-    input bit [9:0] ext_reg_view_port_60hz_end_x,
     input bit [9:0] ext_reg_view_port_60hz_start_y,
     input bit [9:0] ext_reg_view_port_60hz_end_y
 );
@@ -106,15 +104,7 @@ module VDP_SUPER_RES (
   bit super_res_visible_switched_on;
   bit [9:0] view_port_start_x;
 
-  always_ff @(posedge reset or posedge clk) begin
-    if (reset | ~vdp_super) begin
-      view_port_start_x <= 0;
-
-    end else begin
-      if (pal_mode) view_port_start_x <= ext_reg_view_port_50hz_start_x;
-      else view_port_start_x <= ext_reg_view_port_60hz_start_x;
-    end
-  end
+  assign view_port_start_x = ext_reg_view_port_start_x;
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
@@ -132,10 +122,10 @@ module VDP_SUPER_RES (
 
       if ((cx == FRAME_WIDTH(pal_mode) - 2) && !pal_mode && cy == ext_reg_view_port_60hz_end_y) on_a_visible_line <= 0;
 
-      if (((pal_mode && cx == ext_reg_view_port_50hz_start_x) && on_a_visible_line) || ((!pal_mode && cx == ext_reg_view_port_60hz_start_x) && on_a_visible_line)) begin
+      if ((cx == ext_reg_view_port_start_x) && on_a_visible_line) begin
         super_res_visible <= 1;
 
-      end else if (((pal_mode && cx == ext_reg_view_port_50hz_end_x) && on_a_visible_line) || ((!pal_mode && cx == ext_reg_view_port_60hz_end_x) && on_a_visible_line)) begin
+      end else if ((cx == ext_reg_view_port_end_x) && on_a_visible_line) begin
         super_res_visible <= 0;
       end
 
