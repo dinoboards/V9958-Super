@@ -164,8 +164,7 @@ module VDP_REGISTER (
 
     output bit[9:0] ext_reg_bus_arb_start_x,
     output bit[9:0] ext_reg_bus_arb_end_x,
-    output bit[9:0] ext_reg_bus_arb_50hz_start_y,
-    output bit[9:0] ext_reg_bus_arb_60hz_start_y,
+    output bit[9:0] ext_reg_bus_arb_start_y,
 
     output bit[9:0] ext_reg_view_port_start_x,
     output bit[9:0] ext_reg_view_port_end_x,
@@ -245,13 +244,10 @@ module VDP_REGISTER (
   bit [9:0] _ext_reg_view_port_start_y;
   bit [9:0] _ext_reg_view_port_end_y;
 
-  assign ext_reg_bus_arb_50hz_start_y = {extended_super_regs[5][1:0], extended_super_regs[4]};
   assign _ext_reg_view_port_start_x = {extended_super_regs[9][1:0], extended_super_regs[8]};
   assign _ext_reg_view_port_end_x = {extended_super_regs[11][1:0], extended_super_regs[10]};
   assign _ext_reg_view_port_start_y = {extended_super_regs[13][1:0], extended_super_regs[12]};
   assign _ext_reg_view_port_end_y = {extended_super_regs[15][1:0], extended_super_regs[14]};
-
-  assign ext_reg_bus_arb_60hz_start_y = {extended_super_regs[25][1:0], extended_super_regs[24]};
 
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
@@ -601,19 +597,14 @@ module VDP_REGISTER (
 `ifdef ENABLE_SUPER_RES
       FF_REG_R31 <= 0;
       extended_reg_index <= 0;
-      extended_super_regs[4] <= 8'h6C; // BUS_ARB_50HZ_START_Y     Low  byte 620 (0x26C)
-      extended_super_regs[5] <= 8'h02; // BUS_ARB_50HZ_START_Y     High byte 620 (0x26C)
-      extended_super_regs[8] <= 8'h00; // VIEW_PORT__START_X       Low  byte   0 (0x000)
-      extended_super_regs[9] <= 8'h00; // VIEW_PORT__START_X       High byte   0 (0x000)
+      extended_super_regs[8] <= 8'h00;  // VIEW_PORT_START_X       Low  byte   0 (0x000)
+      extended_super_regs[9] <= 8'h00;  // VIEW_PORT_START_X       High byte   0 (0x000)
       extended_super_regs[10] <= 8'hD0; // VIEW_PORT_END_X         Low  byte 720 (0x2D0)
       extended_super_regs[11] <= 8'h02; // VIEW_PORT_END_X         High byte 720 (0x2D0)
       extended_super_regs[12] <= 8'h00; // VIEW_PORT_START_Y       Low  byte   0 (0x000)
       extended_super_regs[13] <= 8'h00; // VIEW_PORT_START_Y       High byte   0 (0x000)
       extended_super_regs[14] <= 8'hFF; // VIEW_PORT_END_Y         Low  byte  -1 (0xFFF)
       extended_super_regs[15] <= 8'hFF; // VIEW_PORT_END_Y         High byte  -1 (0xFFF)
-
-      extended_super_regs[24] <= 8'h08; // BUS_ARB_60HZ_START_Y    Low  byte 520 (0x208)
-      extended_super_regs[25] <= 8'h02; // BUS_ARB_60HZ_START_Y    High byte 520 (0x208)
 
 `endif
     end else begin
@@ -858,9 +849,7 @@ module VDP_REGISTER (
               if (extended_reg_index == 8'd255) begin
                 // command register
 
-                if (VDPP1DATA[0]) begin //reset 50HZ mode
-                  extended_super_regs[4] <= 8'h6C; // BUS_ARB_50HZ_START_Y     Low  byte 620 (0x26C)
-                  extended_super_regs[5] <= 8'h02; // BUS_ARB_50HZ_START_Y     High byte 620 (0x26C)
+                if (VDPP1DATA[0]) begin //reset viewport
                   extended_super_regs[8] <= 8'h00;  // VIEW_PORT_START_X       Low  byte   0 (0x000)
                   extended_super_regs[9] <= 8'h00;  // VIEW_PORT_START_X       High byte   0 (0x000)
                   extended_super_regs[10] <= 8'hD0; // VIEW_PORT_END_X         Low  byte 720 (0x2D0)
@@ -869,11 +858,6 @@ module VDP_REGISTER (
                   extended_super_regs[13] <= 8'h00; // VIEW_PORT_START_Y       High byte   0 (0x000)
                   extended_super_regs[14] <= 8'hFF; // VIEW_PORT_END_Y         Low  byte  -1 (0xFFF)
                   extended_super_regs[15] <= 8'hFF; // VIEW_PORT_END_Y         High byte  -1 (0xFFF)
-                end
-
-                if (VDPP1DATA[1]) begin //reset 60HZ mode
-                  extended_super_regs[24] <= 8'h08; // BUS_ARB_60HZ_START_Y    Low  byte 520 (0x208)
-                  extended_super_regs[25] <= 8'h02; // BUS_ARB_60HZ_START_Y    High byte 520 (0x208)
                 end
               end
 
@@ -911,9 +895,12 @@ module VDP_REGISTER (
   bit [9:0] view_port_end_y_minus_one;
   bit view_port_start_y_wrap;
   bit view_port_end_y_wrap;
-  bit [9:0] arb_start_minus_5_wrapped;
+  bit [9:0] arb_start_x_minus_5_wrapped;
   bit [9:0] view_port_start_x_minus_5;
-  bit arb_start_has_wrapped;
+  bit arb_start_x_has_wrapped;
+  bit [9:0] arb_start_y_minus_5_wrapped;
+  bit [9:0] view_port_start_y_minus_5;
+  bit arb_start_y_has_wrapped;
 
   assign ext_reg_bus_arb_end_x = _ext_reg_view_port_end_x;
 
@@ -944,10 +931,14 @@ module VDP_REGISTER (
       view_port_end_y_wrap <= _ext_reg_view_port_end_y == 10'b1111111111;
 
     // STAGE 1
-      arb_start_minus_5_wrapped <= frame_width_minus_one - (10'd5 - _ext_reg_view_port_start_x);
-
+      arb_start_x_minus_5_wrapped <= frame_width_minus_one - (10'd5 - _ext_reg_view_port_start_x);
       view_port_start_x_minus_5 <= _ext_reg_view_port_start_x - 10'd6;
-      arb_start_has_wrapped <= (_ext_reg_view_port_start_x < 10'd6) ;
+      arb_start_x_has_wrapped <= (_ext_reg_view_port_start_x < 10'd6) ;
+
+      //TODO: can we change from 5 before to say 1 or 2 before?
+      arb_start_y_minus_5_wrapped <= frame_height_minus_one - (10'd5 - _ext_reg_view_port_start_y);
+      view_port_start_y_minus_5 <= _ext_reg_view_port_start_y - 10'd6;
+      arb_start_y_has_wrapped <= (_ext_reg_view_port_start_y < 10'd6) ;
 
     // STAGE 3
       if (super_mid)
@@ -961,7 +952,10 @@ module VDP_REGISTER (
       ext_reg_view_port_start_y <= view_port_start_y_wrap ? frame_height_minus_one : view_port_start_y_minus_one;;
       ext_reg_view_port_end_y <= view_port_end_y_wrap ? pixel_height_minus_one : view_port_end_y_minus_one;;
 
-      ext_reg_bus_arb_start_x <= arb_start_has_wrapped ? arb_start_minus_5_wrapped : view_port_start_x_minus_5;
+      ext_reg_bus_arb_start_x <= arb_start_x_has_wrapped ? arb_start_x_minus_5_wrapped : view_port_start_x_minus_5;
+
+      ext_reg_bus_arb_start_y <= arb_start_y_has_wrapped ? arb_start_y_minus_5_wrapped : view_port_start_y_minus_5;
+
     end
   end
 

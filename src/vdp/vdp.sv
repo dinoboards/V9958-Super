@@ -307,8 +307,7 @@ module VDP (
 
   bit  [ 9:0] ext_reg_bus_arb_start_x;
   bit  [ 9:0] ext_reg_bus_arb_end_x;
-  bit  [ 9:0] ext_reg_bus_arb_50hz_start_y;
-  bit  [ 9:0] ext_reg_bus_arb_60hz_start_y;
+  bit  [ 9:0] ext_reg_bus_arb_start_y;
 
   bit  [ 9:0] ext_reg_view_port_start_x;
   bit  [ 9:0] ext_reg_view_port_end_x;
@@ -909,8 +908,7 @@ module VDP (
 
       .ext_reg_bus_arb_start_x(ext_reg_bus_arb_start_x),
       .ext_reg_bus_arb_end_x(ext_reg_bus_arb_end_x),
-      .ext_reg_bus_arb_50hz_start_y(ext_reg_bus_arb_50hz_start_y),
-      .ext_reg_bus_arb_60hz_start_y(ext_reg_bus_arb_60hz_start_y),
+      .ext_reg_bus_arb_start_y(ext_reg_bus_arb_start_y),
 
       .ext_reg_view_port_start_x(ext_reg_view_port_start_x),
       .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
@@ -1000,8 +998,7 @@ module VDP (
 
       .ext_reg_bus_arb_start_x(ext_reg_bus_arb_start_x),
       .ext_reg_bus_arb_end_x(ext_reg_bus_arb_end_x),
-      .ext_reg_bus_arb_50hz_start_y(ext_reg_bus_arb_50hz_start_y),
-      .ext_reg_bus_arb_60hz_start_y(ext_reg_bus_arb_60hz_start_y),
+      .ext_reg_bus_arb_start_y(ext_reg_bus_arb_start_y),
 
       .ext_reg_view_port_start_x(ext_reg_view_port_start_x),
       .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
