@@ -53,10 +53,8 @@ module VDP_SUPER_RES (
     input bit [9:0] ext_reg_bus_arb_60hz_end_y,
     input bit [9:0] ext_reg_view_port_start_x,
     input bit [9:0] ext_reg_view_port_end_x,
-    input bit [9:0] ext_reg_view_port_50hz_start_y,
-    input bit [9:0] ext_reg_view_port_50hz_end_y,
-    input bit [9:0] ext_reg_view_port_60hz_start_y,
-    input bit [9:0] ext_reg_view_port_60hz_end_y
+    input bit [9:0] ext_reg_view_port_start_y,
+    input bit [9:0] ext_reg_view_port_end_y
 );
 
   import custom_timings::*;
@@ -114,13 +112,9 @@ module VDP_SUPER_RES (
     end else begin
 
       //cy == start_y-1 P(625-1) , N(525-1)
-      if ((cx == FRAME_WIDTH(pal_mode) - 2) && pal_mode && cy == ext_reg_view_port_50hz_start_y) on_a_visible_line <= 1;
+      if ((cx == FRAME_WIDTH(pal_mode) - 2) && cy == ext_reg_view_port_start_y) on_a_visible_line <= 1;
 
-      if ((cx == FRAME_WIDTH(pal_mode) - 2) && !pal_mode && cy == ext_reg_view_port_60hz_start_y) on_a_visible_line <= 1;
-
-      if ((cx == FRAME_WIDTH(pal_mode) - 2) && pal_mode && cy == ext_reg_view_port_50hz_end_y) on_a_visible_line <= 0;
-
-      if ((cx == FRAME_WIDTH(pal_mode) - 2) && !pal_mode && cy == ext_reg_view_port_60hz_end_y) on_a_visible_line <= 0;
+      if ((cx == FRAME_WIDTH(pal_mode) - 2) && cy == ext_reg_view_port_end_y) on_a_visible_line <= 0;
 
       if ((cx == ext_reg_view_port_start_x) && on_a_visible_line) begin
         super_res_visible <= 1;
