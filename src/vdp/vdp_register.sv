@@ -162,11 +162,10 @@ module VDP_REGISTER (
     output bit[7:0] PALETTE_DATA_G2_OUT,
     output bit[7:0] PALETTE_DATA_B2_OUT,
 
-    output bit[9:0] ext_reg_bus_arb_50hz_start_x,
+    output bit[9:0] ext_reg_bus_arb_start_x,
     output bit[9:0] ext_reg_bus_arb_50hz_end_x,
     output bit[9:0] ext_reg_bus_arb_50hz_start_y,
     output bit[9:0] ext_reg_bus_arb_50hz_end_y, //not used
-    output bit[9:0] ext_reg_bus_arb_60hz_start_x,
     output bit[9:0] ext_reg_bus_arb_60hz_end_x,
     output bit[9:0] ext_reg_bus_arb_60hz_start_y,
     output bit[9:0] ext_reg_bus_arb_60hz_end_y, //not used
@@ -249,7 +248,6 @@ module VDP_REGISTER (
   bit [9:0] _ext_reg_view_port_start_y;
   bit [9:0] _ext_reg_view_port_end_y;
 
-  assign ext_reg_bus_arb_50hz_start_x = {extended_super_regs[1][1:0], extended_super_regs[0]};
   assign ext_reg_bus_arb_50hz_end_x = {extended_super_regs[3][1:0], extended_super_regs[2]};
   assign ext_reg_bus_arb_50hz_start_y = {extended_super_regs[5][1:0], extended_super_regs[4]};
   assign ext_reg_bus_arb_50hz_end_y = {extended_super_regs[7][1:0], extended_super_regs[6]};//not used
@@ -258,7 +256,6 @@ module VDP_REGISTER (
   assign _ext_reg_view_port_start_y = {extended_super_regs[13][1:0], extended_super_regs[12]};
   assign _ext_reg_view_port_end_y = {extended_super_regs[15][1:0], extended_super_regs[14]};
 
-  assign ext_reg_bus_arb_60hz_start_x = {extended_super_regs[21][1:0], extended_super_regs[20]};
   assign ext_reg_bus_arb_60hz_end_x = {extended_super_regs[23][1:0], extended_super_regs[22]};
   assign ext_reg_bus_arb_60hz_start_y = {extended_super_regs[25][1:0], extended_super_regs[24]};
   assign ext_reg_bus_arb_60hz_end_y = {extended_super_regs[27][1:0], extended_super_regs[26]}; //not used
@@ -936,7 +933,7 @@ module VDP_REGISTER (
   bit [9:0] _view_port_width;
   bit prev_REG_R9_PAL_MODE;
   bit [7:0] prev_extended_reg_index;
-  bit [9:0] frame_width;
+  bit [9:0] frame_width_minus_one;
   bit [9:0] view_port_start_x_minus_one;
   bit [7:0] prev_FF_REG_R31;
   bit [9:0] frame_height_minus_one;
@@ -947,6 +944,9 @@ module VDP_REGISTER (
   bit view_port_end_y_wrap;
   bit [9:0] __ext_reg_view_port_start_y;
   bit [9:0] __ext_reg_view_port_end_y;
+  bit [9:0] arb_start_minus_5_wrapped;
+  bit [9:0] view_port_start_x_minus_5;
+  bit arb_start_has_wrapped;
 
   //--------------------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
@@ -965,7 +965,7 @@ module VDP_REGISTER (
       // STAGE 0
       _view_port_width <= (_ext_reg_view_port_end_x - _ext_reg_view_port_start_x);
 
-      frame_width <= FRAME_WIDTH(REG_R9_PAL_MODE) - 1;
+      frame_width_minus_one <= FRAME_WIDTH(REG_R9_PAL_MODE) - 1;
       frame_height_minus_one <= FRAME_HEIGHT(REG_R9_PAL_MODE) - 1;
       pixel_height_minus_one <= PIXEL_HEIGHT(REG_R9_PAL_MODE) - 1;
 
@@ -980,17 +980,25 @@ module VDP_REGISTER (
       __ext_reg_view_port_start_y <= view_port_start_y_wrap ? frame_height_minus_one : view_port_start_y_minus_one;
       __ext_reg_view_port_end_y <= view_port_end_y_wrap ? pixel_height_minus_one : view_port_end_y_minus_one;
 
+      //863 - (5 - 0)
+      arb_start_minus_5_wrapped <= frame_width_minus_one - (10'd5 - _ext_reg_view_port_start_x);
+
+      view_port_start_x_minus_5 <= _ext_reg_view_port_start_x - 10'd6;
+      arb_start_has_wrapped <= (_ext_reg_view_port_start_x < 10'd6) ;
+
     // STAGE 3
       if (super_mid)
         view_port_width <= {1'b0, _view_port_width[9:1]};
       else
         view_port_width <= _view_port_width;
 
-      ext_reg_view_port_start_x <= _ext_reg_view_port_start_x == 0 ? frame_width : view_port_start_x_minus_one;
+      ext_reg_view_port_start_x <= _ext_reg_view_port_start_x == 0 ? frame_width_minus_one : view_port_start_x_minus_one;
       ext_reg_view_port_end_x <= 10'(_ext_reg_view_port_end_x - 10'd1);
 
       ext_reg_view_port_start_y <= __ext_reg_view_port_start_y;
       ext_reg_view_port_end_y <= __ext_reg_view_port_end_y;
+
+      ext_reg_bus_arb_start_x <= arb_start_has_wrapped ? arb_start_minus_5_wrapped : view_port_start_x_minus_5;
     end
   end
 
