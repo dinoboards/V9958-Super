@@ -90,6 +90,8 @@ module VDP (
 `ifdef ENABLE_SUPER_RES
     ,
     input bit [31:0] PRAMDBI_32_B,
+    input bit [7:0] PRAMDBI_8,
+    input bit data_ready,
     output bit vdp_super
 `endif
 );
@@ -297,6 +299,7 @@ module VDP (
   wire [ 7:0] PRAMDAT;
 `ifdef ENABLE_SUPER_RES
   bit  [31:0] PRAMDAT_32_B;
+  bit  [ 7:0] PRAMDAT_8;
 
   // SUPER RES MODES
   bit         super_mid;
@@ -346,10 +349,15 @@ module VDP (
 
   assign PRAMADR = IRAMADR;
   assign XRAMSEL = IRAMADR[0];
-  assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
 `ifdef ENABLE_SUPER_RES
   assign PRAMDAT_32_B = PRAMDBI_32_B;
+  assign PRAMDAT_8 = PRAMDBI_8;
+  assign PRAMDAT = PRAMDBI_8;
+
+`else
+  assign PRAMDAT = (XRAMSEL == 1'b0) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
 `endif
+
   assign PRAMDATPAIR = (XRAMSEL == 1'b1) ? PRAMDBI_16[7:0] : PRAMDBI_16[15:8];
 
   //--------------------------------------------------------------
@@ -538,11 +546,19 @@ module VDP (
   // main process
   //----------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      VDPVRAMRDDATA   <= {8{1'b0}};
+    if (RESET == 1'b1) begin
+      VDPVRAMRDDATA   <= 8'b0;
       VDPVRAMREADINGA <= 1'b0;
     end else begin
-      if ((DOTSTATE == 2'b01)) begin
+// `ifdef ENABLE_SUPER_RES
+//       if (vdp_super) begin
+//         if (super_res_drawing && (VDPVRAMREADINGR != VDPVRAMREADINGA)) begin
+//           VDPVRAMRDDATA   <= PRAMDAT;
+//           VDPVRAMREADINGA <= ~VDPVRAMREADINGA;
+//         end
+//       end else
+// `endif
+      if (DOTSTATE == 2'b01) begin
         if ((VDPVRAMREADINGR != VDPVRAMREADINGA)) begin
           VDPVRAMRDDATA   <= PRAMDAT;
           VDPVRAMREADINGA <= ~VDPVRAMREADINGA;
@@ -552,11 +568,21 @@ module VDP (
   end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
+    if (RESET == 1'b1) begin
       VDPCMDVRAMRDDATA <= 8'b0;
       vdp_cmd_vram_rd_ack <= 1'b0;
       vdp_cmd_vram_reading_ack <= 1'b0;
     end else begin
+
+`ifdef ENABLE_SUPER_RES
+      if (vdp_super) begin
+        if (data_ready && (vdp_cmd_vram_reading_req != vdp_cmd_vram_reading_ack)) begin
+          VDPCMDVRAMRDDATA <= PRAMDAT_8;
+          vdp_cmd_vram_rd_ack <= ~vdp_cmd_vram_rd_ack;
+          vdp_cmd_vram_reading_ack <= ~vdp_cmd_vram_reading_ack;
+        end
+      end else
+`endif
       if (DOTSTATE == 2'b01) begin
         if (vdp_cmd_vram_reading_req != vdp_cmd_vram_reading_ack) begin
           VDPCMDVRAMRDDATA <= PRAMDAT;

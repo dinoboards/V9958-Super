@@ -43,7 +43,9 @@ module MEM_CONTROLLER #(
 
     input bit [7:0] din8,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
 `ifdef ENABLE_SUPER_RES
-    output bit [31:0] dout32B,  //2nd channel of 32 bit data - to avoid congestion???
+    output bit [31:0] dout32B,
+    output bit [7:0] dout8,  // The data read from the SDRAM. Available 4 cycles after the read signal is set.
+    output bit data_ready,  //set true when a read data has been latched
 `endif
     output bit [15:0] dout16,  // The data read from the SDRAM. Available 4 cycles after the read signal is set.
 
@@ -75,16 +77,17 @@ module MEM_CONTROLLER #(
   bit [3:0] wdm;
   bit [31:0] __din32;
 `ifdef ENABLE_SUPER_RES
-  bit [31:0] data32;
   bit [31:0] data32B;
 `endif
   bit [31:0] requested_din32;
   bit MemRD, MemWR, MemRefresh, MemInitializing;
   logic [31:0] MemDout32;
   logic [15:0] MemDout16;
+  logic [7:0] MemDout8;
   bit [2:0] cycles;
   bit r_read;
   bit [15:0] data16;
+  bit [7:0] data8;
   bit MemBusy, MemDataReady;
   bit __operation_initiated;
   bit operation_read;
@@ -96,6 +99,7 @@ module MEM_CONTROLLER #(
 
 `ifdef ENABLE_SUPER_RES
   assign dout32B = data32B;
+  assign dout8   = data8;
 `endif
   assign dout16 = data16;
 
@@ -138,13 +142,18 @@ module MEM_CONTROLLER #(
       .O_sdram_dqm(O_sdram_dqm)
   );
 
-  assign MemDout16 = word_addr[0] ? MemDout32[31:16] : MemDout32[15:0];
+  bit [1:0] byte_addr;
+
+  assign MemDout16 = byte_addr[1] ? MemDout32[31:16] : MemDout32[15:0];
+  assign MemDout8  = byte_addr[0] ? MemDout16[15:8] : MemDout16[7:0];
 
   always_ff @(posedge clk or negedge resetn) begin
     if (~resetn) begin
       busy <= 1'b1;
       fail <= 1'b0;
       MemInitializing <= 1'b1;
+      data_ready <= 0;
+      byte_addr <= 0;
 
     end else begin
       MemWR <= 1'b0;
@@ -162,6 +171,8 @@ module MEM_CONTROLLER #(
           requested_din32 <= __din32;
           cycles <= 4;
           r_read <= read;
+          data_ready <= 0;
+          byte_addr <= addr[1:0];
         end
 
       end else if (MemInitializing) begin
@@ -169,6 +180,7 @@ module MEM_CONTROLLER #(
           // initialization is done
           MemInitializing <= 1'b0;
           busy <= 1'b0;
+          data_ready <= 0;
         end
 
       end else begin
@@ -181,6 +193,8 @@ module MEM_CONTROLLER #(
             if (r_read) begin
 `ifdef ENABLE_SUPER_RES
               data32B <= MemDout32;
+              data8 <= MemDout8;
+              data_ready <= 1;
 `endif
               data16 <= MemDout16;
             end

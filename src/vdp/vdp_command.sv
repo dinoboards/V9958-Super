@@ -281,6 +281,8 @@ module VDP_COMMAND (
   end
 
   bit nx_loop_end;
+  bit[9:0] ext_reg_low_res_width;
+  bit[9:0] ext_reg_high_res_width;
 
   always_comb begin
     // DETERMINE IF X-LOOP IS FINISHED
@@ -288,9 +290,9 @@ module VDP_COMMAND (
       LINE: begin
 `ifdef ENABLE_SUPER_RES
         if (mode_graphic_super_mid) begin
-          nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd360;
+          nx_loop_end = (nx_tmp == NX) || dx_tmp == ext_reg_low_res_width;
         end else if (mode_graphic_super_res) begin
-          nx_loop_end = (nx_tmp == NX) || dx_tmp == 10'd720;
+          nx_loop_end = (nx_tmp == NX) || dx_tmp == ext_reg_high_res_width;
         end else begin
 `endif
           nx_loop_end = (nx_tmp == NX) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
@@ -302,9 +304,9 @@ module VDP_COMMAND (
       HMMV, HMMC, LMMV, LMMC: begin
 `ifdef ENABLE_SUPER_RES
         if (mode_graphic_super_mid) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd360;
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == ext_reg_low_res_width;
         end else if (mode_graphic_super_res) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == 10'd720;
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == ext_reg_high_res_width;
         end else begin
 `endif
           nx_loop_end = (nx_tmp == 0) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
@@ -318,7 +320,17 @@ module VDP_COMMAND (
       end
 
       HMMM, LMMM: begin
+`ifdef ENABLE_SUPER_RES
+        if (mode_graphic_super_mid) begin
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == ext_reg_low_res_width;
+        end else if (mode_graphic_super_res) begin
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == ext_reg_high_res_width;
+        end else begin
+`endif
         nx_loop_end = ((nx_tmp == 0) || ((sx_tmp[9:8] & MAXXMASK) == MAXXMASK) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK));
+`ifdef ENABLE_SUPER_RES
+        end
+`endif
       end
 
       LMCM: begin
@@ -358,9 +370,6 @@ module VDP_COMMAND (
       end
     endcase
   end
-
-  bit[9:0] ext_reg_low_res_width;
-  bit[9:0] ext_reg_high_res_width;
 
   always_ff @(posedge reset, posedge clk) begin
     if (reset) begin
@@ -494,7 +503,7 @@ module VDP_COMMAND (
         // PROCESS THE VDP COMMAND state
         case (state)
           IDLE: begin
-            if ((cmr_wr == 1'b0)) begin
+            if (cmr_wr == 1'b0) begin
               CE <= 1'b0;
               CE <= 1'b0;
             end else begin
@@ -583,7 +592,7 @@ module VDP_COMMAND (
                 BD <= 1'b1;
                 state <= EXEC_END;
               end else begin
-                sx_tmp <= sx_tmp + XCOUNTDELTA;
+                sx_tmp <= 10'(sx_tmp + XCOUNTDELTA);
                 state  <= SRCH_CHK_LOOP;
               end
             end
@@ -592,7 +601,7 @@ module VDP_COMMAND (
           WAIT_RD_VRAM: begin
             // APPLICABLE TO YMMM, HMMM, LMCM, LMMM
             if ((vram_rd_req == vram_rd_ack)) begin
-              sx_tmp <= sx_tmp + XCOUNTDELTA;
+              sx_tmp <= 10'(sx_tmp + XCOUNTDELTA);
               case (CMR[7:4])
                 LMMM: begin
                   vram_wr_data_8 <= RDPOINT;

@@ -119,8 +119,10 @@ module v9958_top (
 `ifdef ENABLE_SUPER_RES
   bit vdp_super;
   bit [31:0] VrmDbi_32_B;
+  bit data_ready;
 `endif
   bit [15:0] VrmDbi_16;
+  bit [7:0] VrmDbi_8;
 
   logic [9:0] cx;
   logic [9:0] cy;
@@ -154,6 +156,8 @@ module v9958_top (
       .din8(VrmDbo_8),
 `ifdef ENABLE_SUPER_RES
       .dout32B(VrmDbi_32_B),
+      .dout8(VrmDbi_8),
+      .data_ready(data_ready),
 `endif
       .dout16(VrmDbi_16),
       .IO_sdram_dq(IO_sdram_dq),
@@ -235,6 +239,8 @@ module v9958_top (
 `ifdef ENABLE_SUPER_RES
       .vdp_super   (vdp_super),
       .PRAMDBI_32_B(VrmDbi_32_B),
+      .PRAMDBI_8   (VrmDbi_8),
+      .data_ready  (data_ready),
 `endif
       .PRAMDBI_16  (VrmDbi_16),
       .PRAMDBO_8   (VrmDbo_8),
