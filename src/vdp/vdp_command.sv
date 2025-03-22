@@ -90,10 +90,7 @@ module VDP_COMMAND (
     ,
     input bit mode_graphic_super_mid,
     input bit mode_graphic_super_res,
-    input bit[9:0] ext_reg_low_res_50hz_width,
-    input bit[9:0] ext_reg_high_res_50hz_width,
-    input bit[9:0] ext_reg_low_res_60hz_width,
-    input bit[9:0] ext_reg_high_res_60hz_width,
+    input bit[9:0] view_port_width,
     input bit pal_mode
 
 `endif
@@ -281,18 +278,14 @@ module VDP_COMMAND (
   end
 
   bit nx_loop_end;
-  bit[9:0] ext_reg_low_res_width;
-  bit[9:0] ext_reg_high_res_width;
 
   always_comb begin
     // DETERMINE IF X-LOOP IS FINISHED
     case (CMR[7:4])
       LINE: begin
 `ifdef ENABLE_SUPER_RES
-        if (mode_graphic_super_mid) begin
-          nx_loop_end = (nx_tmp == NX) || dx_tmp == ext_reg_low_res_width;
-        end else if (mode_graphic_super_res) begin
-          nx_loop_end = (nx_tmp == NX) || dx_tmp == ext_reg_high_res_width;
+        if (mode_graphic_super_mid || mode_graphic_super_res) begin
+          nx_loop_end = (nx_tmp == NX) || dx_tmp == view_port_width;
         end else begin
 `endif
           nx_loop_end = (nx_tmp == NX) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
@@ -303,10 +296,8 @@ module VDP_COMMAND (
 
       HMMV, HMMC, LMMV, LMMC: begin
 `ifdef ENABLE_SUPER_RES
-        if (mode_graphic_super_mid) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == ext_reg_low_res_width;
-        end else if (mode_graphic_super_res) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == ext_reg_high_res_width;
+        if (mode_graphic_super_mid || mode_graphic_super_res) begin
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == view_port_width;
         end else begin
 `endif
           nx_loop_end = (nx_tmp == 0) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK);
@@ -321,10 +312,8 @@ module VDP_COMMAND (
 
       HMMM, LMMM: begin
 `ifdef ENABLE_SUPER_RES
-        if (mode_graphic_super_mid) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == ext_reg_low_res_width;
-        end else if (mode_graphic_super_res) begin
-          nx_loop_end = (nx_tmp == 0) || dx_tmp == ext_reg_high_res_width;
+        if (mode_graphic_super_mid || mode_graphic_super_res) begin
+          nx_loop_end = (nx_tmp == 0) || dx_tmp == view_port_width;
         end else begin
 `endif
         nx_loop_end = ((nx_tmp == 0) || ((sx_tmp[9:8] & MAXXMASK) == MAXXMASK) || ((dx_tmp[9:8] & MAXXMASK) == MAXXMASK));
@@ -371,19 +360,6 @@ module VDP_COMMAND (
     endcase
   end
 
-  always_ff @(posedge reset, posedge clk) begin
-    if (reset) begin
-    end else begin
-      if (pal_mode) begin
-        ext_reg_low_res_width <= ext_reg_low_res_50hz_width;
-        ext_reg_high_res_width <= ext_reg_high_res_50hz_width;
-      end else begin
-        ext_reg_low_res_width <= ext_reg_low_res_60hz_width;
-        ext_reg_high_res_width <= ext_reg_high_res_60hz_width;
-      end
-    end
-  end
-
   always_comb begin
     if (mode_graphic_4) begin
       vram_access_addr = {vram_access_y[9:0], vram_access_x[7:1]};
@@ -395,20 +371,20 @@ module VDP_COMMAND (
       vram_access_addr = {vram_access_y[8:0], vram_access_x[8:1]};
 
 `ifdef ENABLE_SUPER_RES
-    end else if (mode_graphic_super_mid) begin
+    end else if (mode_graphic_super_mid || mode_graphic_super_res) begin
       //1 byte per pixel - colour from palette register - resolution of 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
       //x is 0 to 359, and y 0 to 187 or for 60hz mode y is 0 to 239
       //addr = y * 360 + x
 
       // vram_access_addr = 19'((vram_access_y * 180 * 2) + (vram_access_x)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
-      vram_access_addr = 19'((vram_access_y * ext_reg_low_res_width) + (vram_access_x));
+      vram_access_addr = 19'((vram_access_y * view_port_width) + (vram_access_x));
 
-    end else if (mode_graphic_super_res) begin
-      //1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-      //x is 0 to 719, and y 0 to 287 or for 60hz mode y is 0 to 479
-      //addr = y * 720 + x
+    // end else if (mode_graphic_super_res) begin
+    //   //1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+    //   //x is 0 to 719, and y 0 to 287 or for 60hz mode y is 0 to 479
+    //   //addr = y * 720 + x
 
-      vram_access_addr = 19'((vram_access_y * ext_reg_high_res_width) + (vram_access_x));
+    //   vram_access_addr = 19'((vram_access_y * view_port_width) + (vram_access_x));
 `endif
 
     end else begin

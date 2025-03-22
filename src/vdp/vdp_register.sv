@@ -180,12 +180,12 @@ module VDP_REGISTER (
     output bit[9:0] ext_reg_view_port_60hz_start_y,
     output bit[9:0] ext_reg_view_port_60hz_end_y,
 
-    output bit[9:0] ext_reg_low_res_50hz_width,
-    output bit[9:0] ext_reg_high_res_50hz_width,
-    output bit[9:0] ext_reg_low_res_60hz_width,
-    output bit[9:0] ext_reg_high_res_60hz_width
+    output bit[9:0] view_port_width
+
 `endif
 );
+
+    import custom_timings::*;
 
   // S#2
   // S#2
@@ -257,8 +257,8 @@ module VDP_REGISTER (
   assign ext_reg_view_port_50hz_end_x = {extended_super_regs[11][1:0], extended_super_regs[10]};
   assign ext_reg_view_port_50hz_start_y = {extended_super_regs[13][1:0], extended_super_regs[12]};
   assign ext_reg_view_port_50hz_end_y = {extended_super_regs[15][1:0], extended_super_regs[14]};
-  assign ext_reg_low_res_50hz_width = {extended_super_regs[17][1:0], extended_super_regs[16]};
-  assign ext_reg_high_res_50hz_width = {extended_super_regs[19][1:0], extended_super_regs[18]};
+  // assign ext_reg_low_res_50hz_width = {extended_super_regs[17][1:0], extended_super_regs[16]};
+  // assign ext_reg_high_res_50hz_width = {extended_super_regs[19][1:0], extended_super_regs[18]};
 
   assign ext_reg_bus_arb_60hz_start_x = {extended_super_regs[21][1:0], extended_super_regs[20]};
   assign ext_reg_bus_arb_60hz_end_x = {extended_super_regs[23][1:0], extended_super_regs[22]};
@@ -268,8 +268,8 @@ module VDP_REGISTER (
   assign ext_reg_view_port_60hz_end_x = {extended_super_regs[31][1:0], extended_super_regs[30]};
   assign ext_reg_view_port_60hz_start_y = {extended_super_regs[33][1:0], extended_super_regs[32]};
   assign ext_reg_view_port_60hz_end_y = {extended_super_regs[35][1:0], extended_super_regs[34]};
-  assign ext_reg_low_res_60hz_width = {extended_super_regs[37][1:0], extended_super_regs[36]};
-  assign ext_reg_high_res_60hz_width = {extended_super_regs[39][1:0], extended_super_regs[38]};
+  // assign ext_reg_low_res_60hz_width = {extended_super_regs[37][1:0], extended_super_regs[36]};
+  // assign ext_reg_high_res_60hz_width = {extended_super_regs[39][1:0], extended_super_regs[38]};
 
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
@@ -914,8 +914,8 @@ module VDP_REGISTER (
                   extended_super_regs[5] <= 8'h02; // BUS_ARB_50HZ_START_Y     High byte 620 (0x26C)
                   extended_super_regs[6] <= 8'h40; // BUS_ARB_50HZ_END_Y       Low  byte 576 (0x240)
                   extended_super_regs[7] <= 8'h02; // BUS_ARB_50HZ_END_Y       High byte 576 (0x240)
-                  extended_super_regs[8] <= 8'h5F; // VIEW_PORT_50HZ_START_X  Low  byte 864-1 (0x35F)
-                  extended_super_regs[9] <= 8'h03; // VIEW_PORT_50HZ_START_X  High byte 864-1 (0x35F)
+                  extended_super_regs[8] <= 8'h5F; // VIEW_PORT_50HZ_START_X   Low  byte 864-1 (0x35F)
+                  extended_super_regs[9] <= 8'h03; // VIEW_PORT_50HZ_START_X   High byte 864-1 (0x35F)
                   extended_super_regs[10] <= 8'hCF; // VIEW_PORT_50HZ_END_X    Low  byte 720-1 (0x2CF)
                   extended_super_regs[11] <= 8'h02; // VIEW_PORT_50HZ_END_X    High byte 720-1 (0x2CF)
                   extended_super_regs[12] <= 8'h70; // VIEW_PORT_50HZ_START_Y  Low  byte 625-1 (0x270)
@@ -972,5 +972,38 @@ module VDP_REGISTER (
       end
     end
   end
+
+`ifdef ENABLE_SUPER_RES
+
+  bit [9:0] view_port_start_x_wrapped;
+  bit [9:0] ext_reg_view_port_start_x;
+  bit [9:0] ext_reg_view_port_end_x;
+  bit [9:0] _view_port_width;
+
+  assign ext_reg_view_port_start_x = REG_R9_PAL_MODE ? ext_reg_view_port_50hz_start_x : ext_reg_view_port_60hz_start_x;
+  assign ext_reg_view_port_end_x = REG_R9_PAL_MODE ? ext_reg_view_port_50hz_end_x : ext_reg_view_port_60hz_end_x;
+
+  assign _view_port_width = (ext_reg_view_port_end_x - view_port_start_x_wrapped);
+
+  //--------------------------------------------------------------------------------------
+  always_ff @(posedge RESET, posedge CLK21M) begin
+    if (RESET) begin
+      view_port_width <= 0;
+    end else begin
+
+      if (ext_reg_view_port_start_x == FRAME_WIDTH(REG_R9_PAL_MODE)-1)
+        view_port_start_x_wrapped <= -1;
+      else
+        view_port_start_x_wrapped <= ext_reg_view_port_start_x;
+
+      if (super_mid)
+        view_port_width <= {1'b0, _view_port_width[9:1]};
+      else
+        view_port_width <= _view_port_width;
+
+    end
+  end
+
+`endif
 
 endmodule
