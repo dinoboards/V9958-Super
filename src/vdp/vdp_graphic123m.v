@@ -77,21 +77,21 @@ module VDP_GRAPHIC123M (
     input wire [8:3] REG_R26_H_SCROLL,
     input wire [2:0] REG_R27_H_SCROLL,
     input wire [7:0] PRAMDAT,
-    output bit [17:0] PRAMADR,
+    output bit [19:0] PRAMADR,
     output wire [3:0] PCOLORCODE
 );
 
-  bit [17:0] FF_REQ_ADDR;
+  bit [19:0] FF_REQ_ADDR;
   reg [3:0] FF_COL_CODE;
   reg [7:0] FF_PAT_NUM;
   reg [7:0] FF_PRE_PAT_GEN;
   reg [7:0] FF_PRE_PAT_COL;
   reg [7:0] FF_PAT_GEN;
   reg [7:0] FF_PAT_COL;
-  wire [17:0] REQ_PAT_NAME_TBL_ADDR;
-  wire [17:0] REQ_PAT_GEN_TBL_ADDR;
-  wire [17:0] REQ_PAT_COL_TBL_ADDR;
-  reg [17:0] REQ_ADDR;
+  wire [19:0] REQ_PAT_NAME_TBL_ADDR;
+  wire [19:0] REQ_PAT_GEN_TBL_ADDR;
+  wire [19:0] REQ_PAT_COL_TBL_ADDR;
+  reg [19:0] REQ_ADDR;
   wire COL_HL_SEL;
   wire [3:0] COL_CODE;
   reg [3:0] EIGHTDOTSTATE_DEC;
@@ -195,10 +195,11 @@ module VDP_GRAPHIC123M (
   end
 
   always_ff @(posedge RESET, posedge CLK21M) begin
-    if ((RESET == 1'b1)) begin
-      FF_REQ_ADDR <= {18{1'b0}};
+    if (RESET == 1'b1) begin
+      FF_REQ_ADDR <= 20'b0;
+
     end else begin
-      if ((DOTSTATE == 2'b11)) begin
+      if (DOTSTATE == 2'b11) begin
         FF_REQ_ADDR <= REQ_ADDR;
       end
     end

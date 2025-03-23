@@ -39,20 +39,17 @@ module MEM_CONTROLLER #(
     input bit        write,      // Signal to initiate a write operation to the SDRAM
     input bit        refresh,    // Signal to initiate an auto-refresh operation in the SDRAM
     input bit [22:0] addr,       // The address to read from or write to in the SDRAM
+    input bit [ 7:0] din8,       // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
 
-
-    input bit [7:0] din8,  // The data to be written to the SDRAM (only the byte specified by wdm is written 01 or 10)
 `ifdef ENABLE_SUPER_RES
     output bit [31:0] dout32B,
-    output bit [7:0] dout8,  // The data read from the SDRAM. Available 4 cycles after the read signal is set.
-    output bit data_ready,  //set true when a read data has been latched
+    output bit [ 7:0] dout8,      // The data read from the SDRAM. Available 4 cycles after the read signal is set.
+    output bit        data_ready, //set true when a read data has been latched
 `endif
-    output bit [15:0] dout16,  // The data read from the SDRAM. Available 4 cycles after the read signal is set.
 
-    output bit enabled,  // Signal indicating that the memory controller is enabled.
-
-    // debug interface
-    output bit fail,  // Signal indicating a timing mistake or SDRAM malfunction
+    output bit [15:0] dout16,   // The data read from the SDRAM. Available 4 cycles after the read signal is set.
+    output bit        enabled,  // Signal indicating that the memory controller is enabled.
+    output bit        fail,     // debug interface - Signal indicating a timing mistake or SDRAM malfunction
 
     // GoWin's Physical SDRAM interface
     inout  logic [31:0] IO_sdram_dq,    // 32 bit bidirectional data bus

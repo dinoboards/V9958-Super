@@ -77,7 +77,7 @@ module VDP_COMMAND (
     output bit p_tr_clr_ack,
     output bit vram_wr_req,
     output bit p_vram_rd_req,
-    output bit [18:0] p_vram_access_addr,
+    output bit [19:0] p_vram_access_addr,
     output bit [7:0] p_vram_wr_data_8,
     output bit [7:0] p_clr,
     output bit p_ce,
@@ -105,11 +105,11 @@ module VDP_COMMAND (
 
   // VDP COMMAND SIGNALS - CAN BE SET BY CPU
   bit [ 9:0] SX;  // R33,32
-  bit [ 9:0] SY;  // R35,34
+  bit [ 10:0] SY;  // R35,34
   bit [ 9:0] DX;  // R37,36
-  bit [ 9:0] DY;  // R39,38
+  bit [ 10:0] DY;  // R39,38
   bit [ 9:0] NX;  // R41,40
-  bit [ 9:0] NY;  // R43,42
+  bit [ 10:0] NY;  // R43,42
   bit        MM;  // R45 BIT 0
   bit        EQ;  // R45 BIT 1
   bit        DIX;  // R45 BIT 2
@@ -128,7 +128,7 @@ module VDP_COMMAND (
   // AND MEMORY INTERFACE (WHICH IS IN THE COLOR GENERATOR)
   bit        internal_vram_wr_req;
   bit        vram_rd_req;
-  bit [18:0] vram_access_addr;
+  bit [19:0] vram_access_addr;
   bit [ 7:0] vram_wr_data_8;
   bit [15:0] vram_wr_data_16;
   bit [31:0] vram_wr_data_32;
@@ -143,7 +143,7 @@ module VDP_COMMAND (
 
   //??
   bit [ 1:0] rd_x_low;
-  bit [ 9:0] vram_access_y;
+  bit [ 10:0] vram_access_y;
   bit [ 9:0] vram_access_x;
 
   typedef enum logic [3:0] {
@@ -214,8 +214,8 @@ module VDP_COMMAND (
                    CMR[7:6] == 2'b11 && mode_graphic_5 ? {2'b00, NX[9:2]} :
                    NX;
 
-  bit [9:0] YCOUNTDELTA;
-  assign YCOUNTDELTA = (DIY == 1'b0) ? 10'b0000000001 : 10'b1111111111;
+  bit [10:0] YCOUNTDELTA;
+  assign YCOUNTDELTA = (DIY == 1'b0) ? 11'b0000000001 : 11'b11111111111;
 
   bit [1:0] MAXXMASK;
   assign MAXXMASK = mode_high_res ? 2'b10 : 2'b01;  // GRAPHIC 5,6
@@ -374,7 +374,7 @@ module VDP_COMMAND (
 `ifdef ENABLE_SUPER_RES
     end else if (mode_graphic_super_mid || mode_graphic_super_res) begin
       // Calculate the address of a given pixel for super res modes
-      vram_access_addr = 19'((vram_access_y * view_port_width) + (vram_access_x)) + ext_reg_super_res_page_addr;
+      vram_access_addr = 20'((vram_access_y * view_port_width) + (vram_access_x)) + ext_reg_super_res_page_addr;
 
 `endif
 
@@ -432,15 +432,27 @@ module VDP_COMMAND (
           4'b0000: SX[7:0] <= reg_data;  // #32
           4'b0001: SX[9:8] <= reg_data[1:0];  // #33
           4'b0010: SY[7:0] <= reg_data;  // #34
+`ifdef ENABLE_SUPER_RES
+          4'b0011: SY[10:8] <= reg_data[2:0];  // #35
+`else
           4'b0011: SY[9:8] <= reg_data[1:0];  // #35
+`endif
           4'b0100: DX[7:0] <= reg_data;  // #36
           4'b0101: DX[9:8] <= reg_data[1:0];  // #37
           4'b0110: DY[7:0] <= reg_data;  // #38
+`ifdef ENABLE_SUPER_RES
+          4'b0111: DY[10:8] <= reg_data[2:0];  // #39
+`else
           4'b0111: DY[9:8] <= reg_data[1:0];  // #39
+`endif
           4'b1000: NX[7:0] <= reg_data;  // #40
           4'b1001: NX[9:8] <= reg_data[1:0];  // #41
           4'b1010: NY[7:0] <= reg_data;  // #42
+`ifdef ENABLE_SUPER_RES
+          4'b1011: NY[10:8] <= reg_data[2:0];  // #43
+`else
           4'b1011: NY[9:8] <= reg_data[1:0];  // #43
+`endif
           4'b1100: begin  // #44
             // DATA IS TRANSFERRED FROM CPU TO VDP COLOR REGISTER
             CLR <= (CE == 1'b1) ? reg_data & COLMASK : reg_data;
@@ -763,7 +775,7 @@ module VDP_COMMAND (
                 sx_tmp <= {1'b0, SX};
               end
               dx_tmp <= DX;
-              NY <= 10'(NY - 1);
+              NY <= 11'(NY - 1);
               if ((CMR[5] != CMR[4])) begin
                 // BIT5 /= BIT4 IS TRUE FOR COMMANDS YMMM, HMMM, LMCM, LMMM
                 SY <= SY + YCOUNTDELTA;

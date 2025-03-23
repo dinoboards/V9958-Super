@@ -114,7 +114,7 @@ module v9958_top (
   bit        VideoDLClk;
   bit        VideoDHClk;
   bit        WeVdp_n;
-  bit [18:0] VdpAdr;
+  bit [19:0] VdpAdr;
   bit [ 7:0] VrmDbo_8;
 `ifdef ENABLE_SUPER_RES
   bit vdp_super;
@@ -152,7 +152,7 @@ module v9958_top (
       .refresh(memory_refresh),
       .fail(ram_fail),
       .enabled(ram_enabled),
-      .addr({4'b0, VdpAdr}),
+      .addr({3'b0, VdpAdr}),
       .din8(VrmDbo_8),
 `ifdef ENABLE_SUPER_RES
       .dout32B(VrmDbi_32_B),

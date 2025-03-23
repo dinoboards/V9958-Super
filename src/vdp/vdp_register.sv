@@ -88,7 +88,7 @@ module VDP_REGISTER (
     input wire [7:0] VDPCMDCLR,
     input wire [10:0] VDPCMDSXTMP,
     output reg [7:0] VDPVRAMACCESSDATA,
-    output reg [18:0] VDPVRAMACCESSADDRTMP,
+    output reg [19:0] VDPVRAMACCESSADDRTMP,
     output reg VDPVRAMADDRSETREQ,
     input wire VDPVRAMADDRSETACK,
     output reg VDPVRAMWRREQ,
@@ -245,13 +245,11 @@ module VDP_REGISTER (
   bit [9:0] _ext_reg_view_port_end_x;
   bit [9:0] _ext_reg_view_port_start_y;
   bit [9:0] _ext_reg_view_port_end_y;
-  bit [16:0] _ext_reg_super_res_page_addr;
 
   assign _ext_reg_view_port_start_x = {extended_super_regs[1][1:0], extended_super_regs[0]};
   assign _ext_reg_view_port_end_x = {extended_super_regs[3][1:0], extended_super_regs[2]};
   assign _ext_reg_view_port_start_y = {extended_super_regs[5][1:0], extended_super_regs[4]};
   assign _ext_reg_view_port_end_y = {extended_super_regs[7][1:0], extended_super_regs[6]};
-  assign _ext_reg_super_res_page_addr = {extended_super_regs[10][0], extended_super_regs[9], extended_super_regs[8]};
 
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
@@ -552,7 +550,7 @@ module VDP_REGISTER (
       VDPVRAMWRREQ <= 1'b0;
       VDPVRAMRDREQ <= 1'b0;
       VDPVRAMADDRSETREQ <= 1'b0;
-      VDPVRAMACCESSADDRTMP <= 17'd0;
+      VDPVRAMACCESSADDRTMP <= 20'd0;
       VDPVRAMACCESSDATA <= 8'd0;
       FF_R0_DISP_MODE <= 3'd0;
       REG_R0_HSYNC_INT_EN <= 1'b0;
@@ -879,7 +877,7 @@ module VDP_REGISTER (
               // latch the page addr after all 3 bytes have been loaded into the register
               // assumes the MSB is loaded last
               if (extended_reg_index == 10)
-                ext_reg_super_res_page_addr <= _ext_reg_super_res_page_addr;
+                ext_reg_super_res_page_addr <= {VDPP1DATA[0], extended_super_regs[9], extended_super_regs[8]};
 
               extended_reg_index = 8'(extended_reg_index + 1);
             end

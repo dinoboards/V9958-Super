@@ -79,7 +79,7 @@ module VDP_GRAPHIC4567 (
     input wire REG_R25_SP2,
     input wire [7:0] PRAMDAT,
     input wire [7:0] PRAMDATPAIR,
-    output bit [17:0] PRAMADR,
+    output bit [19:0] PRAMADR,
     output reg [7:0] PCOLORCODE,
     output reg [5:0] P_YJK_R,
     output reg [5:0] P_YJK_G,
@@ -353,7 +353,7 @@ module VDP_GRAPHIC4567 (
   // VRAM READ ADDRESS
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
-      PRAMADR <= {17{1'b0}};
+      PRAMADR <= 20'b0;
     end else begin
       if ((DOTSTATE == 2'b11)) begin
         if (((VDPMODEGRAPHIC4 == 1'b1) || (VDPMODEGRAPHIC5 == 1'b1))) begin

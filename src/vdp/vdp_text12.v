@@ -76,7 +76,7 @@ module VDP_TEXT12 (
     input wire [5:0] REG_R4_PT_GEN_ADDR,
     input wire [10:0] REG_R10R3_COL_ADDR,
     input wire [7:0] PRAMDAT,
-    output reg [17:0] PRAMADR,
+    output reg [19:0] PRAMADR,
     output wire TXVRAMREADEN,
     output wire [3:0] PCOLORCODE
 );
@@ -188,7 +188,7 @@ module VDP_TEXT12 (
   always_ff @(posedge RESET, posedge CLK21M) begin
     if ((RESET == 1'b1)) begin
       PATTERNNUM <= {8{1'b0}};
-      PRAMADR <= {18{1'b0}};
+      PRAMADR <= 20'b0;
       ITXVRAMREADEN <= 1'b0;
       ITXVRAMREADEN2 <= 1'b0;
       TXCHARCOUNTERX <= 0;

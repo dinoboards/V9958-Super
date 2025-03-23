@@ -103,7 +103,7 @@ module VDP_SPRITE (
     input wire SPMODE2,
     output reg SPVRAMACCESSING,
     input wire [7:0] PRAMDAT,
-    output wire [17:0] PRAMADR,
+    output wire [19:0] PRAMADR,
     output reg SPCOLOROUT,
     output reg [3:0] SPCOLORCODE,
     input wire REG_R9_Y_DOTS,
@@ -137,7 +137,7 @@ module VDP_SPRITE (
   reg [1:0] SPSTATE;
 
   reg [4:0] SPRENDERPLANES[0:7];
-  bit [17:0] IRAMADR;
+  bit [19:0] IRAMADR;
   reg [16:0] FF_Y_TEST_VRAM_ADDR;
   reg [16:0] IRAMADRPREPARE;
   reg [10-1:0] SPATTRTBLBASEADDR;

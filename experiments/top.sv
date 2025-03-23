@@ -15,7 +15,7 @@ module top (
   assign led5_n = 0;
 
   bit [17:0] vram_access_addr;
-  bit [ 9:0] vram_access_y;
+  bit [10:0] vram_access_y;
   bit [ 8:0] vram_access_x;
 
   always_ff @(posedge clk) begin

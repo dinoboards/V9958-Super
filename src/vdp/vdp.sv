@@ -71,7 +71,7 @@ module VDP (
     input  wire [ 7:0] DBO,
     output wire        INT_N,
     output reg         PRAMWE_N,
-    output bit  [18:0] PRAMADR,
+    output bit  [19:0] PRAMADR,
     input  bit  [15:0] PRAMDBI_16,
     output reg  [ 7:0] PRAMDBO_8,
     input  wire        VDPSPEEDMODE,
@@ -144,12 +144,11 @@ module VDP (
   wire [ 8:0] PREDOTCOUNTER_YP;
 
   // VDP REGISTER ACCESS
-  // reg  [17:0] VDPVRAMACCESSADDR;
   reg         VDPVRAMREADINGR;
   reg         VDPVRAMREADINGA;
   wire [ 3:1] VDPR0DISPNUM;
   wire [ 7:0] VDPVRAMACCESSDATA;
-  wire [18:0] VDPVRAMACCESSADDRTMP;
+  wire [19:0] VDPVRAMACCESSADDRTMP;
   wire        VDPVRAMADDRSETREQ;
   reg         VDPVRAMADDRSETACK;
   wire        VDPVRAMWRREQ;
@@ -204,16 +203,16 @@ module VDP (
   wire        VDPMODEISHIGHRES;  // TRUE WHEN MODE GRAPHIC5, 6
 
   // FOR TEXT 1 AND 2
-  wire [17:0] PRAMADRT12;
+  wire [19:0] PRAMADRT12;
   wire [ 3:0] COLORCODET12;
   wire        TXVRAMREADEN;
 
   // FOR GRAPHIC 1,2,3 AND MULTI COLOR
-  wire [17:0] PRAMADRG123M;
+  wire [19:0] PRAMADRG123M;
   wire [ 3:0] COLORCODEG123M;
 
   // FOR GRAPHIC 4,5,6,7
-  wire [17:0] PRAMADRG4567;
+  wire [19:0] PRAMADRG4567;
   wire [ 7:0] COLORCODEG4567;
   wire [ 5:0] YJK_R;
   wire [ 5:0] YJK_G;
@@ -223,7 +222,7 @@ module VDP (
   // GRAPHIC SUPER
 `ifdef ENABLE_SUPER_RES
   bit         super_res_drawing;
-  bit  [16:0] super_vram_addr;
+  bit  [17:0] super_vram_addr;
   bit  [ 7:0] PALETTE_ADDR2;
   bit  [ 7:0] PALETTE_DATA_R2_OUT;
   bit  [ 7:0] PALETTE_DATA_G2_OUT;
@@ -233,7 +232,7 @@ module VDP (
   // SPRITE
   wire        SPMODE2;
   wire        SPVRAMACCESSING;
-  wire [17:0] PRAMADRSPRITE;
+  wire [19:0] PRAMADRSPRITE;
   wire        SPRITECOLOROUT;
   wire [ 3:0] COLORCODESPRITE;
   wire        VDPS0SPCOLLISIONINCIDENCE;
@@ -274,7 +273,7 @@ module VDP (
   wire        VDPCMDTRCLRREQ;
   wire        vdp_cmd_vram_wr_req;
   wire        vdp_cmd_vram_rd_req;
-  wire [18:0] VDPCMDVRAMACCESSADDR;
+  wire [19:0] VDPCMDVRAMACCESSADDR;
   wire [ 7:0] VDP_CMD_VRAM_WR_DATA_8;
 
   reg         VDP_COMMAND_DRIVE;
@@ -295,7 +294,7 @@ module VDP (
   wire [ 5:0] IVIDEOG_VGA;
   wire [ 5:0] IVIDEOB_VGA;
 
-  bit  [18:0] IRAMADR;
+  bit  [19:0] IRAMADR;
   wire [ 7:0] PRAMDAT;
 `ifdef ENABLE_SUPER_RES
   bit  [31:0] PRAMDAT_32_B;

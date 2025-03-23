@@ -37,7 +37,7 @@ module VDP_SUPER_RES (
     input  bit [7:0] PALETTE_DATA_G2_OUT,
     input  bit [7:0] PALETTE_DATA_B2_OUT,
 
-    output logic [16:0] super_res_vram_addr,
+    output logic [17:0] super_res_vram_addr,
     output bit [7:0] high_res_red,
     output bit [7:0] high_res_green,
     output bit [7:0] high_res_blue,
@@ -146,7 +146,7 @@ module VDP_SUPER_RES (
 
         724: begin  // cycle cx[1:0] == 0
           if (last_line) begin
-            super_res_vram_addr <= 17'(super_res_vram_addr + 1);
+            super_res_vram_addr <= 18'(super_res_vram_addr + 1);
           end
         end
 
@@ -196,7 +196,7 @@ module VDP_SUPER_RES (
                 3'b000: begin
                   if (active_line) begin
                     current_vram_data   <= REG_R1_DISP_ON ? next_vram_data : 0;
-                    super_res_vram_addr <= 17'(super_res_vram_addr + 1);
+                    super_res_vram_addr <= 18'(super_res_vram_addr + 1);
                   end
                 end
                 3'b001: begin
@@ -252,7 +252,7 @@ module VDP_SUPER_RES (
                 0: begin
                   current_vram_data <= next_vram_data;
                   PALETTE_ADDR2 <= next_vram_data[15:8];
-                  super_res_vram_addr <= 17'(super_res_vram_addr + 1);
+                  super_res_vram_addr <= 18'(super_res_vram_addr + 1);
                 end
 
                 // During clock cycle 1:

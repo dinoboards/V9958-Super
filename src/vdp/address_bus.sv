@@ -27,7 +27,7 @@ module ADDRESS_BUS #(
     input bit          VDPMODEISHIGHRES,          // TRUE WHEN MODE GRAPHIC5, 6
     input bit   [ 7:0] VDPVRAMACCESSDATA,
     input bit          VDPVRAMADDRSETREQ,
-    input bit   [18:0] VDPVRAMACCESSADDRTMP,
+    input bit   [19:0] VDPVRAMACCESSADDRTMP,
     input bit          VDPVRAMWRREQ,
     input bit          VDPVRAMRDREQ,
     input bit          VDP_COMMAND_ACTIVE,
@@ -35,24 +35,24 @@ module ADDRESS_BUS #(
     input bit          vdp_cmd_vram_rd_req,
     input bit          VDPVRAMREADINGA,
     input bit          vdp_cmd_vram_rd_ack,
-    input bit   [18:0] VDPCMDVRAMACCESSADDR,
+    input bit   [19:0] VDPCMDVRAMACCESSADDR,
     input bit   [ 7:0] VDP_CMD_VRAM_WR_DATA_8,
-    input bit   [17:0] PRAMADRT12,
-    input bit   [17:0] PRAMADRSPRITE,
-    input bit   [17:0] PRAMADRG123M,
-    input bit   [17:0] PRAMADRG4567,
+    input bit   [19:0] PRAMADRT12,
+    input bit   [19:0] PRAMADRSPRITE,
+    input bit   [19:0] PRAMADRG123M,
+    input bit   [19:0] PRAMADRG4567,
     input bit          vdp_cmd_vram_reading_ack,
 
 `ifdef ENABLE_SUPER_RES
     input bit          vdp_super,
-    input logic [16:0] super_vram_addr,
+    input logic [17:0] super_vram_addr,
     input bit super_res_drawing,
 `endif
 
     output bit        vdp_cmd_vram_wr_ack,
     output bit        vdp_cmd_vram_reading_req,
     output bit        VDP_COMMAND_DRIVE,
-    output bit [18:0] IRAMADR,
+    output bit [19:0] IRAMADR,
     output bit [ 7:0] PRAMDBO_8,
     output bit        PRAMWE_N,
     output bit        VDPVRAMREADINGR,
@@ -71,14 +71,14 @@ module ADDRESS_BUS #(
   localparam VRAM_ACCESS_VDPR = 6;
   localparam VRAM_ACCESS_VDPS = 7;
 
-  bit [18:0] VDPVRAMACCESSADDR;
+  bit [19:0] VDPVRAMACCESSADDR;
 
 `ifdef ENABLE_SUPER_RES
-  bit [16:0] __super_vram_addr;
+  bit [17:0] __super_vram_addr;
 
   always_ff @(posedge RESET, posedge CLK21M) begin
 
-    if ((RESET == 1'b1)) begin
+    if (RESET == 1'b1) begin
       __super_vram_addr <= 0;
     end else begin
       __super_vram_addr <= super_vram_addr;
@@ -87,18 +87,18 @@ module ADDRESS_BUS #(
 `endif
 
   always_ff @(posedge RESET, posedge CLK21M) begin : P1
-    bit [18:0] VDPVRAMACCESSADDRV;
+    bit [19:0] VDPVRAMACCESSADDRV;
     bit [31:0] VRAMACCESSSWITCH;
 
     if ((RESET == 1'b1)) begin
-      IRAMADR <= {19{1'b1}};
-      PRAMDBO_8 <= {8{1'bZ}};
+      IRAMADR <= 20'b1;
+      PRAMDBO_8 <= 8'bZ;
       PRAMWE_N <= 1'b1;
       VDPVRAMREADINGR <= 1'b0;
       VDPVRAMRDACK <= 1'b0;
       VDPVRAMWRACK <= 1'b0;
       VDPVRAMADDRSETACK <= 1'b0;
-      VDPVRAMACCESSADDR <= {19'b0};
+      VDPVRAMACCESSADDR <= 20'b0;
       vdp_cmd_vram_wr_ack <= 1'b0;
       vdp_cmd_vram_reading_req <= 1'b0;
       VDP_COMMAND_DRIVE <= 1'b0;
@@ -187,7 +187,7 @@ module ADDRESS_BUS #(
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
           VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDR[13:0] + 1);
         end else begin
-          VDPVRAMACCESSADDR <= 19'(VDPVRAMACCESSADDR + 1); //TODO: has extending the bit width broken compatibility with non super res modes
+          VDPVRAMACCESSADDR <= 20'(VDPVRAMACCESSADDR + 1); //TODO: has extending the bit width broken compatibility with non super res modes
         end
         PRAMDBO_8 <= VDPVRAMACCESSDATA;
         PRAMWE_N <= 1'b0;
@@ -208,7 +208,7 @@ module ADDRESS_BUS #(
         if(((VDPMODETEXT1 == 1'b1) || (VDPMODETEXT1Q == 1'b1) || (VDPMODEMULTI == 1'b1) || (VDPMODEMULTIQ == 1'b1) || (VDPMODEGRAPHIC1 == 1'b1) || (VDPMODEGRAPHIC2 == 1'b1))) begin
           VDPVRAMACCESSADDR[13:0] <= 14'(VDPVRAMACCESSADDRV[13:0] + 1);
         end else begin
-          VDPVRAMACCESSADDR <= 19'(VDPVRAMACCESSADDRV + 1);
+          VDPVRAMACCESSADDR <= 20'(VDPVRAMACCESSADDRV + 1);
         end
         PRAMDBO_8 <= 8'bZ;
         PRAMWE_N <= 1'b1;
