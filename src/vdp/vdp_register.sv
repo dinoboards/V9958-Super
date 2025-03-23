@@ -119,7 +119,7 @@ module VDP_REGISTER (
     output reg [10:0] REG_R10R3_COL_ADDR,
     output reg [9:0] REG_R11R5_SP_ATR_ADDR,
     output reg [5:0] REG_R6_SP_GEN_ADDR,
-    output reg [7:0] REG_R7_FRAME_COL,
+    output bit [7:0] REG_R7_FRAME_COL,
     output reg REG_R8_SP_OFF,
     output reg REG_R8_COL0_ON,
     output reg REG_R9_PAL_MODE,
@@ -768,7 +768,7 @@ module VDP_REGISTER (
               REG_R6_SP_GEN_ADDR <= VDPP1DATA[5:0];
             end
             5'b00111: begin  // #07
-              REG_R7_FRAME_COL <= VDPP1DATA[7:0];
+              REG_R7_FRAME_COL <= VDPP1DATA;
             end
             5'b01000: begin  // #08
               REG_R8_SP_OFF  <= VDPP1DATA[1];

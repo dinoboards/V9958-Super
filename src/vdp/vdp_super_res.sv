@@ -36,6 +36,7 @@ module VDP_SUPER_RES (
     input  bit [7:0] PALETTE_DATA_R2_OUT,
     input  bit [7:0] PALETTE_DATA_G2_OUT,
     input  bit [7:0] PALETTE_DATA_B2_OUT,
+    input  bit [7:0] REG_R7_FRAME_COL,
 
     output logic [17:0] super_res_vram_addr,
     output bit [7:0] high_res_red,
@@ -186,7 +187,7 @@ module VDP_SUPER_RES (
 
         default begin
           if (!super_res_visible) begin
-            PALETTE_ADDR2 <= 2;  //TODO: make this the default background colour index
+            PALETTE_ADDR2 <= REG_R7_FRAME_COL;
 
           end else begin
             if (super_mid) begin

@@ -169,7 +169,7 @@ module VDP (
   wire [10:0] REG_R10R3_COL_ADDR;
   wire [ 9:0] REG_R11R5_SP_ATR_ADDR;
   wire [ 5:0] REG_R6_SP_GEN_ADDR;
-  wire [ 7:0] REG_R7_FRAME_COL;
+  bit  [ 7:0] REG_R7_FRAME_COL;
   wire        REG_R8_SP_OFF;
   wire        REG_R8_COL0_ON;
   wire        REG_R9_PAL_MODE;
@@ -1000,6 +1000,7 @@ module VDP (
       .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
       .PALETTE_DATA_G2_OUT(PALETTE_DATA_G2_OUT),
       .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT),
+      .REG_R7_FRAME_COL(REG_R7_FRAME_COL),
 
       .ext_reg_bus_arb_start_x(ext_reg_bus_arb_start_x),
       .ext_reg_bus_arb_end_x(ext_reg_bus_arb_end_x),

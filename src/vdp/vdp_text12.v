@@ -69,7 +69,7 @@ module VDP_TEXT12 (
     input wire VDPMODETEXT1Q,
     input wire VDPMODETEXT2,
     input wire REG_R1_BL_CLKS,
-    input wire [7:0] REG_R7_FRAME_COL,
+    input bit  [7:0] REG_R7_FRAME_COL,
     input wire [7:0] REG_R12_BLINK_MODE,
     input wire [7:0] REG_R13_BLINK_PERIOD,
     input wire [6:0] REG_R2_PT_NAM_ADDR,

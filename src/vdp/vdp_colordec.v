@@ -92,7 +92,7 @@ module VDP_COLORDEC (
     output wire [5:0] PVIDEOG_VDP,
     output wire [5:0] PVIDEOB_VDP,
     input wire REG_R1_DISP_ON,
-    input wire [7:0] REG_R7_FRAME_COL,
+    input bit [7:0] REG_R7_FRAME_COL,
     input wire REG_R8_COL0_ON,
     input wire REG_R25_YJK
 );
