@@ -916,8 +916,8 @@ module VDP_REGISTER (
   bit [9:0] arb_start_x_minus_5_wrapped;
   bit [9:0] view_port_start_x_minus_5;
   bit arb_start_x_has_wrapped;
-  bit [9:0] arb_start_y_minus_5_wrapped;
-  bit [9:0] view_port_start_y_minus_5;
+  bit [9:0] arb_start_y_minus_1_wrapped;
+  bit [9:0] view_port_start_y_minus_1;
   bit arb_start_y_has_wrapped;
 
   assign ext_reg_bus_arb_end_x = _ext_reg_view_port_end_x;
@@ -953,10 +953,9 @@ module VDP_REGISTER (
       view_port_start_x_minus_5 <= _ext_reg_view_port_start_x - 10'd6;
       arb_start_x_has_wrapped <= (_ext_reg_view_port_start_x < 10'd6) ;
 
-      //TODO: can we change from 5 before to say 1 or 2 before?
-      arb_start_y_minus_5_wrapped <= frame_height_minus_one - (10'd5 - _ext_reg_view_port_start_y);
-      view_port_start_y_minus_5 <= _ext_reg_view_port_start_y - 10'd6;
-      arb_start_y_has_wrapped <= (_ext_reg_view_port_start_y < 10'd6) ;
+      arb_start_y_minus_1_wrapped <= frame_height_minus_one;
+      view_port_start_y_minus_1 <= _ext_reg_view_port_start_y - 10'd1;
+      arb_start_y_has_wrapped <= (_ext_reg_view_port_start_y < 10'd1) ;
 
     // STAGE 3
       if (super_mid)
@@ -972,7 +971,7 @@ module VDP_REGISTER (
 
       ext_reg_bus_arb_start_x <= arb_start_x_has_wrapped ? arb_start_x_minus_5_wrapped : view_port_start_x_minus_5;
 
-      ext_reg_bus_arb_start_y <= arb_start_y_has_wrapped ? arb_start_y_minus_5_wrapped : view_port_start_y_minus_5;
+      ext_reg_bus_arb_start_y <= arb_start_y_has_wrapped ? arb_start_y_minus_1_wrapped : view_port_start_y_minus_1;
 
     end
   end
