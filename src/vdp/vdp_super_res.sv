@@ -49,7 +49,9 @@ module VDP_SUPER_RES (
     input bit [9:0] ext_reg_view_port_start_x,
     input bit [9:0] ext_reg_view_port_end_x,
     input bit [9:0] ext_reg_view_port_start_y,
-    input bit [9:0] ext_reg_view_port_end_y
+    input bit [9:0] ext_reg_view_port_end_y,
+
+    input bit [16:0] ext_reg_super_res_page_addr
 );
 
   import custom_timings::*;
@@ -130,7 +132,7 @@ module VDP_SUPER_RES (
       case (cx)
         720: begin  //(DL)
           if (last_line) begin
-            super_res_vram_addr <= 0;
+            super_res_vram_addr <= ext_reg_super_res_page_addr;
           end
           line_buffer_index <= 0;
         end
@@ -144,7 +146,7 @@ module VDP_SUPER_RES (
 
         724: begin  // cycle cx[1:0] == 0
           if (last_line) begin
-            super_res_vram_addr <= 1;
+            super_res_vram_addr <= 17'(super_res_vram_addr + 1);
           end
         end
 

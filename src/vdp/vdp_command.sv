@@ -91,7 +91,8 @@ module VDP_COMMAND (
     input bit mode_graphic_super_mid,
     input bit mode_graphic_super_res,
     input bit[9:0] view_port_width,
-    input bit pal_mode
+    input bit pal_mode,
+    input bit[16:0] ext_reg_super_res_page_addr
 
 `endif
 );
@@ -372,19 +373,9 @@ module VDP_COMMAND (
 
 `ifdef ENABLE_SUPER_RES
     end else if (mode_graphic_super_mid || mode_graphic_super_res) begin
-      //1 byte per pixel - colour from palette register - resolution of 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
-      //x is 0 to 359, and y 0 to 187 or for 60hz mode y is 0 to 239
-      //addr = y * 360 + x
+      // Calculate the address of a given pixel for super res modes
+      vram_access_addr = 19'((vram_access_y * view_port_width) + (vram_access_x)) + ext_reg_super_res_page_addr;
 
-      // vram_access_addr = 19'((vram_access_y * 180 * 2) + (vram_access_x)); // use the double multiplication to cause the synth to use a MULTADDALU18X18 otherwise it uses MULT18X18 with additional LUT for the add
-      vram_access_addr = 19'((vram_access_y * view_port_width) + (vram_access_x));
-
-    // end else if (mode_graphic_super_res) begin
-    //   //1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-    //   //x is 0 to 719, and y 0 to 287 or for 60hz mode y is 0 to 479
-    //   //addr = y * 720 + x
-
-    //   vram_access_addr = 19'((vram_access_y * view_port_width) + (vram_access_x));
 `endif
 
     end else begin

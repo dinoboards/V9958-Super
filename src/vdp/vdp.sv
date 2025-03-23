@@ -316,6 +316,8 @@ module VDP (
 
   bit  [ 9:0] view_port_width;
 
+  bit  [16:0] ext_reg_super_res_page_addr;
+
 `endif
   wire        XRAMSEL;
   wire [ 7:0] PRAMDATPAIR;
@@ -915,7 +917,9 @@ module VDP (
       .ext_reg_view_port_start_y(ext_reg_view_port_start_y),
       .ext_reg_view_port_end_y(ext_reg_view_port_end_y),
 
-      .view_port_width (view_port_width)
+      .view_port_width (view_port_width),
+
+      .ext_reg_super_res_page_addr(ext_reg_super_res_page_addr)
 
 `endif
 
@@ -957,7 +961,9 @@ module VDP (
       .mode_graphic_super_res(super_res),
 
       .pal_mode(PAL_MODE),
-      .view_port_width (view_port_width)
+      .view_port_width (view_port_width),
+
+      .ext_reg_super_res_page_addr(ext_reg_super_res_page_addr)
 `endif
   );
 
@@ -1003,7 +1009,9 @@ module VDP (
       .ext_reg_view_port_start_x(ext_reg_view_port_start_x),
       .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
       .ext_reg_view_port_start_y(ext_reg_view_port_start_y),
-      .ext_reg_view_port_end_y(ext_reg_view_port_end_y)
+      .ext_reg_view_port_end_y(ext_reg_view_port_end_y),
+
+      .ext_reg_super_res_page_addr(ext_reg_super_res_page_addr)
   );
 `endif
 
