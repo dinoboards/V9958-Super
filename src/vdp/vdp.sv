@@ -302,6 +302,7 @@ module VDP (
 
   // SUPER RES MODES
   bit         super_mid;
+  bit         super_mid2;
   bit         super_res;
 
   bit  [ 9:0] ext_reg_bus_arb_start_x;
@@ -902,6 +903,7 @@ module VDP (
       ,
       .vdp_super(vdp_super),
       .super_mid(super_mid),
+      .super_mid2(super_mid2),
       .super_res(super_res),
       .PALETTE_ADDR2(PALETTE_ADDR2),
       .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
@@ -988,6 +990,7 @@ module VDP (
       .clk(CLK21M),
       .vdp_super(vdp_super),
       .super_mid(super_mid),
+      .super_mid2(super_mid2),
       .super_res(super_res),
       .cx(CX),
       .cy(CY),

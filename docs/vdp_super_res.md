@@ -1,12 +1,15 @@
 
 ## Super high res modes
 
-If bits 1:2 of REG31 are set, then one of the VDP's super modes are activated.
-There are 2 modes.  The specific super mode is determined by bits 2:1 or REG31
+Setting bit 0 of REG31 will activate one of the super res modes.
 
+If bits 1:2 of REG31 are set, then one of the VDP's super modes are activated.
+There are 3 modes.  The specific super mode is determined by bits 2:1 or REG31
+
+* 00: N/A not used
 * 01: 1 byte per pixel - colour from palette register - resolution of 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
 * 10: 1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-* 11: Unused
+* 11: 1 byte per pixel - colour from palette register - resolution of 50Hz:720x288 (207360 Bytes), 60Hz:720x240 (172800 bytes)
 
 ## View Port Registers
 
