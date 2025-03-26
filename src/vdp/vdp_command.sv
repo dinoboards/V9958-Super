@@ -89,10 +89,11 @@ module VDP_COMMAND (
 `ifdef ENABLE_SUPER_RES
     ,
     input bit mode_graphic_super_mid,
+    input bit mode_graphic_super_mid2,
     input bit mode_graphic_super_res,
     input bit[9:0] view_port_width,
     input bit pal_mode,
-    input bit[16:0] ext_reg_super_res_page_addr
+    input bit[16:0] ext_reg_super_res_page_command_addr
 
 `endif
 );
@@ -374,7 +375,7 @@ module VDP_COMMAND (
 `ifdef ENABLE_SUPER_RES
     end else if (mode_graphic_super_mid || mode_graphic_super_res) begin
       // Calculate the address of a given pixel for super res modes
-      vram_access_addr = 20'((vram_access_y * view_port_width) + (vram_access_x)) + ext_reg_super_res_page_addr;
+      vram_access_addr = 20'((vram_access_y * view_port_width) + (vram_access_x)) + {ext_reg_super_res_page_command_addr, 2'b00};
 
 `endif
 

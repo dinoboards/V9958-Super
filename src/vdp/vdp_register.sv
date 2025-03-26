@@ -173,7 +173,9 @@ module VDP_REGISTER (
 
     output bit[9:0] view_port_width,
 
-    output bit[16:0] ext_reg_super_res_page_addr
+    output bit[16:0] ext_reg_super_res_page_addr,
+    output bit[16:0] ext_reg_super_res_page_command_addr
+
 
 `endif
 );
@@ -612,6 +614,9 @@ module VDP_REGISTER (
       extended_super_regs[9] <= 8'h00;  // ext_reg_super_res_page_addr
       extended_super_regs[10] <= 8'h00; // ext_reg_super_res_page_addr
 
+      extended_super_regs[11] <= 8'h00; // ext_reg_super_res_page_command_addr
+      extended_super_regs[12] <= 8'h00; // ext_reg_super_res_page_command_addr
+      extended_super_regs[13] <= 8'h00; // ext_reg_super_res_page_command_addr
 `endif
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
@@ -872,12 +877,22 @@ module VDP_REGISTER (
                   extended_super_regs[10] <= 8'h00; // ext_reg_super_res_page_addr
                   ext_reg_super_res_page_addr <= 0;
                 end
+
+                if (VDPP1DATA[2]) begin //reset base addr
+                  extended_super_regs[11] <= 8'h00;  // ext_reg_super_res_page_command_addr
+                  extended_super_regs[12] <= 8'h00;  // ext_reg_super_res_page_command_addr
+                  extended_super_regs[13] <= 8'h00; // ext_reg_super_res_page_command_addr
+                  ext_reg_super_res_page_command_addr <= 0;
+                end
               end
 
               // latch the page addr after all 3 bytes have been loaded into the register
               // assumes the MSB is loaded last
               if (extended_reg_index == 10)
                 ext_reg_super_res_page_addr <= {VDPP1DATA[0], extended_super_regs[9], extended_super_regs[8]};
+
+              if (extended_reg_index == 13)
+                ext_reg_super_res_page_command_addr <= {VDPP1DATA[0], extended_super_regs[12], extended_super_regs[11]};
 
               extended_reg_index = 8'(extended_reg_index + 1);
             end
