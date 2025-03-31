@@ -95,8 +95,6 @@ module VDP_SUPER_RES (
   bit super_res_visible_switched_on;
   bit [9:0] view_port_start_x;
 
-  assign view_port_start_x = ext_reg_view_port_start_x;
-
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
       super_res_visible <= 0;
@@ -112,7 +110,7 @@ module VDP_SUPER_RES (
       if ((cx == ext_reg_view_port_start_x) && on_a_visible_line) begin
         super_res_visible <= 1;
 
-      end else if ((cx == ext_reg_view_port_end_x) && on_a_visible_line) begin
+      end else if (cx == ext_reg_view_port_end_x) begin
         super_res_visible <= 0;
       end
 
@@ -132,6 +130,22 @@ module VDP_SUPER_RES (
 
     end else begin
       case (cx)
+        ext_reg_view_port_start_x: begin
+          if (on_a_visible_line) PALETTE_ADDR2 <= first_col_palett_addr;
+        end
+
+
+        ext_reg_view_port_end_x: begin //679 //cycle cx[1:0] == 3
+          PALETTE_ADDR2 <= 3;
+          if (super_res_visible && (super_res || super_mid2))
+            next_vram_data <= vrm_32;
+
+          // if (super_res_visible && super_mid2)
+            // line_buffer[line_buffer_index] <= vrm_32[7:0];
+        end
+
+
+
         720: begin  //(DL)
           if (last_line) begin
             super_res_vram_addr <= ext_reg_super_res_page_addr;
@@ -180,10 +194,6 @@ module VDP_SUPER_RES (
             line_buffer_index <= 10'(line_buffer_index + 1);
             odd_phase <= 0;
           end
-        end
-
-        view_port_start_x: begin
-          if (on_a_visible_line) PALETTE_ADDR2 <= first_col_palett_addr;
         end
 
         default begin
