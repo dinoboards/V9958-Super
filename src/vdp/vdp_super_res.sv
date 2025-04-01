@@ -86,6 +86,20 @@ module VDP_SUPER_RES (
     end
   end
 
+
+  bit [9:0] frame_width_minus_2;
+  bit [9:0] frame_width;
+
+  always_ff @(posedge reset or posedge clk) begin
+    if (reset | ~vdp_super) begin
+      frame_width_minus_2 <= 0;
+      frame_width <= 0;
+    end else begin
+      frame_width <= FRAME_WIDTH(pal_mode);
+      frame_width_minus_2 <= 10'(frame_width - 2);
+    end
+  end
+
   assign last_line = cy == frame_height_minus_1;
 
   bit on_a_visible_line;
@@ -127,9 +141,9 @@ module VDP_SUPER_RES (
     end else begin
 
       //cy == start_y-1 P(625-1) , N(525-1)
-      if ((cx == FRAME_WIDTH(pal_mode) - 2) && cy == ext_reg_view_port_start_y) on_a_visible_line <= 1;
+      if ((cx == frame_width_minus_2) && cy == ext_reg_view_port_start_y) on_a_visible_line <= 1;
 
-      if ((cx == FRAME_WIDTH(pal_mode) - 2) && cy == ext_reg_view_port_end_y) on_a_visible_line <= 0;
+      if ((cx == frame_width_minus_2) && cy == ext_reg_view_port_end_y) on_a_visible_line <= 0;
 
       if ((cx == ext_reg_view_port_start_x) && on_a_visible_line) begin
         super_res_visible <= 1;
