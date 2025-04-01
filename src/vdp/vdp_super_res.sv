@@ -72,7 +72,21 @@ module VDP_SUPER_RES (
   assign high_res_blue = PALETTE_DATA_B2_OUT;
 
   assign active_line = ((super_mid) && cy[0] == 0) || super_res;
-  assign last_line = cy == (FRAME_HEIGHT(pal_mode) - 1);
+
+  bit [9:0] frame_height_minus_1;
+  bit [9:0] frame_height;
+
+  always_ff @(posedge reset or posedge clk) begin
+    if (reset | ~vdp_super) begin
+      frame_height_minus_1 <= 0;
+      frame_height <= 0;
+    end else begin
+      frame_height <= FRAME_HEIGHT(pal_mode);
+      frame_height_minus_1 <= 10'(frame_height - 1);
+    end
+  end
+
+  assign last_line = cy == frame_height_minus_1;
 
   bit on_a_visible_line;
 
