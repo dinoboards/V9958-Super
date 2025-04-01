@@ -31,53 +31,41 @@ module CPU_IO (
   assign rd_iorq_n = rd_n | iorq_n;
   assign wr_iorq_n = wr_n | iorq_n;
 
-  bit       io_state_r = 1'b0;
+  bit       io_state_r = 0;
   bit [1:0] cs_latch;
   bit       vdp_io_addr;
   bit       vdp_cs_wr_n;
   bit       vdp_cs_rd_n;
 
-  // Cross domain synchronizers
-  bit       vdp_io_wr_meta;
-  bit       vdp_io_wr_sync;
-  bit       vdp_io_rd_meta;
-  bit       vdp_io_rd_sync;
-  bit       vdp_io_rd_prev;
-  bit       vdp_io_wr_prev;
-
   assign vdp_io_addr = A[7] & ~A[6] & ~A[5] & A[4] & A[3] & ~A[2];  // $98 TO $9B
   assign vdp_cs_rd_n = !(vdp_io_addr & !rd_iorq_n);
   assign vdp_cs_wr_n = !(vdp_io_addr & !wr_iorq_n);
 
-  // Cross domain synchronization
   always_ff @(posedge clk or negedge reset_n) begin
-    if (!reset_n) begin
-      vdp_io_wr_meta <= 1'b0;
-      vdp_io_wr_prev <= 1'b0;
-      vdp_io_wr_sync <= 1'b0;
-      vdp_io_rd_meta <= 1'b0;
-      vdp_io_rd_prev <= 1'b0;
-      vdp_io_rd_sync <= 1'b0;
+    if (reset_n == 0) begin
+      io_state_r  <= 0;
+
+      vdp_data_in <= 0;
+      vdp_io_wr   <= 0;
+      vdp_io_req  <= 0;
+
     end else begin
-      // Two-stage synchronization, with 3rd stage for edge detection
-      vdp_io_wr_meta <= !wr_iorq_n;
-      vdp_io_wr_sync <= vdp_io_wr_meta;
-      vdp_io_wr_prev <= vdp_io_wr_sync;
+      if (!io_state_r) begin
+        vdp_data_in <= cd;
+        vdp_io_req <= (vdp_cs_rd_n ^ vdp_cs_wr_n);
+        vdp_io_wr <= ~vdp_cs_wr_n;
 
-      vdp_io_rd_meta <= !rd_iorq_n;
-      vdp_io_rd_sync <= vdp_io_rd_meta;
-      vdp_io_rd_prev <= vdp_io_rd_sync;
+        cs_latch <= {vdp_cs_rd_n, vdp_cs_wr_n};
+        io_state_r <= 1;
 
-      if (!vdp_io_wr_prev && vdp_io_wr_sync && vdp_io_addr) begin  //wr_iorq_n has gone active (low)
-        vdp_data_in <= cd;  // capture data from CPU
-        vdp_io_wr   <= 1;
-        vdp_io_req  <= 1;
-      end else if (!vdp_io_rd_prev && vdp_io_rd_sync && vdp_io_addr) begin  //rd_iorq_n has gone active (low)
-        vdp_io_wr  <= 0;
-        vdp_io_req <= 1;
       end else begin
         vdp_io_wr  <= 0;
         vdp_io_req <= 0;
+
+        if (cs_latch != {vdp_cs_rd_n, vdp_cs_wr_n}) begin
+          io_state_r <= 0;
+        end
+
       end
     end
   end
@@ -85,7 +73,9 @@ module CPU_IO (
 `ifdef ENABLE_WS2812
   assign cs_n = vdp_cs_rd_n & vdp_cs_wr_n & ws2812_cs_rd_n & ws2812_cs_wr_n;
 
-  assign cd   = vdp_cs_rd_n == 0 ? vdp_data_out : (ws2812_cs_rd_n == 0 ? ws2812_data_out : 8'bzzzzzzzz);`else
+  assign cd   = vdp_cs_rd_n == 0 ? vdp_data_out : (ws2812_cs_rd_n == 0 ? ws2812_data_out : 8'bzzzzzzzz);
+
+`else
   assign cs_n = vdp_cs_rd_n & vdp_cs_wr_n;
 
   assign cd   = vdp_cs_rd_n == 0 ? vdp_data_out : 8'bzzzzzzzz;
