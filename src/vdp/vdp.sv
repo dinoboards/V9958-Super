@@ -302,7 +302,6 @@ module VDP (
 
   // SUPER RES MODES
   bit         super_mid;
-  bit         super_mid2;
   bit         super_res;
 
   bit  [ 9:0] ext_reg_bus_arb_start_x;
@@ -903,7 +902,6 @@ module VDP (
       ,
       .vdp_super(vdp_super),
       .super_mid(super_mid),
-      .super_mid2(super_mid2),
       .super_res(super_res),
       .PALETTE_ADDR2(PALETTE_ADDR2),
       .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
@@ -961,7 +959,6 @@ module VDP (
 `ifdef ENABLE_SUPER_RES
       ,
       .mode_graphic_super_mid(super_mid),
-      .mode_graphic_super_mid2(super_mid2),
       .mode_graphic_super_res(super_res),
 
       .pal_mode(PAL_MODE),
@@ -990,7 +987,6 @@ module VDP (
       .clk(CLK21M),
       .vdp_super(vdp_super),
       .super_mid(super_mid),
-      .super_mid2(super_mid2),
       .super_res(super_res),
       .cx(CX),
       .cy(CY),

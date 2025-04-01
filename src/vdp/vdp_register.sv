@@ -156,7 +156,6 @@ module VDP_REGISTER (
     output bit vdp_super,
     output bit super_mid, /* half width, half height */
     output bit super_res, /* full width, full height */
-    output bit super_mid2, /* full width, half height */
 
     input bit [7:0] PALETTE_ADDR2,
     output bit[7:0] PALETTE_DATA_R2_OUT,
@@ -268,8 +267,7 @@ module VDP_REGISTER (
 `ifdef ENABLE_SUPER_RES
   assign super_mid = FF_REG_R31[2:1] == 1;  // 1 byte per pixel into palette lookup 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
   assign super_res = FF_REG_R31[2:1] == 2;  // 1 byte per pixel into palette lookup 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-  assign super_mid2 = FF_REG_R31[2:1] == 3;  // 1 byte per pixel into palette lookup 50Hz:720x288 (207360 Bytes), 60Hz:720x240 (172800 bytes)
-  assign mode_graphic_super_base = super_mid2 || super_mid || super_res;  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
+  assign mode_graphic_super_base = super_mid || super_res;  //if true, and mode_Graphic_7_base is true, then we are in super graphic mode
   assign vdp_super = mode_graphic_super_base & mode_graphic_7_base;
 `endif
 
