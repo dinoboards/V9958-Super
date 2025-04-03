@@ -174,7 +174,6 @@ module VDP_SUPER_RES (
 
 
         ext_reg_view_port_end_x: begin  //679 //cycle cx[1:0] == 3
-          PALETTE_ADDR2 <= _REG_R7_FRAME_COL;
           if (super_res_visible && (super_res)) vrm_32_1 <= vrm_32;
         end
 
@@ -210,7 +209,6 @@ module VDP_SUPER_RES (
         856: begin  //cycle cx[1:0] == 2
           //LOAD PALETTE_ADDR2 for first pixel of each row
           if (super_res) begin
-            PALETTE_ADDR2 <= vrm_32_1[7:0];
             first_pixel   <= vrm_32_1[7:0];
           end else begin
             if (!active_line || last_line) begin
