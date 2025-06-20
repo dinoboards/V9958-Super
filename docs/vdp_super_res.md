@@ -1,25 +1,12 @@
 
 ## Super high res modes
 
-Setting bit 0 of REG31 will activate one of the super res modes.
+This document describes the additional registers available (over the standard V9958 register set) to enable higher resolution graphics.
 
-If bits 1:2 of REG31 are set, then one of the VDP's super modes are activated.
-There are 3 modes.  The specific super mode is determined by bits 2:1 or REG31
+The register sets are devided into 2 groups:
 
-* 00: N/A not used
-* 01: 1 byte per pixel - colour from palette register - resolution of 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
-* 10: 1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-* 11: 1 byte per pixel - colour from palette register - resolution of 50Hz:720x288 (207360 Bytes), 60Hz:720x240 (172800 bytes)
-
-## View Port Registers
-
-Describe in more detail below, the extended registers, `#EXTR0` to `#EXTR7`, can be used to define a boundary
-rectangle that will constrain or clip the super res modes.  Smaller rendering rectangles can aid in performance,
-as the increase in blanking period grants the CPU/VDP more time for VRAM access.
-
-The values are in units of the relevant native HDMI resolution (50Hz: 720x576, 60Hz: 720x480)
-
-> For example, if a boundary rectangle of 640x400 is defined, and super_mid mode is selected, the resulting resolution will be 320x200.
+* The additional registers (R#29 and R#30)
+* The super extended registers - accessed indirectly through R#30
 
 ## New Registers
 
@@ -38,9 +25,9 @@ BIT 2:1: SUPER MODE TYPE:
 * 10 -> SUPER_RES:   1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
 
 BIT 3: EXTENDED PALETTE ACTIVE
-* If set, then support for 8bit per colour palette (24bits in total).
- each RGB is loaded into the palette data port one byte for each R, G, B.
-* up to 256 palette entries, are only availble in the super modes.
+* If set, then enables 8 bits per colour for each colour entry in the colour palette (24bits in total).
+ each RGB is loaded into the palette data port one byte for each colour: Red, Green then Blue (RGB).
+* up to 256 palette entries are only available in the super modes.
 
 ### R#29
 
@@ -48,9 +35,19 @@ Index to use for writing to the super extended registers.  Auto incremented as v
 
 ### R30
 
-Assigns to current extended register value
+Writes to current super extended register value
 
 ## Extended Register
+
+## View Port Registers
+
+Describe in more detail below, the extended registers, `#EXTR0` to `#EXTR7`, can be used to define a boundary
+rectangle that will constrain or clip the super res modes.  Smaller rendering rectangles can aid in performance,
+as the increase in blanking period grants the CPU/VDP more time for VRAM access.
+
+The values are in units of the relevant native HDMI resolution (50Hz: 720x576, 60Hz: 720x480)
+
+> For example, if a boundary rectangle of 640x400 is defined, and super_mid mode is selected, the resulting resolution will be 320x200.
 
 ### EXTR#0 & EXTR#1 (VIEW_PORT_START_X - #0 LSB, #1 MSB - 10 bits)
 
