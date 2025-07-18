@@ -22,10 +22,20 @@
 
 > Given the full access to the IO signals, the solution can perform its own chip-select.  And allow for possible future expansion for other hardware emulation.
 
-5. New 'Super' Display modes -- The new registers available in Assembly or by using the new MSX-BASIC extensions developed for the Embedded ROM of the [Yellow MSX System](https://github.com/vipoo/yellow-msx-series-for-rc2014) (Work in progress 2024-03-26). New Resolutions being developed are:
+## New 'Super' Display modes
 
-* 24 bit RGB colour - 3 bytes per pixel - resolution of 50Hz:180x144 (77760/103680 Bytes), 60Hz:180x120 (64800/86400 bytes)
-* 16 bit RGB colour - 2 bytes per pixel - resolution of 50Hz:360x288 (207360 Bytes), 60Hz:360x240 (172800 bytes)
-* ?? bit RGB palette colour - 1 byte per pixel - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
+### **SUPER_MID*** graphics mode:
+
+* 1 byte per pixel
+* colour from palette register
+* resolution at 50Hz:360x288 (103680 Bytes)
+* resolution at 60Hz:360x240 (86400 bytes)
+
+### ***SUPER_RES*** graphics mode:
+
+* 1 byte per pixel
+* colour from palette register
+* resolution at 50Hz:720x576 (414720 Bytes)
+* resolution at 60Hz:720x480 (345600 bytes)
 
 See [docs/vdp_super_res.md](./vdp_super_res.md) for more current details

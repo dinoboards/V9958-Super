@@ -4,8 +4,6 @@ This repo contains the Verilog code to emulate Yamaha's V9958 Video Display Proc
 
 Its designed specifically for the [Yellow MSX System](https://github.com/vipoo/yellow-msx-series-for-rc2014?tab=readme-ov-file#yellow-msx-series-for-rc2014) kit, based on the Tang Nano 20K FPGA module.
 
-(Board is still under development)
-
 ## Objective
 
 1. To provide the RC2014 (specifically the Yellow MSX series) to have HDMI output of an emulated Yamaha V9958 Graphic Video Display Processor
@@ -16,8 +14,8 @@ Its designed specifically for the [Yellow MSX System](https://github.com/vipoo/y
 * Compatible with RC2014 (enhanced bus required)
 * HDMI output
 * Onboard ADC for HDMI audio delivery
-* Extended Video modes (supported by a patched MSX-BASIC ROM for the Yellow MSX platform)
-* WS2812 RGB LEDs
+* Extended Video modes
+* WS2812 RGB LEDs (Not currently activated)
 
 <img src="./docs/pcb-render.png" width="50%"/>
 
@@ -25,8 +23,8 @@ Its designed specifically for the [Yellow MSX System](https://github.com/vipoo/y
 
 The current version of the schematic can be found here
 
-* [Schematic](./docs/SCHEMATIC.pdf)
-* [PCB IMAGE](./docs/PCB-IMAGE.pdf)
+* [Schematic](./docs/schematic.pdf)
+
 
 ### Difference with [tn_vdp](https://github.com/lfantoniosi/tn_vdp)
 
@@ -36,19 +34,24 @@ The current version of the schematic can be found here
 
 New 'Super' Display modes -- New hardware registers available for applications to enable higher (super) resolution and colour modes.
 
-A MSX-BASIC patches and extensions are available for the Embedded ROM of the [Yellow MSX System](https://github.com/vipoo/yellow-msx-series-for-rc2014) (Work in progress 2024-04-21).
+The new Resolutions are:
 
-The new Resolutions under development are:
+* `SUPER_MID`:   resolution of 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes), 256 colours
+* `SUPER_RES`:   resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes), 256 colours
 
-* 01 -> SUPER_MID:   1 byte per pixel - colour from palette register - resolution of 50Hz:360x288 (103680 Bytes), 60Hz:360x240 (86400 bytes)
-* 10 -> SUPER_RES:   1 byte per pixel - colour from palette register - resolution of 50Hz:720x576 (414720 Bytes), 60Hz:720x480 (345600 bytes)
-*
 See [docs/vdp_super_res.md](./docs/vdp_super_res.md) for more details.
 
-## Building using the Command Line (windows)
+## Building FPGA image
+
+Download and install the Gowin IDE.  Currently tested with V1.9.11.01.  See [https://wiki.sipeed.com/hardware/en/tang/common-doc/get_started/install-the-ide.html](https://wiki.sipeed.com/hardware/en/tang/common-doc/get_started/install-the-ide.html)
+
+> Please note I have not been able to get the linux version of the IDE to work.  I use wine on linux to run the windows version.
+
+
+### Using the Command Line (windows)
 
 > Requires the gowin IDE to be installed at `C:\Gowin64`
-> Make sure you have Gowin IDE install to `C:\Gowin64`.  This should include the cli tool at: `C:\Gowin64\Gowin_V1.9.9.01_x64\IDE\bin\gw_sh.exe`
+> Make sure you have Gowin IDE install to `C:\Gowin64`.  This should include the cli tool at: `C:\Gowin64\Gowin_V1.9.11.01_Education_x64\IDE\bin\gw_sh.exe`
 
 There is a TCL script that contains the required configuration to build the file stream (fs) for the Tang Nano.
 
@@ -60,7 +63,7 @@ Within *Windows Subsystem for Linux* (WSL), you can use the `buildwsl.sh` script
 buildwsl.sh
 ```
 
-In in windows, run the BAT file:
+Or In windows, run the BAT file:
 
 ```
 build.bat
@@ -69,17 +72,26 @@ build.bat
 > The project may also be built using Gowin GUI IDE, by opening the file `tn_vdp.gprj`.  But please note that the GUI project may not be kept in sync with the tcl file and may be missing files or attempts to included files since deleted.
 
 
-## Building using command line (wine)
+## Linux: Using command line (wine)
 
-Download and install the education version (so no need to worry about licence activation process)
+I have not been able to get the tool chain to work natively in linux.  I used wine to invoke the windows binaries.
+
+You will need to download and install the education version (so no need to worry about licence activation process) within your wine environment.
 
 Then run (adjusting path to `gw_shl.exe` as per your version)
 
 ```
-c:\Gowin64\Gowin_V1.9.11.01_Education_x64\IDE\bin\gw_sh.exe" tn_vdp.tcl
+wine "c:\Gowin64\Gowin_V1.9.11.01_Education_x64\IDE\bin\gw_sh.exe" tn_vdp.tcl
 ```
 
-To flash/program device, use the opensource programmer
+or use my helper script (to reduce the verbosity of the output logging):
+
+```
+build.sh
+```
+
+
+## To flash/program device, use the opensource programmer
 
 use: openFPGALoader -> https://github.com/trabucayre/openFPGALoader
 
