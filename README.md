@@ -2,11 +2,9 @@
 
 This repo contains the Verilog code to emulate Yamaha's V9958 Video Display Processor.  Its was forked from the project [tn_vdp](https://github.com/lfantoniosi/tn_vdp) (derived from V3).
 
-Its designed specifically for the [Yellow MSX System](https://github.com/vipoo/yellow-msx-series-for-rc2014?tab=readme-ov-file#yellow-msx-series-for-rc2014) kit, based on the Tang Nano 20K FPGA module.
-
 ## Objective
 
-1. To provide the RC2014 (specifically the Yellow MSX series) to have HDMI output of an emulated Yamaha V9958 Graphic Video Display Processor
+1. To provide the RC2014/RCBus to have HDMI output of an emulated Yamaha V9958 Graphic Video Display Processor
 2. Provide enhanced graphics modes with more colours and resolution that the original V9958 supported.
 
 ## Key Features
@@ -15,7 +13,7 @@ Its designed specifically for the [Yellow MSX System](https://github.com/vipoo/y
 * HDMI output
 * Onboard ADC for HDMI audio delivery
 * Extended Video modes
-* WS2812 RGB LEDs (Not currently activated)
+* WS2812 RGB LEDs
 
 <img src="./docs/pcb-render.png" width="50%"/>
 
