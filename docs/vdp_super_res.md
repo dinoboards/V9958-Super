@@ -11,6 +11,8 @@ This document describes the additional registers over the stock V9958 registers.
 
 The [eZ80 for RC](https://www.dinoboards.com.au/ez80-for-rc)'s clang tool chain has support for the V9958 and the extended register capabilities of this module.  See
 
+> Please note, the higher resolution PORTS are only effective, when the V9958 is configured for GRAPHICS MODE 7.
+
 ## Changed Status Register
 
 ### `S#1` - VDP ID CHANGED
@@ -131,3 +133,300 @@ To enable double buffering writes, do something along the lines of:
 2. Set the `SUPER_BASE_COMMAND_ADDR` to the address of the 1st page (0)
 5. When ready to switch rendering back to the '1st page', by setting the `SUPER_BASE_RENDERING_ADDR` to 0.
 6. Repeat...
+
+
+<hr/>
+
+## Some Common Resolution and Colour configurations
+
+### Super Graphics Mode 1
+
+Characteristics:
+- Resolution: 320 x 200 pixels @ 60Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 64,000 bytes
+- This mode has a small border around the main view
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+- Border colour as per Register #7
+
+#### Pseudo Code
+
+```
+  set_refresh 60
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 7       # reset VIEW PORT and BASE ADDR
+  reg_write 31, $80+1   # set SUPER_MID mode
+
+  reg_write 29, $00
+  reg_write 30, $28    # 0:VIEW_PORT_START_X  Low  byte 40 ($28)
+  reg_write 30, $00    # 1:VIEW_PORT_START_X  High byte 40 ($28)
+  reg_write 30, $A8    # 2:VIEW_PORT_END_X    Low  byte 680 ($2A8)
+  reg_write 30, $02    # 3:VIEW_PORT_END_X    High byte 680 ($2A8)
+  reg_write 30, $28    # 4:VIEW_PORT_START_Y  Low  byte 40 ($28)
+  reg_write 30, $00    # 5:VIEW_PORT_START_Y  High byte 40 ($0)
+  reg_write 30, $B8    # 6:VIEW_PORT_END_Y    Low  byte 440 ($1B0)
+  reg_write 30, $01    # 7:VIEW_PORT_END_Y    High byte 440 ($1B0)
+```
+
+### Super Graphics Mode 2
+
+Characteristics:
+- Resolution: 320 x 240 pixels @ 60Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 76,800 bytes
+- This mode has a small border around the main view
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+- Border colour as per Register #7
+
+#### Pseudo Code
+
+```
+  set_refresh 50
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 7      # reset VIEW PORT and BASE ADDR
+  reg_write 31, $80+2  # set SUPER_MID mode
+
+  reg_write 29, $00
+  reg_write 30, $28    # 0:VIEW_PORT_START_X  Low  byte 40 ($28)
+  reg_write 30, $00    # 1:VIEW_PORT_START_X  High byte 40 ($28)
+  reg_write 30, $A8    # 2:VIEW_PORT_END_X    Low  byte 680 ($2A8)
+  reg_write 30, $02    # 3:VIEW_PORT_END_X    High byte 680 ($2A8)
+  reg_write 30, $30    # 4:VIEW_PORT_START_Y  Low  byte 48 ($30)
+  reg_write 30, $00    # 5:VIEW_PORT_START_Y  High byte 48 ($0)
+  reg_write 30, $10    # 6:VIEW_PORT_END_Y    Low  byte 528 ($210)
+  reg_write 30, $02    # 7:VIEW_PORT_END_Y    High byte 528 ($210)
+```
+
+### Super Graphics Mode 3
+
+Characteristics:
+- Resolution: 360 x 240 @ 60Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 86,400
+- This mode will fill the entire screen space
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+
+#### Pseudo Code
+
+```
+  set_refresh 60
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 7       # reset VIEW PORT and BASE ADDR
+  reg_write 31, $80+3   # set SUPER_MID mode
+```
+
+### Super Graphics Mode 4
+
+Characteristics:
+- Resolution: 360 x 288 @ 50Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 103,680
+- This mode will fill the entire screen space
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+
+#### Pseudo Code
+
+```
+  set_refresh 50
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 7       # reset VIEW PORT and BASE ADDR
+  reg_write 31, $80+4   # set SUPER_MID mode
+```
+
+### Super Graphics Mode 5
+
+Characteristics:
+- Resolution: 640 x 400 @ 60Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 256,000
+- This mode has a small border around the main view
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+- Border colour as per Register #7
+
+#### Pseudo Code
+
+```
+  set_refresh 60
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 7         # reset viewport and base addr
+  reg_write 31, $80+5     # set SUPER_RES mode
+
+  reg_write 29, 0
+  reg_write 30, $28     # 0:VIEW_PORT_START_X  Low  byte 40 ($28)
+  reg_write 30, $00     # 1:VIEW_PORT_START_X  High byte 40 ($28)
+  reg_write 30, $A8     # 2:VIEW_PORT_END_X    Low  byte 680 ($2A8)
+  reg_write 30, $02     # 3:VIEW_PORT_END_X    High byte 680 ($2A8)
+  reg_write 30, $28     # 4:VIEW_PORT_START_Y  Low  byte 40 ($28)
+  reg_write 30, $00     # 5:VIEW_PORT_START_Y  High byte 40 ($0)
+  reg_write 30, $B8     # 6:VIEW_PORT_END_Y    Low  byte 440 ($1B0)
+  reg_write 30, $01     # 7:VIEW_PORT_END_Y    High byte 440 ($1B0)
+```
+
+### Super Graphics Mode 6
+
+Characteristics:
+- Resolution: 640 x 480 @ 50Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 307,200
+- This mode has a small border around the main view
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+- Border colour as per Register #7
+
+#### Pseudo Code
+
+```
+  set_refresh 50
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 7       # reset viewport and base addr
+  reg_write 31, $80+6   # set SUPER_RES mode
+
+  reg_write 29, 0
+  reg_write 30, $28    # 0:VIEW_PORT_START_X  Low  byte 40 ($28)
+  reg_write 30, $00    # 1:VIEW_PORT_START_X  High byte 40 ($28)
+  reg_write 30, $A8    # 2:VIEW_PORT_END_X    Low  byte 680 ($2A8)
+  reg_write 30, $02    # 3:VIEW_PORT_END_X    High byte 680 ($2A8)
+  reg_write 30, $30    # 4:VIEW_PORT_START_Y  Low  byte 48 ($30)
+  reg_write 30, $00    # 5:VIEW_PORT_START_Y  High byte 48 ($0)
+  reg_write 30, $10    # 6:VIEW_PORT_END_Y    Low  byte 528 ($210)
+  reg_write 30, $02    # 7:VIEW_PORT_END_Y    High byte 528 ($210)
+```
+
+### Super Graphics Mode 7
+
+Characteristics:
+- Resolution: 720 x 480 @ 60Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 345,600
+- This mode will fill the entire screen space
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+
+#### Pseudo Code
+
+```
+  set_refresh 60
+  set_graphic 7
+
+  vdp_reg_write(29, 255);
+  vdp_reg_write(30, 7);   # reset viewport and base addr
+  vdp_reg_write(31, $80+7);
+```
+
+
+### Super Graphics Mode 8
+
+Characteristics:
+- Resolution: 720 x 576 @ 50Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 414,720
+- This mode will fill the entire screen space
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+
+#### Pseudo Code
+
+```
+  set_refresh 50
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 8     # reset viewport and base addr
+  reg_write 31, $80+8
+```
+
+### Super Graphics Mode 9
+
+- Resolution: 640 x 512 @ 50Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage: 327, 680 bytes
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+
+#### Pseudo Code
+
+```
+  set_refresh 50
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 7       # reset viewport and base addr
+  reg_write 31, $80+9
+
+  reg_write 29, 0
+  reg_write 30, $28    # 0:VIEW_PORT_START_X  Low  byte  40 ($28)
+  reg_write 30, $00    # 1:VIEW_PORT_START_X  High byte  40 ($28)
+  reg_write 30, $A8    # 2:VIEW_PORT_END_X    Low  byte 680 ($2A8)
+  reg_write 30, $02    # 3:VIEW_PORT_END_X    High byte 680 ($2A8)
+  reg_write 30, $20    # 4:VIEW_PORT_START_Y  Low  byte  32 ($20)
+  reg_write 30, $00    # 5:VIEW_PORT_START_Y  High byte  32 ($20)
+  reg_write 30, $20    # 6:VIEW_PORT_END_Y    Low  byte 544 ($220)
+  reg_write 30, $02    # 7:VIEW_PORT_END_Y    High byte 544 ($220)
+```
+
+### Super Graphics Mode 10
+
+Characteristics:
+- Resolution: 640 x 256 @ 50Hz
+- Colors: Uses 256 palette colors
+- VRAM Usage:  bytes
+
+Memory organization:
+- Each pixel uses one byte to specify its color
+- Colors are selected from palette registers
+
+#### Pseudo Code
+
+```
+  set_refresh 50
+  set_graphic 7
+
+  reg_write 29, 255
+  reg_write 30, 7         # reset viewport and base addr
+  reg_write 31, $80+10
+
+  reg_write 29, 0
+  reg_write 30, $28      # 0:VIEW_PORT_START_X  Low  byte 40 ($28)
+  reg_write 30, $00      # 1:VIEW_PORT_START_X  High byte 40 ($28)
+  reg_write 30, $A8      # 2:VIEW_PORT_END_X    Low  byte 680 ($2A8)
+  reg_write 30, $02      # 3:VIEW_PORT_END_X    High byte 680 ($2A8)
+  reg_write 30, $70      # 4:VIEW_PORT_START_Y  Low  byte 112 ($70)
+  reg_write 30, $00      # 5:VIEW_PORT_START_Y  High byte 112 ($70)
+  reg_write 30, $70      # 6:VIEW_PORT_END_Y    Low  byte 368 ($170)
+  reg_write 30, $01      # 7:VIEW_PORT_END_Y    High byte 368 ($170)
+```
