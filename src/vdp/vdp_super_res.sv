@@ -292,7 +292,6 @@ module VDP_SUPER_RES (
                 // During clock cycle 0:
                 //   super_res: PALETTE_ADDR2 is loaded pixel indexes [1, 5, 9, 13, ...]
                 0: begin
-                  vrm_32_2 <= vrm_32_1;
                   PALETTE_ADDR2 <= vrm_32_1[15:8];
                   super_res_vram_addr <= 18'(super_res_vram_addr + 1);
                 end
@@ -301,13 +300,13 @@ module VDP_SUPER_RES (
                 //   super_res: PALETTE_ADDR2 is loaded pixel indexes [2, 6, 10, 14, ...]
                 // Request for next double word is initiated at during this clock cycle (vrm_32_1)
                 1: begin
-                  PALETTE_ADDR2 <= vrm_32_2[23:16];
+                  PALETTE_ADDR2 <= vrm_32_1[23:16];
                 end
 
                 // During clock cycle 2:
                 //   super_res: PALETTE_ADDR2 is loaded pixel indexes [3, 7, 11, 15, ...]
                 2: begin
-                  PALETTE_ADDR2 <= vrm_32_2[31:24];
+                  PALETTE_ADDR2 <= vrm_32_1[31:24];
                 end
 
                 // During clock cycle 3:
