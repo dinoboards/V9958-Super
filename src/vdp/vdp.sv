@@ -359,19 +359,13 @@ module VDP (
   assign IVIDEOG = IVIDEOG_VDP;
   assign IVIDEOB = IVIDEOB_VDP;
 
-`ifdef ENABLE_SUPER_RES
-  bit [7:0] high_res_red;
-  bit [7:0] high_res_green;
-  bit [7:0] high_res_blue;
-`endif
-
   always_comb begin
 `ifdef ENABLE_SUPER_RES
     if (vdp_super) begin
       //full 8 bits of colour supported
-      red   = high_res_red;
-      green = high_res_green;
-      blue  = high_res_blue;
+      red   = PALETTE_DATA_R2_OUT;
+      green = PALETTE_DATA_G2_OUT;
+      blue  = PALETTE_DATA_B2_OUT;
     end else begin
 `endif
       if (scanlin && CY[0]) begin
@@ -994,14 +988,8 @@ module VDP (
       .REG_R1_DISP_ON(REG_R1_DISP_ON),
       .vrm_32(PRAMDAT_32_B),
       .super_res_vram_addr(super_vram_addr),
-      .high_res_red(high_res_red),
-      .high_res_green(high_res_green),
-      .high_res_blue(high_res_blue),
       .super_res_drawing(super_res_drawing),
       .PALETTE_ADDR2(PALETTE_ADDR2),
-      .PALETTE_DATA_R2_OUT(PALETTE_DATA_R2_OUT),
-      .PALETTE_DATA_G2_OUT(PALETTE_DATA_G2_OUT),
-      .PALETTE_DATA_B2_OUT(PALETTE_DATA_B2_OUT),
       .REG_R7_FRAME_COL(REG_R7_FRAME_COL),
 
       .ext_reg_bus_arb_start_x(ext_reg_bus_arb_start_x),

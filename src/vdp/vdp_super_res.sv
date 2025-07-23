@@ -33,15 +33,9 @@ module VDP_SUPER_RES (
     input bit [31:0] vrm_32,
 
     output bit [7:0] PALETTE_ADDR2,
-    input  bit [7:0] PALETTE_DATA_R2_OUT,
-    input  bit [7:0] PALETTE_DATA_G2_OUT,
-    input  bit [7:0] PALETTE_DATA_B2_OUT,
     input  bit [7:0] REG_R7_FRAME_COL,
 
     output logic [17:0] super_res_vram_addr,
-    output bit [7:0] high_res_red,
-    output bit [7:0] high_res_green,
-    output bit [7:0] high_res_blue,
     output bit super_res_drawing,
 
     input bit [9:0] ext_reg_bus_arb_start_x,
@@ -66,10 +60,6 @@ module VDP_SUPER_RES (
   bit active_line;  // true if line is drawn from sdram, false if drawn from line buffer
   bit [7:0] line_buffer[720];
   bit [9:0] line_buffer_index;
-
-  assign high_res_red = PALETTE_DATA_R2_OUT;
-  assign high_res_green = PALETTE_DATA_G2_OUT;
-  assign high_res_blue = PALETTE_DATA_B2_OUT;
 
   assign active_line = ((super_mid) && cy[0] == 0) || super_res;
 
