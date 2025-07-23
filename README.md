@@ -96,3 +96,5 @@ use: openFPGALoader -> https://github.com/trabucayre/openFPGALoader
 ```
 openFPGALoader -b tangnano20k -f ./impl/pnr/project.fs
 ```
+
+> You can flash the Tang Nano in-circuit, but please remove the 3 Jumpers for J2 and do **not** power to your RC2014/RCBus system.
