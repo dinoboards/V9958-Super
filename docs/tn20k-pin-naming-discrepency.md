@@ -1,3 +1,15 @@
+
+<br/>
+<br/>
+<br/>
+
+***THE SCHEMATIC ISSUE HAS BEEN CORRECTED AS PER V1.1a of the SCHEMATIC***
+
+<br/>
+<br/>
+<br/>
+
+---
 ## Summary of issue with apparent PIN 25/26 incorrectly assigned
 
 The footprint used in the schematic for the Tang Nano 20K, has incorrectly swapped labeled
