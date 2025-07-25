@@ -146,128 +146,24 @@ module VDP_SUPER_RES (
   assign super_res_vram_addr = super_res ? super_high_res_vram_addr : super_mid_res_vram_addr;
   assign PALETTE_ADDR2 = super_res ? super_high_res_palette_addr : super_mid_res_palette_addr;
 
-
-  bit [7:0] first_pixel;
-  bit active_line;  // true if line is drawn from sdram, false if drawn from line buffer
-  bit [7:0] line_buffer[720];
-  bit [9:0] line_buffer_index;
-  bit odd_phase;
-  bit [31:0] mvrm_32_1;
-  bit [31:0] mvrm_32_2;
-  assign active_line = ((super_mid) && cy[0] == 0) || super_res;
-
-  always_ff @(posedge reset or posedge clk) begin
-    if (reset | ~vdp_super) begin
-      super_mid_res_vram_addr <= 0;
-      super_mid_res_palette_addr <= '{default: 0};
-
-    end else begin
-      case (cx)
-        720: begin
-          if (last_line) begin
-            super_mid_res_vram_addr <= ext_reg_super_res_page_addr;
-          end
-          line_buffer_index <= 0;
-        end
-
-        724: begin  // cycle cx[1:0] == 0
-          if (last_line) begin
-            super_mid_res_vram_addr <= 18'(super_mid_res_vram_addr + 1);
-          end
-        end
-
-        725: begin  //cycle cx[1:0] == 1
-          if (last_line) begin
-            mvrm_32_1 <= vrm_32;
-          end
-        end
-
-        856: begin  //cycle cx[1:0] == 2
-          //LOAD super_mid_res_palette_addr for first pixel of each row
-          if (!active_line || last_line) begin
-            super_mid_res_palette_addr <= mvrm_32_1[7:0];
-            first_pixel <= mvrm_32_1[7:0];
-
-            line_buffer[line_buffer_index] <= mvrm_32_1[7:0];
-          end else begin
-            super_mid_res_palette_addr <= line_buffer[line_buffer_index];
-            first_pixel <= line_buffer[line_buffer_index];
-
-          end
-          line_buffer_index <= 10'(line_buffer_index + 1);
-          odd_phase <= 0;
-        end
-
-        ext_reg_view_port_start_x: begin  //default: frame-width -1
-          if (on_a_visible_line) super_mid_res_palette_addr <= first_pixel;
-        end
-
-        default begin
-          if (!super_res_visible) begin
-            super_mid_res_palette_addr <= _REG_R7_FRAME_COL;
-
-          end else begin
-            case ({
-              odd_phase, cx[1:0]
-            })
-              3'b000: begin
-                if (active_line) begin
-                  mvrm_32_2 <= REG_R1_DISP_ON ? mvrm_32_1 : 0;
-                  super_mid_res_vram_addr <= 18'(super_mid_res_vram_addr + 1);
-                end
-              end
-              3'b001: begin
-                if (active_line) begin
-                  super_mid_res_palette_addr <= mvrm_32_1[15:8];
-                  line_buffer[line_buffer_index] <= mvrm_32_1[15:8];
-                  mvrm_32_1 <= vrm_32;  //capture next 4 bytes
-                end else begin
-                  super_mid_res_palette_addr <= line_buffer[line_buffer_index];
-                end
-                line_buffer_index <= 10'(line_buffer_index + 1);
-              end
-              3'b010: begin
-              end
-              3'b011: begin
-                if (active_line) begin
-                  super_mid_res_palette_addr <= mvrm_32_2[23:16];
-                  line_buffer[line_buffer_index] <= mvrm_32_2[23:16];
-                end else begin
-                  super_mid_res_palette_addr <= line_buffer[line_buffer_index];
-                end
-                line_buffer_index <= 10'(line_buffer_index + 1);
-                odd_phase <= 1;
-              end
-              3'b100: begin
-              end
-              3'b101: begin
-                if (active_line) begin
-                  super_mid_res_palette_addr <= mvrm_32_2[31:24];
-                  line_buffer[line_buffer_index] <= mvrm_32_2[31:24];
-                end else begin
-                  super_mid_res_palette_addr <= line_buffer[line_buffer_index];
-                end
-                line_buffer_index <= 10'(line_buffer_index + 1);
-              end
-              3'b110: begin
-              end
-              3'b111: begin
-                if (active_line) begin
-                  super_mid_res_palette_addr <= mvrm_32_1[7:0];
-                  line_buffer[line_buffer_index] <= mvrm_32_1[7:0];
-                end else begin
-                  super_mid_res_palette_addr <= line_buffer[line_buffer_index];
-                end
-                line_buffer_index <= 10'(line_buffer_index + 1);
-                odd_phase <= 0;
-              end
-            endcase
-          end
-        end
-      endcase
-    end
-  end
-
+  VDP_SUPER_MID_RES VDP_SUPER_MID_RES (
+      .reset(reset),
+      .clk(clk),
+      .vdp_super(vdp_super),
+      .last_line(last_line),
+      .on_a_visible_line(on_a_visible_line),
+      .ext_reg_view_port_start_x(ext_reg_view_port_start_x),
+      .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
+      .ext_reg_super_res_page_addr(ext_reg_super_res_page_addr),
+      .REG_R7_FRAME_COL(_REG_R7_FRAME_COL),
+      .super_res_visible(super_res_visible),
+      .vrm_32(vrm_32),
+      .cx(cx),
+      .cy(cy),
+      .REG_R1_DISP_ON(REG_R1_DISP_ON),
+      .super_mid_res_vram_addr(super_mid_res_vram_addr),
+      .super_mid_res_palette_addr(super_mid_res_palette_addr)
+  );
 
   VDP_SUPER_HIGH_RES U_VDP_SUPER_HIGH_RES (
       .reset(reset),
