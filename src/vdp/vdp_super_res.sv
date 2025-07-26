@@ -45,6 +45,7 @@ module VDP_SUPER_RES (
     input bit [9:0] ext_reg_view_port_end_x,
     input bit [9:0] ext_reg_view_port_start_y,
     input bit [9:0] ext_reg_view_port_end_y,
+    input bit ext_reg_pixel_depth,
 
     input bit [16:0] ext_reg_super_res_page_addr
 );
@@ -139,12 +140,28 @@ module VDP_SUPER_RES (
 
 
   bit [17:0] super_high_res_vram_addr;
+  bit [17:0] super_high_2ppb_res_vram_addr;
   bit [17:0] super_mid_res_vram_addr;
   bit [ 7:0] super_high_res_palette_addr;
+  bit [ 7:0] super_high_2ppb_res_palette_addr;
   bit [ 7:0] super_mid_res_palette_addr;
 
-  assign super_res_vram_addr = super_res ? super_high_res_vram_addr : super_mid_res_vram_addr;
-  assign PALETTE_ADDR2 = super_res ? super_high_res_palette_addr : super_mid_res_palette_addr;
+  always_comb begin
+    if (super_res) begin
+      if (ext_reg_pixel_depth == 0) begin
+        super_res_vram_addr = super_high_res_vram_addr;
+        PALETTE_ADDR2 = super_high_res_palette_addr;
+
+      end else begin
+        super_res_vram_addr = super_high_2ppb_res_vram_addr;
+        PALETTE_ADDR2 = super_high_2ppb_res_palette_addr;
+      end
+
+    end else begin
+      super_res_vram_addr = super_mid_res_vram_addr;
+      PALETTE_ADDR2 = super_mid_res_palette_addr;
+    end
+  end
 
   VDP_SUPER_MID_RES VDP_SUPER_MID_RES (
       .reset(reset),
@@ -180,6 +197,23 @@ module VDP_SUPER_RES (
       .cx(cx),
       .super_high_res_vram_addr(super_high_res_vram_addr),
       .super_high_res_palette_addr(super_high_res_palette_addr)
+  );
+
+  VDP_SUPER_HIGH_2PPB_RES U_VDP_SUPER_HIGH_2PPB_RES (
+      .reset(reset),
+      .clk(clk),
+      .last_line(last_line),
+      .vdp_super(vdp_super),
+      .on_a_visible_line(on_a_visible_line),
+      .ext_reg_view_port_start_x(ext_reg_view_port_start_x),
+      .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
+      .ext_reg_super_res_page_addr(ext_reg_super_res_page_addr),
+      .REG_R7_FRAME_COL(_REG_R7_FRAME_COL),
+      .super_res_visible(super_res_visible),
+      .vrm_32(vrm_32),
+      .cx(cx),
+      .super_high_res_vram_addr(super_high_2ppb_res_vram_addr),
+      .super_high_res_palette_addr(super_high_2ppb_res_palette_addr)
   );
 
 endmodule

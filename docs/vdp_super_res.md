@@ -62,7 +62,9 @@ BIT 3: ***EXTENDED PALETTE***
   of the palette data port - instead of expecting one byte per entry, 3 bytes are expected for each of the RGB colour codes.
 * up to 256 palette entries can be stored - but only the super res modes support the full palette set.
 
-## Extended Register (View Port Registers)
+## Extended Register
+
+### View Port Dimensions
 
 Describe in more detail below, the extended registers, `#EXTR0` to `#EXTR7`, can be used to define a boundary
 rectangle that will constrain or clip the super res modes.  Smaller rendering rectangles can aid in performance,
@@ -104,6 +106,8 @@ Must be a value greater than `VIEW_PORT_START_Y` and less than or equal to the c
 
 A value of -1 is special, and indicates that it should use all available height. For 50Hz operation, this is equivalent to 576. For 60Hz operation, this is equivalent to 480
 
+#### VRAM Addressing
+
 ### `EXTR#8`..`EXTR#10` (SUPER_BASE_RENDERING_ADDR - #8 LSB, #10 MSB - 20 bits)
 
 Defines the base starting VRAM address for rendering the current super resolution mode.
@@ -134,6 +138,41 @@ To enable double buffering writes, do something along the lines of:
 5. When ready to switch rendering back to the '1st page', by setting the `SUPER_BASE_RENDERING_ADDR` to 0.
 6. Repeat...
 
+### Palette Depth
+### `EXTR#14` (PALETTE_DEPTH)
+
+Defines the bits per pixel used for the super res graphics mode.
+
+By default, all super graphics mode use 1 byte (8 bits) for each pixel.  The value of the byte is used to lookup into the palette register.
+
+The `PALETTE_DEPTH` register allows for reducing the number of bits used per pixels.  By reducing the number of bits per pixel, the total memory used by the super graphics modes is reduced, but also reducing the total number of unique colours that can be displayed at once.
+
+| Value | Description | Total Unique Colours |
+| ----- | ----------- | -------------------- |
+|  00   | 1 byte per pixel aka 8 bits per pixel | 256 |
+|  01   | 2 pixels per byte aka 4 bits per pixel | 16 |
+|  02*  | 4 pixels per byte aka 2 bits per pixel | 4 |
+|  03*  | 8 pixels per byte aka 1 bit per pixel | 2 |
+
+\* Not yet implemented
+
+When less than 8 bits per pixel is selected - the most significant bits represent the left most pixel, and the least signficiate bit will be used for the last pixel represented by the byte.
+
+
+### `EXTR#255` (RESET)
+
+Super Res Reset flags
+
+This register can be used to reset some or all of the extended registers to their defaults.  If a specific bit of the byte written to this register is set, a corresponding set of extended registers are returned to their defaults.
+
+If the value of 255 is written then all extended registers are returned to their defaults.
+
+| Bit | Registers |
+| --- | --------- |
+| 0   | `EXTR#0` to `EXTR#7` (VIEW_PORT_xxx) |
+| 1   | `EXTR#8` to `EXTR#10` (SUPER_BASE_RENDERING_ADDR) |
+| 2   | `EXTR#11` to `EXTR#13` (SUPER_BASE_COMMAND_ADDR) |
+| 3   | `EXTR#14` (PALETTE_DEPTH) |
 
 <hr/>
 

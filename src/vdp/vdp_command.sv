@@ -92,7 +92,8 @@ module VDP_COMMAND (
     input bit mode_graphic_super_res,
     input bit[9:0] view_port_width,
     input bit pal_mode,
-    input bit[16:0] ext_reg_super_res_page_command_addr
+    input bit[16:0] ext_reg_super_res_page_command_addr,
+    input bit ext_reg_pixel_depth
 
 `endif
 );
@@ -206,11 +207,11 @@ module VDP_COMMAND (
   assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7;
 `endif
 
-  bit graphic_4_or_6;
-  assign graphic_4_or_6 = mode_graphic_4 || mode_graphic_6;
+  bit graphic_2ppb;
+  assign graphic_2ppb = mode_graphic_4 || mode_graphic_6 || (mode_graphic_super_res && ext_reg_pixel_depth == 1);
 
   bit [9:0] NXCOUNT;
-  assign NXCOUNT = CMR[7:6] == 2'b11 && graphic_4_or_6 ? {1'b0, NX[9:1]} :
+  assign NXCOUNT = CMR[7:6] == 2'b11 && graphic_2ppb ? {1'b0, NX[9:1]} :
                    CMR[7:6] == 2'b11 && mode_graphic_5 ? {2'b00, NX[9:2]} :
                    NX;
 
@@ -223,7 +224,7 @@ module VDP_COMMAND (
   bit [ 7:0] RDPOINT;
   always_comb begin
     // RETRIEVE THE 'POINT' OUT OF THE BYTE THAT WAS MOST RECENTLY READ
-    if (graphic_4_or_6) begin
+    if (graphic_2ppb) begin
       RDPOINT = rd_x_low[0] ? {4'b0000, vram_rd_data[3:0]} : {4'b0000, vram_rd_data[7:4]};
 
     end else if (mode_graphic_5) begin
@@ -246,7 +247,7 @@ module VDP_COMMAND (
       end
 
       default: begin
-        if (graphic_4_or_6) begin
+        if (graphic_2ppb) begin
           COLMASK = 8'b00001111;
         end else if (mode_graphic_5) begin
           COLMASK = 8'b00000011;
@@ -343,7 +344,7 @@ module VDP_COMMAND (
     case (CMR[7:6])
       2'b11: begin
         // BYTE COMMAND
-        if (graphic_4_or_6) begin
+        if (graphic_2ppb) begin
           XCOUNTDELTA = DIX ? 11'b11111111110  /*-2*/ : 11'b00000000010;  /*+2*/
 
         end else if (mode_graphic_5) begin
@@ -373,8 +374,14 @@ module VDP_COMMAND (
 
 `ifdef ENABLE_SUPER_RES
     end else if (mode_graphic_super_mid || mode_graphic_super_res) begin
+
       // Calculate the address of a given pixel for super res modes
-      vram_access_addr = 20'((vram_access_y * view_port_width) + (vram_access_x)) + {ext_reg_super_res_page_command_addr, 2'b00};
+
+      if (ext_reg_pixel_depth == 1) //2 pixels per byte
+        vram_access_addr = 20'((vram_access_y * view_port_width[9:1]) + (vram_access_x[9:1])) + {ext_reg_super_res_page_command_addr, 2'b00};
+
+      else
+        vram_access_addr = 20'((vram_access_y * view_port_width) + (vram_access_x)) + {ext_reg_super_res_page_command_addr, 2'b00};
 
 `endif
 
@@ -613,7 +620,7 @@ module VDP_COMMAND (
           WAIT_PRE_RD_VRAM: begin
             // APPLICABLE TO LMMC, LMMM, LMMV, LINE, PSET
             if (vram_rd_req == vram_rd_ack) begin
-              if (graphic_4_or_6) begin
+              if (graphic_2ppb) begin
                 vram_wr_data_8 = rd_x_low[0] ? {vram_rd_data[7:4], logical_operation_dest_colour[3:0]} : {logical_operation_dest_colour[3:0], vram_rd_data[3:0]};
 
               end else if (mode_graphic_5) begin

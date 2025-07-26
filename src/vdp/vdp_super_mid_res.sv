@@ -3,17 +3,13 @@
 
 /*
 
-REG_R9_Y_DOTS: 1
- super res @50hz 720x576
- super res @60hz 720x480
+256 colours
 
+REG_R9_Y_DOTS: 1
  super mid @50hz 360x288
  super mid @60hz 360x240
 
 REG_R9_Y_DOTS: 0
- super res @50hz 640x480 (offsets: 40, 48)
- super res @60hz 640x400 (offsets: 40, 0)
-
  super mid @50hz 320x200 (offsets: 15, 40)
  super mid @60hz 320x166 (offsets: 15, 37)
 */

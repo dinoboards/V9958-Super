@@ -312,6 +312,7 @@ module VDP (
   bit  [ 9:0] ext_reg_view_port_end_x;
   bit  [ 9:0] ext_reg_view_port_start_y;
   bit  [ 9:0] ext_reg_view_port_end_y;
+  bit ext_reg_pixel_depth;
 
   bit  [ 9:0] view_port_width;
 
@@ -910,6 +911,7 @@ module VDP (
       .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
       .ext_reg_view_port_start_y(ext_reg_view_port_start_y),
       .ext_reg_view_port_end_y(ext_reg_view_port_end_y),
+      .ext_reg_pixel_depth(ext_reg_pixel_depth),
 
       .view_port_width (view_port_width),
 
@@ -954,6 +956,7 @@ module VDP (
       ,
       .mode_graphic_super_mid(super_mid),
       .mode_graphic_super_res(super_res),
+      .ext_reg_pixel_depth(ext_reg_pixel_depth),
 
       .pal_mode(PAL_MODE),
       .view_port_width (view_port_width),
@@ -1000,6 +1003,7 @@ module VDP (
       .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
       .ext_reg_view_port_start_y(ext_reg_view_port_start_y),
       .ext_reg_view_port_end_y(ext_reg_view_port_end_y),
+      .ext_reg_pixel_depth(ext_reg_pixel_depth),
 
       .ext_reg_super_res_page_addr(ext_reg_super_res_page_addr)
   );
