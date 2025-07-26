@@ -96,6 +96,10 @@ module VDP_SUPER_MID_RES (
           if (on_a_visible_line) super_mid_res_palette_addr <= first_pixel;
         end
 
+        ext_reg_view_port_end_x: begin
+          super_mid_res_palette_addr <= REG_R7_FRAME_COL;
+        end
+
         default begin
           if (!super_res_visible) begin
             super_mid_res_palette_addr <= REG_R7_FRAME_COL;
