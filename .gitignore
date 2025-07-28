@@ -4,3 +4,5 @@ experiments/impl/*
 !impl/tn_vdp_process_config.json
 
 docs/SUG*.pdf
+
+releases/CHANGELOG.md
