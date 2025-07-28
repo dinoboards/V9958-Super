@@ -88,17 +88,23 @@ module VDP_SUPER_RES (
 
   bit on_a_visible_line;
 
+  // super_res_drawing when true, ensures the address bus is switch for rendering
+  // commands are blocked until it becomes false
+  // if a command has started though, this flag will not 'cancel' or pause the command
+  // so some extra timing space is needed.
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
       super_res_drawing <= 1;
     end else begin
-      if (last_line && cx == 710) super_res_drawing <= 1;
+      if (last_line && cx == 715) super_res_drawing <= 1;  //about to start drawing, so let command finish any current command
+
+      if (cx == ext_reg_bus_arb_end_x && cy == ext_reg_view_port_end_y) super_res_drawing <= 0;
 
       if (cx == ext_reg_bus_arb_start_x && on_a_visible_line) super_res_drawing <= 1;
 
-      else if (cx == ext_reg_bus_arb_start_x && cy == ext_reg_bus_arb_start_y) super_res_drawing <= 1;
+      if (cx == ext_reg_bus_arb_start_x && cy == ext_reg_bus_arb_start_y) super_res_drawing <= 1;
 
-      else if (cx == ext_reg_bus_arb_end_x && on_a_visible_line) super_res_drawing <= 0;
+      if (cx == ext_reg_bus_arb_end_x && on_a_visible_line) super_res_drawing <= 0;
     end
   end
 
@@ -169,7 +175,7 @@ module VDP_SUPER_RES (
       super_res_vram_addr = super_mid_res_vram_addr;
       PALETTE_ADDR2 = super_mid_res_palette_addr;
 
-    end else begin //super half
+    end else begin  //super half
       if (ext_reg_pixel_depth == 0) begin
         super_res_vram_addr = super_half_res_vram_addr;
         PALETTE_ADDR2 = super_half_res_palette_addr;
