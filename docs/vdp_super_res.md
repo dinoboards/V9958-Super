@@ -41,21 +41,40 @@ Bit flags to turn on specific extended graphics modes or capabilities - higher r
 
 BIT 0: Reserved
 
-BIT 1: ***SUPER_MID*** graphics mode:
+#### BIT 2:1 == 1 ***SUPER_MID*** graphics mode:
 
-* 1 byte per pixel
+##### PALETTE_DEPTH: 0
 * colour from palette register
 * resolution at 50Hz:360x288 (103680 Bytes)
 * resolution at 60Hz:360x240 (86400 bytes)
 
-BIT 2: ***SUPER_RES*** graphics mode:
+#### BIT 2:1 == 2 ***SUPER_HIGH*** graphics mode:
 
-* 1 byte per pixel
+##### PALETTE_DEPTH: 0
+* 1 pixel per byte
 * colour from palette register
 * resolution at 50Hz:720x576 (414720 Bytes)
 * resolution at 60Hz:720x480 (345600 bytes)
 
-> Bit 1 and Bit 2 enabled at the same time is undefined and not supported.
+##### PALETTE_DEPTH: 1
+* 2 pixels per byte
+* colour from palette register
+* resolution at 50Hz:720x576 (207360 Bytes)
+* resolution at 60Hz:720x480 (172800 bytes)
+
+#### BIT 2:1 == 3 ***SUPER_HALF*** graphics mode:
+
+##### PALETTE_DEPTH: 0
+* 1 pixel per byte
+* colour from palette register
+* resolution at 50Hz:720x288 (207360 Bytes)
+* resolution at 60Hz:720x240 (172800 bytes)
+
+##### PALETTE_DEPTH: 1
+* 2 pixels per byte
+* colour from palette register
+* resolution at 50Hz:720x288 (103680 Bytes)
+* resolution at 60Hz:720x240 (86400 bytes)
 
 BIT 3: ***EXTENDED PALETTE***
 * If set, enables 8 bits per colour for each colour entry in the colour palette (24bits in total).  Modifies the behaviour

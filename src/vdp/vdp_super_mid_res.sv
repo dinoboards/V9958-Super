@@ -5,13 +5,9 @@
 
 256 colours
 
-REG_R9_Y_DOTS: 1
  super mid @50hz 360x288
  super mid @60hz 360x240
 
-REG_R9_Y_DOTS: 0
- super mid @50hz 320x200 (offsets: 15, 40)
- super mid @60hz 320x166 (offsets: 15, 37)
 */
 
 
@@ -39,7 +35,7 @@ module VDP_SUPER_MID_RES (
 
   bit [7:0] first_pixel;
   bit active_line;  // true if line is drawn from sdram, false if drawn from line buffer
-  bit [7:0] line_buffer[720];
+  bit [7:0] line_buffer[720];  //TODO: can this be trim to just 360?
   bit [9:0] line_buffer_index;
   bit odd_phase;
   bit [31:0] mvrm_32_1;

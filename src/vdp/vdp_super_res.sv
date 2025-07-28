@@ -151,6 +151,9 @@ module VDP_SUPER_RES (
   bit [17:0] super_half_res_vram_addr;
   bit [ 7:0] super_half_res_palette_addr;
 
+  bit [17:0] super_half_2ppb_res_vram_addr;
+  bit [ 7:0] super_half_2ppb_res_palette_addr;
+
   always_comb begin
     if (super_res) begin
       if (ext_reg_pixel_depth == 0) begin
@@ -166,12 +169,36 @@ module VDP_SUPER_RES (
       super_res_vram_addr = super_mid_res_vram_addr;
       PALETTE_ADDR2 = super_mid_res_palette_addr;
 
-    end else begin
-      super_res_vram_addr = super_half_res_vram_addr;
-      PALETTE_ADDR2 = super_half_res_palette_addr;
+    end else begin //super half
+      if (ext_reg_pixel_depth == 0) begin
+        super_res_vram_addr = super_half_res_vram_addr;
+        PALETTE_ADDR2 = super_half_res_palette_addr;
+
+      end else begin
+        super_res_vram_addr = super_half_2ppb_res_vram_addr;
+        PALETTE_ADDR2 = super_half_2ppb_res_palette_addr;
+      end
 
     end
   end
+
+  VDP_SUPER_HALF_2PPB_RES VDP_SUPER_HALF_2PPB_RES (
+      .reset(reset),
+      .clk(clk),
+      .vdp_super(vdp_super),
+      .last_line(last_line),
+      .on_a_visible_line(on_a_visible_line),
+      .ext_reg_view_port_start_x(ext_reg_view_port_start_x),
+      .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
+      .ext_reg_super_res_page_addr(ext_reg_super_res_page_addr),
+      .REG_R7_FRAME_COL(_REG_R7_FRAME_COL),
+      .super_res_visible(super_res_visible),
+      .vrm_32(vrm_32),
+      .cx(cx),
+      .cy(cy),
+      .super_half_2ppb_res_vram_addr(super_half_2ppb_res_vram_addr),
+      .super_half_2ppb_res_palette_addr(super_half_2ppb_res_palette_addr)
+  );
 
   VDP_SUPER_HALF_RES VDP_SUPER_HALF_RES (
       .reset(reset),

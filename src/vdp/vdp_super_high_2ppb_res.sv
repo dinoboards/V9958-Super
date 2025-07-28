@@ -5,13 +5,9 @@
 
 16 colours
 
-REG_R9_Y_DOTS: 1
  super res @50hz 720x576
  super res @60hz 720x480
 
-REG_R9_Y_DOTS: 0
- super res @50hz 640x480 (offsets: 40, 48)
- super res @60hz 640x400 (offsets: 40, 0)
 */
 
 // 2 pixels per byte (4 bits per pixel)

@@ -209,7 +209,7 @@ module VDP_COMMAND (
 `endif
 
   bit graphic_2ppb;
-  assign graphic_2ppb = mode_graphic_4 || mode_graphic_6 || (mode_graphic_super_res && ext_reg_pixel_depth == 1);
+  assign graphic_2ppb = mode_graphic_4 || mode_graphic_6 || ((mode_graphic_super_half || mode_graphic_super_res) && ext_reg_pixel_depth == 1);
 
   bit [9:0] NXCOUNT;
   assign NXCOUNT = CMR[7:6] == 2'b11 && graphic_2ppb ? {1'b0, NX[9:1]} :

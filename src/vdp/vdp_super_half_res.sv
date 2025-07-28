@@ -5,7 +5,6 @@
 
 256 colours
 
-REG_R9_Y_DOTS: 1
  super res @50hz 720x288
  super res @60hz 720x240
 
