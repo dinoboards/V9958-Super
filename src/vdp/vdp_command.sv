@@ -90,6 +90,7 @@ module VDP_COMMAND (
     ,
     input bit mode_graphic_super_mid,
     input bit mode_graphic_super_res,
+    input bit mode_graphic_super_half,
     input bit[9:0] view_port_width,
     input bit pal_mode,
     input bit[16:0] ext_reg_super_res_page_command_addr,
@@ -202,7 +203,7 @@ module VDP_COMMAND (
   assign current_command = CMR[7:4];
 
 `ifdef ENABLE_SUPER_RES
-  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_mid | mode_graphic_super_res;
+  assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7 | mode_graphic_super_mid | mode_graphic_super_res | mode_graphic_super_half;
 `else
   assign cmd_enable = mode_graphic_4 | mode_graphic_5 | mode_graphic_6 | mode_graphic_7;
 `endif
@@ -286,7 +287,7 @@ module VDP_COMMAND (
     case (CMR[7:4])
       LINE: begin
 `ifdef ENABLE_SUPER_RES
-        if (mode_graphic_super_mid || mode_graphic_super_res) begin
+        if (mode_graphic_super_mid || mode_graphic_super_res || mode_graphic_super_half) begin
           nx_loop_end = (nx_tmp == NX) || dx_tmp == view_port_width;
         end else begin
 `endif
@@ -298,7 +299,7 @@ module VDP_COMMAND (
 
       HMMV, HMMC, LMMV, LMMC: begin
 `ifdef ENABLE_SUPER_RES
-        if (mode_graphic_super_mid || mode_graphic_super_res) begin
+        if (mode_graphic_super_mid || mode_graphic_super_res || mode_graphic_super_half) begin
           nx_loop_end = (nx_tmp == 0) || dx_tmp == view_port_width;
         end else begin
 `endif
@@ -314,7 +315,7 @@ module VDP_COMMAND (
 
       HMMM, LMMM: begin
 `ifdef ENABLE_SUPER_RES
-        if (mode_graphic_super_mid || mode_graphic_super_res) begin
+        if (mode_graphic_super_mid || mode_graphic_super_res || mode_graphic_super_half) begin
           nx_loop_end = (nx_tmp == 0) || dx_tmp == view_port_width;
         end else begin
 `endif
@@ -373,7 +374,7 @@ module VDP_COMMAND (
       vram_access_addr = {vram_access_y[8:0], vram_access_x[8:1]};
 
 `ifdef ENABLE_SUPER_RES
-    end else if (mode_graphic_super_mid || mode_graphic_super_res) begin
+    end else if (mode_graphic_super_mid || mode_graphic_super_res || mode_graphic_super_half) begin
 
       // Calculate the address of a given pixel for super res modes
 

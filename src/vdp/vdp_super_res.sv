@@ -25,6 +25,7 @@ module VDP_SUPER_RES (
     input bit vdp_super,
     input bit super_mid,
     input bit super_res,
+    input bit super_half,
     input bit [9:0] cx,
     input bit [9:0] cy,
     input bit pal_mode,
@@ -114,7 +115,6 @@ module VDP_SUPER_RES (
 
   bit super_res_visible;
   bit super_res_visible_switched_on;
-  bit [9:0] view_port_start_x;
 
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
@@ -140,11 +140,16 @@ module VDP_SUPER_RES (
 
 
   bit [17:0] super_high_res_vram_addr;
-  bit [17:0] super_high_2ppb_res_vram_addr;
-  bit [17:0] super_mid_res_vram_addr;
   bit [ 7:0] super_high_res_palette_addr;
+
+  bit [17:0] super_high_2ppb_res_vram_addr;
   bit [ 7:0] super_high_2ppb_res_palette_addr;
+
+  bit [17:0] super_mid_res_vram_addr;
   bit [ 7:0] super_mid_res_palette_addr;
+
+  bit [17:0] super_half_res_vram_addr;
+  bit [ 7:0] super_half_res_palette_addr;
 
   always_comb begin
     if (super_res) begin
@@ -157,11 +162,34 @@ module VDP_SUPER_RES (
         PALETTE_ADDR2 = super_high_2ppb_res_palette_addr;
       end
 
-    end else begin
+    end else if (super_mid) begin
       super_res_vram_addr = super_mid_res_vram_addr;
       PALETTE_ADDR2 = super_mid_res_palette_addr;
+
+    end else begin
+      super_res_vram_addr = super_half_res_vram_addr;
+      PALETTE_ADDR2 = super_half_res_palette_addr;
+
     end
   end
+
+  VDP_SUPER_HALF_RES VDP_SUPER_HALF_RES (
+      .reset(reset),
+      .clk(clk),
+      .vdp_super(vdp_super),
+      .last_line(last_line),
+      .on_a_visible_line(on_a_visible_line),
+      .ext_reg_view_port_start_x(ext_reg_view_port_start_x),
+      .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
+      .ext_reg_super_res_page_addr(ext_reg_super_res_page_addr),
+      .REG_R7_FRAME_COL(_REG_R7_FRAME_COL),
+      .super_res_visible(super_res_visible),
+      .vrm_32(vrm_32),
+      .cx(cx),
+      .cy(cy),
+      .super_half_res_vram_addr(super_half_res_vram_addr),
+      .super_half_res_palette_addr(super_half_res_palette_addr)
+  );
 
   VDP_SUPER_MID_RES VDP_SUPER_MID_RES (
       .reset(reset),

@@ -41,6 +41,7 @@ add_file src\\vdp\\vdp_register.sv
 add_file src\\vdp\\vdp_spinforam.v
 add_file src\\vdp\\vdp_sprite.v
 add_file src\\vdp\\vdp_ssg.v
+add_file src\\vdp\\vdp_super_half_res.sv
 add_file src\\vdp\\vdp_super_high_2ppb_res.sv
 add_file src\\vdp\\vdp_super_high_res.sv
 add_file src\\vdp\\vdp_super_mid_res.sv

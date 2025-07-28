@@ -23,7 +23,6 @@
         <File path="src/hdmi/source_product_description_info_frame.sv" type="file.verilog" enable="1"/>
         <File path="src/hdmi/tmds_channel.sv" type="file.verilog" enable="1"/>
         <File path="src/memory_controller.sv" type="file.verilog" enable="1"/>
-        <File path="src/vdp/vdp_palette.v" type="file.verilog" enable="1"/>
         <File path="src/ram.v" type="file.verilog" enable="1"/>
         <File path="src/sdram.v" type="file.verilog" enable="1"/>
         <File path="src/v9958_top.sv" type="file.verilog" enable="1"/>
@@ -39,10 +38,15 @@
         <File path="src/vdp/vdp_interrupt.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_line_buffer.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_package.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_palette.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_register.sv" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_spinforam.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_sprite.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_ssg.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_super_half_res.sv" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_super_high_2ppb_res.sv" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_super_high_res.sv" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_super_mid_res.sv" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_super_res.sv" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_text12.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_vga.v" type="file.verilog" enable="1"/>

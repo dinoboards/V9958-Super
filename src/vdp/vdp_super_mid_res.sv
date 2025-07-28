@@ -44,6 +44,7 @@ module VDP_SUPER_MID_RES (
   bit odd_phase;
   bit [31:0] mvrm_32_1;
   bit [31:0] mvrm_32_2;
+
   assign active_line = (cy[0] == 0);
 
   always_ff @(posedge reset or posedge clk) begin
