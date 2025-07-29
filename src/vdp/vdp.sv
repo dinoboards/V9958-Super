@@ -305,6 +305,7 @@ module VDP (
   bit         super_half;
   bit         super_res;
 
+  bit         arb_start_x_on_previous_line;
   bit  [ 9:0] ext_reg_bus_arb_start_x;
   bit  [ 9:0] ext_reg_bus_arb_end_x;
   bit  [ 9:0] ext_reg_bus_arb_start_y;
@@ -908,6 +909,7 @@ module VDP (
       .ext_reg_bus_arb_start_x(ext_reg_bus_arb_start_x),
       .ext_reg_bus_arb_end_x(ext_reg_bus_arb_end_x),
       .ext_reg_bus_arb_start_y(ext_reg_bus_arb_start_y),
+      .arb_start_x_on_previous_line(arb_start_x_on_previous_line),
 
       .ext_reg_view_port_start_x(ext_reg_view_port_start_x),
       .ext_reg_view_port_end_x(ext_reg_view_port_end_x),
@@ -999,6 +1001,7 @@ module VDP (
       .PALETTE_ADDR2(PALETTE_ADDR2),
       .REG_R7_FRAME_COL(REG_R7_FRAME_COL),
 
+      .arb_start_x_on_previous_line(arb_start_x_on_previous_line),
       .ext_reg_bus_arb_start_x(ext_reg_bus_arb_start_x),
       .ext_reg_bus_arb_end_x(ext_reg_bus_arb_end_x),
       .ext_reg_bus_arb_start_y(ext_reg_bus_arb_start_y),

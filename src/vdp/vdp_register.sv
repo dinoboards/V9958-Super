@@ -166,6 +166,7 @@ module VDP_REGISTER (
     output bit[9:0] ext_reg_bus_arb_start_x,
     output bit[9:0] ext_reg_bus_arb_end_x,
     output bit[9:0] ext_reg_bus_arb_start_y,
+    output bit arb_start_x_on_previous_line,
 
     output bit[9:0] ext_reg_view_port_start_x,
     output bit[9:0] ext_reg_view_port_end_x,
@@ -946,6 +947,7 @@ module VDP_REGISTER (
   bit arb_start_y_has_wrapped;
 
   assign ext_reg_bus_arb_end_x = _ext_reg_view_port_end_x;
+  assign arb_start_x_on_previous_line = arb_start_x_has_wrapped;
 
   //--------------------------------------------------------------------------------------
   always_ff @(posedge RESET, posedge CLK21M) begin

@@ -39,6 +39,7 @@ module VDP_SUPER_RES (
     output logic [17:0] super_res_vram_addr,
     output bit super_res_drawing,
 
+    input bit       arb_start_x_on_previous_line,
     input bit [9:0] ext_reg_bus_arb_start_x,
     input bit [9:0] ext_reg_bus_arb_end_x,
     input bit [9:0] ext_reg_bus_arb_start_y,
@@ -92,15 +93,21 @@ module VDP_SUPER_RES (
   // commands are blocked until it becomes false
   // if a command has started though, this flag will not 'cancel' or pause the command
   // so some extra timing space is needed.
+
+  bit duplicated_line;
+  bit line_doubled;
+  assign duplicated_line = (super_mid || super_half) && (arb_start_x_on_previous_line && cy[0] == 0 || (!arb_start_x_on_previous_line && cy[0] == 1));
+
+
   always_ff @(posedge reset or posedge clk) begin
     if (reset | ~vdp_super) begin
       super_res_drawing <= 1;
     end else begin
-      if (last_line && cx == 715) super_res_drawing <= 1;  //about to start drawing, so let command finish any current command
+      if (last_line && cx == 715) super_res_drawing <= 1;
 
       if (cx == ext_reg_bus_arb_end_x && cy == ext_reg_view_port_end_y) super_res_drawing <= 0;
 
-      if (cx == ext_reg_bus_arb_start_x && on_a_visible_line) super_res_drawing <= 1;
+      if (cx == ext_reg_bus_arb_start_x && on_a_visible_line && !duplicated_line) super_res_drawing <= 1;
 
       if (cx == ext_reg_bus_arb_start_x && cy == ext_reg_bus_arb_start_y) super_res_drawing <= 1;
 

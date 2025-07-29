@@ -90,7 +90,7 @@ module VDP_SUPER_HALF_RES (
 
         ext_reg_view_port_start_x: begin  //default: frame-width -1
           if (on_a_visible_line) begin
-            super_half_res_palette_addr <= first_pixel;  //vrm_32_1[7:0];
+            super_half_res_palette_addr <= first_pixel;
           end
           //first pixel of each row, including first row???
         end
