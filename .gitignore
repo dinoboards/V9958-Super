@@ -6,3 +6,7 @@ experiments/impl/*
 docs/SUG*.pdf
 
 releases/CHANGELOG.md
+*.c.asm
+*.o
+*.lib
+bin
