@@ -98,3 +98,16 @@ openFPGALoader -b tangnano20k -f ./impl/pnr/project.fs
 ```
 
 > You can flash the Tang Nano in-circuit, but please remove the 3 Jumpers for J2 and do **not** power to your RC2014/RCBus system.
+
+
+## Demo/Test CP/M applications
+
+There are 2 CP/M applications in this repo that can be used on a stock RC2014/RomWBW based system, to test and demo the module.
+
+1. `SUPHDMI.COM` - will display a simple grid of colours under various graphics mode (2 standard V9958 modes and all the current super graphics modes).
+2. `SHWS2812.COM` - simple demo of driving an optionally connected WS2812 LED strip.
+
+Both of these application are written in C and compiled using z88dk toolchain.
+
+Pre-built binaries be found in the github release.  The source code is under the `testapps` directory of this repo.
+
