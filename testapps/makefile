@@ -25,13 +25,14 @@ define buildlib
 	$(Z88DK_DOCKER_MAKE) z88dk-z80asm -x$@ $^
 endef
 
-all:  $(BIN)SUPHDMI.COM
+all:  $(BIN)SUPHDMI.COM $(BIN)SHWS2812.COM
 
 V99X8_C_FILES=$(wildcard ./library/v99x8/*.c)
 V99X8_C_ASM_FILES= $(patsubst %.c,%.c.asm,$(V99X8_C_FILES))
 V99X8_ASM_FILES=$(wildcard ./library/v99x8/*.asm)
 Z80_FILES=$(wildcard ./library/z80/*.asm)
 CPM_FILES=$(wildcard ./library/cpm/*.asm)
+HBIOS_FILES=$(wildcard ./library/hbios/*.asm)
 WFK_C_FILES=$(wildcard ./library/waitforkey/*.c)
 WFK_C_ASM_FILES= $(patsubst %.c,%.c.asm,$(WFK_C_FILES))
 
@@ -58,5 +59,11 @@ $(BIN)cpm.lib: $(CPM_FILES)
 $(BIN)waitforkey.lib: $(WFK_C_ASM_FILES)
 	$(buildlib)
 
+$(BIN)hbios.lib: $(HBIOS_FILES)
+	$(buildlib)
+
 $(BIN)SUPHDMI.COM: suphdmi/suphdmi.c $(BIN)waitforkey.lib $(BIN)v99x8.lib $(BIN)z80.lib $(BIN)cpm.lib | $(BIN)
+	$(compile)
+
+$(BIN)SHWS2812.COM: shws2812/shws2812.c $(BIN)waitforkey.lib $(BIN)v99x8.lib $(BIN)z80.lib $(BIN)cpm.lib $(BIN)hbios.lib | $(BIN)
 	$(compile)

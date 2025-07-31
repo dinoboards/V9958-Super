@@ -1,7 +1,6 @@
 
 	SECTION CODE
 
-
 	include "common.inc"
 
 	PUBLIC	__vdp_reg_write
