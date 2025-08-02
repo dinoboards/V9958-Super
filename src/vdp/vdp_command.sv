@@ -94,7 +94,9 @@ module VDP_COMMAND (
     input bit[9:0] view_port_width,
     input bit pal_mode,
     input bit[16:0] ext_reg_super_res_page_command_addr,
-    input bit ext_reg_pixel_depth
+    input bit ext_reg_pixel_depth,
+    input bit [7:0] ext_reg_remap_back_colour,
+    input bit [7:0] ext_reg_remap_fore_colour
 
 `endif
 );
@@ -188,6 +190,7 @@ module VDP_COMMAND (
   parameter ORB210 = 3'b010;  //OR DC=SC OR DC
   parameter EORB210 = 3'b011;  //XOR DC=SC XOR DC
   parameter NOTB210 = 3'b100;  //NOT DC=SC NOT DC
+  parameter RMAP210 = 3'b101;  //NOT DC=SC NOT DC
 
   assign p_reg_wr_ack = reg_wr_ack;
   assign p_tr_clr_ack = tr_clr_ack;
@@ -272,6 +275,17 @@ module VDP_COMMAND (
         ORB210:  logical_operation_dest_colour = (vram_wr_data_8 & COLMASK) | RDPOINT;
         EORB210: logical_operation_dest_colour = (vram_wr_data_8 & COLMASK) ^ RDPOINT;
         NOTB210: logical_operation_dest_colour = ~(vram_wr_data_8 & COLMASK);
+        RMAP210: begin
+
+          if (graphic_2ppb) begin
+            logical_operation_dest_colour = {4'b0, vram_wr_data_8[3:0] == 0 ? ext_reg_remap_back_colour[3:0] : ext_reg_remap_fore_colour[3:0]};
+
+          end else begin
+            logical_operation_dest_colour = vram_wr_data_8 == 0 ? ext_reg_remap_back_colour : ext_reg_remap_fore_colour;
+
+          end
+        end
+
         default: logical_operation_dest_colour = RDPOINT;
       endcase
 
