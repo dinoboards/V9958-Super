@@ -94,7 +94,9 @@ module VDP_COMMAND (
     input bit[9:0] view_port_width,
     input bit pal_mode,
     input bit[16:0] ext_reg_super_res_page_command_addr,
-    input bit ext_reg_pixel_depth
+    input bit ext_reg_pixel_depth,
+    input bit [7:0] ext_reg_remap_back_colour,
+    input bit [7:0] ext_reg_remap_fore_colour
 
 `endif
 );
@@ -167,25 +169,26 @@ module VDP_COMMAND (
 
   type_state state;
 
-  parameter HMMC = 4'b1111;  //CPU to VRAM
-  parameter YMMM = 4'b1110;  //VRAM to VRAM y only
-  parameter HMMM = 4'b1101;  //VRAM to VRAM
-  parameter HMMV = 4'b1100;  //VDP to VRAM
-  parameter LMMC = 4'b1011;  //Logical CPU to VRAM
-  parameter LMCM = 4'b1010;  //Logical VRAM to CPU
-  parameter LMMM = 4'b1001;  //Logical VRAM to VRAM
-  parameter LMMV = 4'b1000;  //Logical VDP to VRAM
-  parameter LINE = 4'b0111;  //Draw line
-  parameter SRCH = 4'b0110;  //search
-  parameter PSET = 4'b0101;  //pset apply logical operation to pixel
-  parameter POINT = 4'b0100;  //point retrieve colour of pixel
-  parameter STOP = 4'b0000;  //stop
+  parameter HMMC  = 4'b1111;  // CPU to VRAM
+  parameter YMMM  = 4'b1110;  // VRAM to VRAM y only
+  parameter HMMM  = 4'b1101;  // VRAM to VRAM
+  parameter HMMV  = 4'b1100;  // VDP to VRAM
+  parameter LMMC  = 4'b1011;  // Logical CPU to VRAM
+  parameter LMCM  = 4'b1010;  // Logical VRAM to CPU
+  parameter LMMM  = 4'b1001;  // Logical VRAM to VRAM
+  parameter LMMV  = 4'b1000;  // Logical VDP to VRAM
+  parameter LINE  = 4'b0111;  // Draw line
+  parameter SRCH  = 4'b0110;  // search
+  parameter PSET  = 4'b0101;  // pset apply logical operation to pixel
+  parameter POINT = 4'b0100;  // point retrieve colour of pixel
+  parameter STOP  = 4'b0000;  // stop
 
-  parameter IMPB210 = 3'b000;  //IMP DC=SC
-  parameter ANDB210 = 3'b001;  //AND DC=SC AND DC
-  parameter ORB210 = 3'b010;  //OR DC=SC OR DC
-  parameter EORB210 = 3'b011;  //XOR DC=SC XOR DC
-  parameter NOTB210 = 3'b100;  //NOT DC=SC NOT DC
+  parameter IMPB210 = 3'b000;  // IMP DC=SC
+  parameter ANDB210 = 3'b001;  // AND DC=SC AND DC
+  parameter ORB210  = 3'b010;  // OR DC=SC OR DC
+  parameter EORB210 = 3'b011;  // XOR DC=SC XOR DC
+  parameter NOTB210 = 3'b100;  // NOT DC=SC NOT DC
+  parameter RMAP210 = 3'b101;  // DC = (SC == 0 ?) REMAP_BACK_COLOUR : REMAP_FORE_COLOUR
 
   assign p_reg_wr_ack = reg_wr_ack;
   assign p_tr_clr_ack = tr_clr_ack;
@@ -270,6 +273,7 @@ module VDP_COMMAND (
         ORB210:  logical_operation_dest_colour = (vram_wr_data_8 & COLMASK) | RDPOINT;
         EORB210: logical_operation_dest_colour = (vram_wr_data_8 & COLMASK) ^ RDPOINT;
         NOTB210: logical_operation_dest_colour = ~(vram_wr_data_8 & COLMASK);
+        RMAP210: logical_operation_dest_colour = vram_wr_data_8 == 0 ? ext_reg_remap_back_colour : ext_reg_remap_fore_colour;
         default: logical_operation_dest_colour = RDPOINT;
       endcase
 

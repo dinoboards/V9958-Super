@@ -190,6 +190,37 @@ The `PALETTE_DEPTH` register allows for reducing the number of bits used per pix
 
 When less than 8 bits per pixel is selected - the most significant bits represent the left most pixel, and the least signficiate bit will be used for the last pixel represented by the byte.
 
+### Remapping colours
+
+### `EXTR#15` (REMAP_FORE_COLOUR) and `EXTR#16` (REMAP_BACK_COLOUR)
+
+When logical operation `REMAP` is selected for commands, the destination colours is calculated as:
+
+    DC = (SC == 0 ? REMAP_BACK_COLOUR : REMAP_FORE_COLOUR)
+
+Applies when commands `CMD_LMMM` and `CMD_LMMC` are executed with a new extended logical operation `REMAP` (remap)
+
+#### Logical Operators
+
+The logical operators available for super hdmi, now include the additional operator `REMAP`
+
+
+| Name | Operation | Value |
+| ---- | -----     | --- |
+| IMP |DC = SC | 0x0 |
+| AND | DC=SC & DC | 0x1 |
+| OR  | DC=SC \| DC | 0x2 |
+| EOR | DC= SC  ^ DC | 0x3 |
+| NOT |  DC=!SC | 0x4 |
+| **REMAP** | **DC = (SC == 0 ?) REMAP_BACK_COLOUR : REMAP_FORE_COLOUR** | **0x5** |
+| | | |
+| | | |
+| | | |
+| TIMP | DC = SC = 0 ? DC : SC | 0x8 |
+| TAND | DC = SC = 0 ? DC : SC & DC | 0x9 |
+| TOR | DC = SC = 0 ? DC : SC \| DC | 0xA |
+| TEOR | DC = SC = 0 ? DC : SC ^ DC | 0xB
+| TNOT | DC = SC = 0 ? DC : !SC | 0xC |
 
 ### `EXTR#255` (RESET)
 

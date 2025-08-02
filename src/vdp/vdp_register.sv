@@ -173,6 +173,9 @@ module VDP_REGISTER (
     output bit[9:0] ext_reg_view_port_start_y,
     output bit[9:0] ext_reg_view_port_end_y,
 
+    output bit[7:0] ext_reg_remap_back_colour,
+    output bit[7:0] ext_reg_remap_fore_colour,
+
     output bit[9:0] view_port_width,
 
     output bit[16:0] ext_reg_super_res_page_addr,
@@ -256,6 +259,8 @@ module VDP_REGISTER (
   assign _ext_reg_view_port_start_y = {extended_super_regs[5][1:0], extended_super_regs[4]};
   assign _ext_reg_view_port_end_y = {extended_super_regs[7][1:0], extended_super_regs[6]};
   assign ext_reg_pixel_depth = extended_super_regs[14][0];
+  assign ext_reg_remap_fore_colour = extended_super_regs[15];
+  assign ext_reg_remap_back_colour = extended_super_regs[16];
 
   bit mode_graphic_7_base;
   bit mode_graphic_super_base;
@@ -628,6 +633,10 @@ module VDP_REGISTER (
       extended_super_regs[12] <= 8'h00; // ext_reg_super_res_page_command_addr
       extended_super_regs[13] <= 8'h00; // ext_reg_super_res_page_command_addr
       extended_super_regs[14] <= 8'h00; // ext_reg_pixel_depth
+
+      extended_super_regs[15] <= 8'hFF; //REMAP_FORE_COLOUR
+      extended_super_regs[16] <= 8'h00; //REMAP_BACK_COLOUR
+
 `endif
     end else begin
       if ((REQ == 1'b1 && WRT == 1'b0)) begin  // READ REQUEST
@@ -881,7 +890,6 @@ module VDP_REGISTER (
                   extended_super_regs[6] <= 8'hFF; // VIEW_PORT_END_Y         Low  byte  -1 (0xFFF)
                   extended_super_regs[7] <= 8'hFF; // VIEW_PORT_END_Y         High byte  -1 (0xFFF)
                 end
-
 
                 if (VDPP1DATA[1]) begin //reset base addr
                   extended_super_regs[8] <= 8'h00;  // ext_reg_super_res_page_addr
