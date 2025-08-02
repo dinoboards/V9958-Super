@@ -132,8 +132,6 @@ module VDP_COMMAND (
   bit        vram_rd_req;
   bit [19:0] vram_access_addr;
   bit [ 7:0] vram_wr_data_8;
-  bit [15:0] vram_wr_data_16;
-  bit [31:0] vram_wr_data_32;
   bit [ 7:0] CLR;  // R44, S#7
 
   // VDP COMMAND SIGNALS - CAN BE READ BY CPU
@@ -422,8 +420,6 @@ module VDP_COMMAND (
       internal_vram_wr_req <= 0;
       vram_rd_req          <= 0;
       vram_wr_data_8       <= 0;
-      vram_wr_data_16      <= 0;
-      vram_wr_data_32      <= 0;
       TR                   <= 1'b1;  // TRANSFER READY
       CE                   <= 0;  // COMMAND EXECUTING
       BD                   <= 0;  // BORDER COLOR FOUND
