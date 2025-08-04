@@ -245,6 +245,8 @@ module VDP_REGISTER (
   wire W_IS_BITMAP_MODE;
 
 `ifdef ENABLE_SUPER_RES
+  bit [1:0] vdp_vram_rdwr_req; //counter for pending read/writes from/to VRAM
+
   bit [7:0] FF_REG_R31;
 
   bit [7:0] extended_reg_index;
@@ -422,7 +424,21 @@ module VDP_REGISTER (
   always_ff @(posedge RESET, posedge CLK21M) begin
     if (RESET) begin
       DBI <= 8'd0;
+`ifdef ENABLE_SUPER_RES
+      vdp_vram_rdwr_req <= 0;
+`endif
     end else begin
+
+`ifdef ENABLE_SUPER_RES
+      if (VDPVRAMWRREQ != VDPVRAMWRACK) begin
+        vdp_vram_rdwr_req <= 1;
+      end else begin
+        if (vdp_vram_rdwr_req != 0) begin
+          vdp_vram_rdwr_req <= 2'(vdp_vram_rdwr_req + 1);
+        end
+      end
+`endif
+
       if ((REQ == 1'b1 && WRT == 1'b0)) begin
         // READ REQUEST
         case (mode[1:0])
@@ -438,7 +454,12 @@ module VDP_REGISTER (
                 DBI <= {2'b00, `VDP_ID, ~REQ_HSYNC_INT_N};
               end
               4'b0010: begin  // READ S#2
+`ifdef ENABLE_SUPER_RES
+                DBI <= {VDPCMDTR, VD, HD, VDPCMDBD, 1'b1, vdp_vram_rdwr_req == 0 && VDPVRAMWRREQ == VDPVRAMWRACK, FIELD, VDPCMDCE};
+
+`else
                 DBI <= {VDPCMDTR, VD, HD, VDPCMDBD, 2'b11, FIELD, VDPCMDCE};
+`endif
               end
               4'b0011: begin  // READ S#3
                 DBI <= VDPS3S4SPCOLLISIONX[7:0];

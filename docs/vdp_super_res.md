@@ -15,11 +15,24 @@ The [eZ80 for RC](https://www.dinoboards.com.au/ez80-for-rc)'s clang tool chain 
 
 ## Changed Status Register
 
-### `S#1` - VDP ID CHANGED
+### `S#1`
+
+The VDP ID returned has changed to enable detection of the Super HDMI module.
 
 BIT 5:1 - VDP ID
 
-  10010 -> BIT 2 indicate V9958 and BIT 5 set indicates extra SUPER FEATURES
+    10010 -> BIT 2 indicate V9958 and BIT 5 set indicates extra SUPER FEATURES
+
+### `S#2`
+
+BIT 2 - VRAM TR
+
+This bit can be used to ensure data is written to the VRAM without chance of overlap of operations.  Similar to `TR` (Transmit Ready) bit for the command transfers
+
+    0 -> Write to VRAM is currently underway
+
+    1 -> VDP is ready to receive the next direct write to VRAM
+
 
 ## Additional registers
 
