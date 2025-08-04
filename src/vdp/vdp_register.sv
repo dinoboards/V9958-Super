@@ -433,7 +433,12 @@ module VDP_REGISTER (
                 DBI <= {2'b00, `VDP_ID, ~REQ_HSYNC_INT_N};
               end
               4'b0010: begin  // READ S#2
+`ifdef ENABLE_SUPER_RES
+                DBI <= {VDPCMDTR, VD, HD, VDPCMDBD, 1'b1, VDPVRAMWRREQ == VDPVRAMWRACK, FIELD, VDPCMDCE};
+
+`else
                 DBI <= {VDPCMDTR, VD, HD, VDPCMDBD, 2'b11, FIELD, VDPCMDCE};
+`endif
               end
               4'b0011: begin  // READ S#3
                 DBI <= VDPS3S4SPCOLLISIONX[7:0];
