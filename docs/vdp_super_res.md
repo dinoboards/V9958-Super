@@ -190,17 +190,34 @@ The `PALETTE_DEPTH` register allows for reducing the number of bits used per pix
 
 When less than 8 bits per pixel is selected - the most significant bits represent the left most pixel, and the least signficiate bit will be used for the last pixel represented by the byte.
 
-### Remapping colours
-
 ### `EXTR#15` (REMAP_FORE_COLOUR) and `EXTR#16` (REMAP_BACK_COLOUR)
 
 When logical operation `REMAP` is selected for commands, the destination colours is calculated as:
 
     DC = (SC == 0 ? REMAP_BACK_COLOUR : REMAP_FORE_COLOUR)
 
-Applies when commands `CMD_LMMM` and `CMD_LMMC` are executed with a new extended logical operation `REMAP` (remap)
+Applies when commands `CMD_LMMM`, `CMD_LMMC` or `CMD_BMXL` are executed with a new extended logical operation `REMAP`.
 
-#### Logical Operators
+### `EXTR#255` (RESET)
+
+Super Res Reset flags
+
+This register can be used to reset some or all of the extended registers to their defaults.  If a specific bit of the byte written to this register is set, a corresponding set of extended registers are returned to their defaults.
+
+If the value of 255 is written then all extended registers are returned to their defaults.
+
+| Bit | Registers |
+| --- | --------- |
+| 0   | `EXTR#0` to `EXTR#7` (VIEW_PORT_xxx) |
+| 1   | `EXTR#8` to `EXTR#10` (SUPER_BASE_RENDERING_ADDR) |
+| 2   | `EXTR#11` to `EXTR#13` (SUPER_BASE_COMMAND_ADDR) |
+| 3   | `EXTR#14` (PALETTE_DEPTH) |
+
+<hr/>
+
+## Command and other changes
+
+### Logical Operators
 
 The logical operators available for super hdmi, now include the additional operator `REMAP`
 
@@ -222,20 +239,42 @@ The logical operators available for super hdmi, now include the additional opera
 | TEOR | DC = SC = 0 ? DC : SC ^ DC | 0xB
 | TNOT | DC = SC = 0 ? DC : !SC | 0xC |
 
-### `EXTR#255` (RESET)
+### New Command
 
-Super Res Reset flags
+#### CMD_BMXL Byte Move to XY from Linear
 
-This register can be used to reset some or all of the extended registers to their defaults.  If a specific bit of the byte written to this register is set, a corresponding set of extended registers are returned to their defaults.
+This command is similar to `LMMM` (Logical Move VRAM to VRAM), but instead of using a data source of a bounded rectangle (`SX`, `SY`), the `BMXL` command retrieves its source data from a linear address space (`SA`) within the VRAM.  The registers used to supply the parameters for the command are the same as `LMMM`, except that `SX` and `SY` is replaced with `SA` (Source Address).
 
-If the value of 255 is written then all extended registers are returned to their defaults.
+The `SA` parameter is a 20 bit wide value representing the starting address of the data to be copied.
 
-| Bit | Registers |
-| --- | --------- |
-| 0   | `EXTR#0` to `EXTR#7` (VIEW_PORT_xxx) |
-| 1   | `EXTR#8` to `EXTR#10` (SUPER_BASE_RENDERING_ADDR) |
-| 2   | `EXTR#11` to `EXTR#13` (SUPER_BASE_COMMAND_ADDR) |
-| 3   | `EXTR#14` (PALETTE_DEPTH) |
+When used with logical operation other than `REMAP`, the function will read a byte for each destination pixel, regardless of the pixel depths of the destination.  As such, if used on a destination that only support a 4 bit pixel depth, only the lower 4 bits of each byte are applied to the logical operation.
+
+When used with logical operation `REMAP`, the individual bits of the source data are maps to the individual destination pixels.
+As such, the first byte at `src_addr` will be mapped to the first 8 bytes of the destination rectangle.  If the bit is 0, the
+REMAP_BACK_COLOUR is applied to the pixel and if the bit is a 1, then the REMAP_FORE_COLOUR value is applied.
+
+Parameters for the command are:
+
+| Register  | Name |  Description |
+| --------- | ------------------- | ------ |
+| #R32      | `SA[7:0]` (low)     | Source address (lowest 8 bits)                                  |
+| #R33      | `SA[15:8]` (mid)    | Source address (middle 8 bits)                                  |
+| #R34[3:0] | `SA[19:16]` (high)  | Source address (top 4 bits)                                     |
+| #R34[7]   | SAP                 | Source address phase. The starting nibble for 2ppb modes - typically assigned to 0 |
+| #R35      | N/A                 | Not used                                                        |
+| #R36[7:0] | `DX[7:0]`           | Destination X coordinate (lower 8 bits)                         |
+| #R37[1:0] | `DX[9:8]`           | Destination X coordinate (upper 2 bits)                         |
+| #R38[7:0] | `DY[7:0]`           | Destination Y coordinate (lower 8 bits)                         |
+| #R39[2:0] | `DY[10:8]`          | Destination Y coordinate (upper 3 bits)                         |
+| #R40[7:0] | `NX[7:0]`           | Number of pixels to transfer in the x direction (lower 8 bits)  |
+| #R41[1:0] | `NX[9:8]`           | Number of pixels to transfer in the x direction (upper 2 bits)  |
+| #R42[7:0] | `NY[7:0]`           | Number of pixels to transfer in the y direction (lower 8 bits)  |
+| #R43[2:0] | `NX[10:8]`          | Number of pixels to transfer in the y direction (upper 3 bits)  |
+| #R45[2]   | `DIX`               | Direction for NX from source point (0: DOWN, 1: UP)             |
+| #R45[3]   | `DIY`               | Direction for NY from source point (0: DOWN, 1: UP)             |
+| #R46[7:4] | `CMD`               | BMXL command code (0x03 - 0b0011)                               |
+| #R46[3:0] | `LO`                | Logical Operator - only `REMAP`(0b1001) or `IMP` (0b0000) supported |
+
 
 <hr/>
 
