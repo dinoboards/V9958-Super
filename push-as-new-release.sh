@@ -26,10 +26,10 @@ ask_proceed() {
 }
 
 ask_proceed "Build the firmware"
-# ./build.sh
+./build.sh
 
 ask_proceed "Build the demo apps"
-# (cd testapps && make -B -j)
+(cd testapps && make -B -j)
 
 ask_proceed "Generate Release Notes"
 (cd ./releases && ./create-release-notes.sh)
