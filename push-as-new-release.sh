@@ -25,6 +25,12 @@ ask_proceed() {
     read -p "Press any key to proceed to: '$1'." choice
 }
 
+ask_proceed "Build the firmware"
+# ./build.sh
+
+ask_proceed "Build the demo apps"
+# (cd testapps && make -B -j)
+
 ask_proceed "Generate Release Notes"
 (cd ./releases && ./create-release-notes.sh)
 
