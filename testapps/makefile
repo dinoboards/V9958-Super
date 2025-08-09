@@ -62,7 +62,7 @@ $(BIN)waitforkey.lib: $(WFK_C_ASM_FILES)
 $(BIN)hbios.lib: $(HBIOS_FILES)
 	$(buildlib)
 
-$(BIN)SUPHDMI.COM: suphdmi/suphdmi.c $(BIN)waitforkey.lib $(BIN)v99x8.lib $(BIN)z80.lib $(BIN)cpm.lib | $(BIN)
+$(BIN)SUPHDMI.COM: suphdmi/suphdmi.c suphdmi/sysfont.asm $(BIN)waitforkey.lib $(BIN)v99x8.lib $(BIN)z80.lib $(BIN)cpm.lib | $(BIN)
 	$(compile)
 
 $(BIN)SHWS2812.COM: shws2812/shws2812.c $(BIN)waitforkey.lib $(BIN)v99x8.lib $(BIN)z80.lib $(BIN)cpm.lib $(BIN)hbios.lib | $(BIN)

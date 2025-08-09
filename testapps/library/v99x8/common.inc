@@ -1,4 +1,6 @@
 
+CMD_BMXL	equ	$30
+CMD_POINT	equ	$40
 CMD_PSET	equ	$50
 CMD_LINE	equ	$70
 CMD_LMMV	equ	$80

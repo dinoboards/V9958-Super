@@ -4,18 +4,22 @@
 #include <v99x8.h>
 
 void pause_a_bit(void) {
-  for (volatile int32_t i = 0; i < 70000; i++)
+  for (volatile int32_t i = 0; i < 140000; i++)
     ;
 }
+
+char buffer[257];
 
 void log_mode(void) {
   uint8_t mode = vdp_get_graphic_mode();
   if (mode >= 0x80)
-    printf("Super Graphics Mode %d (%d x %d), %d Colours, @ %dHz\n", mode & 0x7f, vdp_get_screen_width(), vdp_get_screen_height(),
-           vdp_get_screen_max_unique_colours(), vdp_get_refresh());
+    snprintf(buffer, sizeof(buffer), "Super Graphics Mode %d (%d x %d), %d Colours, @ %dHz\n", mode & 0x7f, vdp_get_screen_width(),
+             vdp_get_screen_height(), vdp_get_screen_max_unique_colours(), vdp_get_refresh());
   else
-    printf("Graphics Mode %d (%d x %d), %d Colours, @ %dHz\n", mode, vdp_get_screen_width(), vdp_get_screen_height(),
-           vdp_get_screen_max_unique_colours(), vdp_get_refresh());
+    snprintf(buffer, sizeof(buffer), "Graphics Mode %d (%d x %d), %d Colours, @ %dHz\n", mode, vdp_get_screen_width(),
+             vdp_get_screen_height(), vdp_get_screen_max_unique_colours(), vdp_get_refresh());
+
+  printf("%s", buffer);
 }
 
 uint8_t get_pixel_per_byte(void) {
@@ -100,7 +104,52 @@ RGB palette_256[256] = {
     {138, 138, 138}, {148, 148, 148}, {158, 158, 158}, {168, 168, 168}, {178, 178, 178}, {188, 188, 188}, {198, 198, 198},
     {208, 208, 208}, {218, 218, 218}, {228, 228, 228}, {238, 238, 238}};
 
+uint8_t super_graphic_50hz_modes[] = {0x02, 0x04, 0x06, 0x08, 0x09, 0x0A, 0x0C, 0x16, 0x18, 0x19, 0x1A, 0x1C};
 uint8_t super_graphic_60hz_modes[] = {0x01, 0x03, 0x05, 0x07, 0x0B, 0x15, 0x17, 0x1B};
+
+extern const uint8_t sysfont[(128 - ' ') * 8]; // 96*8
+
+#define VRAM_SIZE         0x100000
+#define FONT_8X8_STORED_Y (VRAM_SIZE - (8L * 256L))
+
+void print_char_at(const uint8_t ch, const uint16_t x, const uint16_t y) {
+  screen_addr_t addr = FONT_8X8_STORED_Y + ((long)ch * 8L);
+
+  vdp_cmd_wait_completion();
+  vdp_cmd_move_linear_to_xy(addr, x, y, 8, 8, DIX_RIGHT | DIY_DOWN, CMD_LOGIC_REMAP);
+}
+
+void load_font_data(void) {
+  vdp_set_super_graphic_1(); // can only access higher memory directly, when super mode is on
+
+  vdp_cpu_to_vram(sysfont, FONT_8X8_STORED_Y + ((long)' ' * 8L), sizeof(sysfont));
+  printf("Fonts data loaded into VRAM at %lx\n", FONT_8X8_STORED_Y);
+}
+
+void print_to_screen(void) {
+  vdp_set_remap(4, 230);
+
+  const char *str = buffer;
+  uint16_t    x   = 0;
+  uint16_t    y   = vdp_get_screen_height() - (4 * 8);
+  char        ch  = *str++;
+  while (ch) {
+    while (ch < ' ') {
+      ch = *str++;
+      if (ch == 0)
+        return;
+    }
+
+    print_char_at(ch, x, y);
+
+    ch = *str++;
+    x += 8;
+    if (x >= vdp_get_screen_width()) {
+      x = 0;
+      y += 8;
+    }
+  }
+}
 
 void test_pattern(uint8_t col_row_count, uint8_t white_colour_index) {
 
@@ -143,6 +192,8 @@ void test_pattern(uint8_t col_row_count, uint8_t white_colour_index) {
   vdp_cmd_wait_completion();
   vdp_cmd_logical_move_vdp_to_vram(vdp_get_screen_width() - 1, 0, 1, vdp_get_screen_height(), 5, 0, 0);
   test_for_escape();
+
+  print_to_screen();
 
   pause_a_bit();
 
@@ -194,6 +245,9 @@ void main_patterns(void) {
 
   for (uint8_t m = 0; m < sizeof(super_graphic_60hz_modes); m++)
     super_graphics_mode_test_pattern(super_graphic_60hz_modes[m]);
+
+  for (uint8_t m = 0; m < sizeof(super_graphic_50hz_modes); m++)
+    super_graphics_mode_test_pattern(super_graphic_50hz_modes[m]);
 }
 
 void missing_super_hdmi(void) {
@@ -225,6 +279,7 @@ int main(void) {
   }
 
   printf("Press ESC to abort\n");
+  load_font_data();
   while (true) {
     main_patterns();
     test_for_escape();
