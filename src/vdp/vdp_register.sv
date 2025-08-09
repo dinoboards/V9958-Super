@@ -820,7 +820,7 @@ module VDP_REGISTER (
             5'b01110: begin  // #14
 `ifdef ENABLE_SUPER_RES
               if (vdp_super) begin
-                VDPVRAMACCESSADDRTMP[18:14] <= VDPP1DATA[4:0];
+                VDPVRAMACCESSADDRTMP[19:14] <= VDPP1DATA[5:0];
               end else begin
                 VDPVRAMACCESSADDRTMP[16:14] <= VDPP1DATA[2:0];
               end
