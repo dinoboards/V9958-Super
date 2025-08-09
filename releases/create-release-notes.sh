@@ -19,7 +19,7 @@ echo -e "## Release Notes\n\n" >> "$relfile"
 echo "``````" >> "$relfile"
 
 # Append the git log to the release notes file
-gitLog=$(git log --pretty=format:"%ad: %s" --date=short --submodule=short "$lastRelease..HEAD")
+gitLog=$(git log --pretty=format:"%s" --date=short --submodule=short "$lastRelease..HEAD")
 echo "$gitLog" >> "$relfile"
 
 # Output the last release tag
