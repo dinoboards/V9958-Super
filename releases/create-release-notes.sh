@@ -6,7 +6,7 @@ set -e
 version=${version:-$(date +"%Y-%m-%d")}
 
 # Get the last release tag
-lastRelease=$(git tag -l | sort | tail -n 2 | head -n 1)
+lastRelease=$(git tag -l | sort | tail -n 1 | head -n 1)
 
 # Define the release file path
 relfile="./CHANGELOG.md"
