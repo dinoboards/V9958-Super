@@ -51,6 +51,11 @@ Download and install the Gowin IDE.  Currently tested with V1.9.11.01.  See [htt
 > Requires the gowin IDE to be installed at `C:\Gowin64`
 > Make sure you have Gowin IDE install to `C:\Gowin64`.  This should include the cli tool at: `C:\Gowin64\Gowin_V1.9.11.01_Education_x64\IDE\bin\gw_sh.exe`
 
+---
+**IMPORTANT!**  A new version of gowin has been released that seems to create a breaking change.  You can still download (at least at time of writing), the older software's installer - you must first be logged into their site - then directly download from their CDN store: https://cdn.gowinsemi.com.cn/Gowin_V1.9.11.01_Education_x64_win.zip
+
+---
+
 There is a TCL script that contains the required configuration to build the file stream (fs) for the Tang Nano.
 
 Current scripts assume a specific install path for Gowin and only supports running under windows
