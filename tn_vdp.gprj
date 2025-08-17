@@ -30,7 +30,6 @@
         <File path="src/vdp/vdp.sv" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_colordec.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_command.sv" type="file.verilog" enable="1"/>
-        <File path="src/vdp/vdp_constants.vh" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_double_buffer.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_graphic123m.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_graphic4567.v" type="file.verilog" enable="1"/>
@@ -43,6 +42,7 @@
         <File path="src/vdp/vdp_spinforam.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_sprite.v" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_ssg.v" type="file.verilog" enable="1"/>
+        <File path="src/vdp/vdp_super_half_2ppb_res.sv" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_super_half_res.sv" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_super_high_2ppb_res.sv" type="file.verilog" enable="1"/>
         <File path="src/vdp/vdp_super_high_res.sv" type="file.verilog" enable="1"/>
