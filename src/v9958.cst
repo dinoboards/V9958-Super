@@ -9,7 +9,7 @@
 //Created Time: Wed 07 19 21:03:46 2023
 
 IO_LOC "clk" 4;
-IO_PORT "clk" PULL_MODE=UP;
+IO_PORT "clk" PULL_MODE=UP IO_TYPE=LVCMOS33;
 
 //IO_LOC "clk_50" 10;
 //IO_PORT "clk_50" PULL_MODE=UP;
