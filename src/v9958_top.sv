@@ -58,7 +58,7 @@ module v9958_top (
   assign led2_n = cs_n;
   assign led3_n = cs_n;
   assign led4_n = cs_n;
-  assign led5_n = cs_n;
+
 
   // ----------------------------------------
   // All Clocks
@@ -93,6 +93,40 @@ module v9958_top (
     end
   end
   assign bus_clk = _bus_clk;
+
+
+  // ----------------------------------------
+  // Blink Live LED
+  // ----------------------------------------
+  bit led_flip_trigger;
+  bit [25:0] led_period_count = 0;
+  bit led_value = 1;
+  bit [25:0] led_period = 2;
+
+  assign led5_n = led_value;
+
+  always @(posedge clk) begin
+    if(led_period_count == led_period) begin
+      led_period_count <= 0;
+      led_flip_trigger <= 1;
+    end
+    else begin
+      led_period_count <= 26'(led_period_count + 1);
+      led_flip_trigger <= 0;
+    end
+  end
+
+  always @(posedge clk) begin
+    if (led_flip_trigger) begin
+      led_value <= ~led_value;
+
+      if (led_value) begin
+        led_period <= 27000000*2;
+      end else begin
+        led_period <= 27000000/4;
+      end
+    end
+  end
 
   // ----------------------------------------
   // Master Reset combined with clock phase locks
