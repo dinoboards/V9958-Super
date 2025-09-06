@@ -118,6 +118,8 @@ void print_char_at(const uint8_t ch, const uint16_t x, const uint16_t y) {
   vdp_cmd_wait_completion();
   vdp_cmd_logical_move_vdp_to_vram(x, y, 8, 8, 0, DIX_RIGHT | DIY_DOWN, CMD_LOGIC_IMP);
 
+  //We could just use CMD_LOGIC_REMAP, without the need to clear the background in the previous line
+  //but this provides an example of the XOR REMAP operation
   vdp_cmd_wait_completion();
   vdp_cmd_move_linear_to_xy(addr, x, y, 8, 8, DIX_RIGHT | DIY_DOWN, CMD_LOGIC_REMAP_XOR);
 }
