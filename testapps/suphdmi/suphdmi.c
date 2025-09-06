@@ -116,7 +116,10 @@ void print_char_at(const uint8_t ch, const uint16_t x, const uint16_t y) {
   screen_addr_t addr = FONT_8X8_STORED_Y + ((long)ch * 8L);
 
   vdp_cmd_wait_completion();
-  vdp_cmd_move_linear_to_xy(addr, x, y, 8, 8, DIX_RIGHT | DIY_DOWN, CMD_LOGIC_REMAP);
+  vdp_cmd_logical_move_vdp_to_vram(x, y, 8, 8, 0, DIX_RIGHT | DIY_DOWN, CMD_LOGIC_IMP);
+
+  vdp_cmd_wait_completion();
+  vdp_cmd_move_linear_to_xy(addr, x, y, 8, 8, DIX_RIGHT | DIY_DOWN, CMD_LOGIC_REMAP_XOR);
 }
 
 void load_font_data(void) {
