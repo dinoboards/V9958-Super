@@ -80,20 +80,9 @@ module v9958_top (
       .clk_audio_w(clk_audio_w),
       .clk_sdram_w(clk_sdram_w),
       .clk_sdramp_w(clk_sdramp_w),
-      .clk_sdram_lock_w(clk_sdram_lock_w)
+      .clk_sdram_lock_w(clk_sdram_lock_w),
+      .clk_bus(bus_clk)
   );
-
-  bit _bus_clk;
-
-  always_ff @(posedge clk or negedge reset_n) begin
-    if (reset_n == 0) begin
-      _bus_clk <= 1'b0;
-    end else begin
-      _bus_clk <= ~_bus_clk;
-    end
-  end
-  assign bus_clk = _bus_clk;
-
 
   // ----------------------------------------
   // Blink Live LED

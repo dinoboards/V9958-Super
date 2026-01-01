@@ -21,13 +21,16 @@ module clocks (
     // generated clocks and lock for the SDRAM
     output clk_sdram_w,
     output clk_sdramp_w,
-    output clk_sdram_lock_w
+    output clk_sdram_lock_w,
+
+    output clk_bus
 );
 
   bit clk_135;
   bit clk_audio;
   bit clk_sdram;
   bit clk_sdramp;
+  bit _clk_bus;
 
   // Main 27Mhz Clock
   BUFG clk_bufg_inst (
@@ -82,4 +85,23 @@ module clocks (
       .O(clk_sdramp_w)
   );
 
+  bit [1:0] clkdiv = 2'b10;
+
+  // Prescaler : 27MHz / 6
+  always @(posedge clk_w) begin
+    if (clkdiv == 2'b00) begin
+      clkdiv <= 2'b10;
+    end else begin
+      clkdiv <= {1'b0, clkdiv[1]};
+    end
+  end
+
+  // ff_cpuclk : 4.5MHz = 27Hz / 6
+  always_ff @(posedge clk) begin
+    if (clkdiv == 2'b10) begin
+      _clk_bus <= ~_clk_bus;
+    end
+  end
+
+    assign clk_bus = _clk_bus;
 endmodule
