@@ -30,7 +30,9 @@ module clocks (
   bit clk_audio;
   bit clk_sdram;
   bit clk_sdramp;
-  bit _clk_bus;
+
+  bit _clk_bus;             // cpu clock out
+  bit [31:0] accumulator;   // counter for cpu clock out calculations
 
   // Main 27Mhz Clock
   BUFG clk_bufg_inst (
@@ -85,23 +87,28 @@ module clocks (
       .O(clk_sdramp_w)
   );
 
-  bit [1:0] clkdiv = 2'b10;
+  // Generate a standard MSX ~3.58Mhz clock signal
+  // for use by the CPU
+  // given our source clock is 27Mhz - there will be
+  // some jitter
+  // Step value calculated for 27MHz -> 3.579545MHz
+  // (3.579545 / 27.0) * 2^32 = 569408471
+  localparam [31:0] STEP = 32'd569408471;
 
-  // Prescaler : 27MHz / 6
-  always @(posedge clk_w) begin
-    if (clkdiv == 2'b00) begin
-      clkdiv <= 2'b10;
+  always @(posedge clk_w or negedge rst_n) begin
+    if (rst_n == 0) begin
+      accumulator <= 32'h0;
+      _clk_bus     <= 1'b0;
     end else begin
-      clkdiv <= {1'b0, clkdiv[1]};
+      // Accumulate the step value every clock cycle
+      accumulator <= accumulator + STEP;
+
+      // The Most Significant Bit (MSB) acts as the divided clock
+      // This naturally toggles at the target frequency
+      _clk_bus <= accumulator[31];
     end
   end
 
-  // ff_cpuclk : 4.5MHz = 27Hz / 6
-  always_ff @(posedge clk) begin
-    if (clkdiv == 2'b10) begin
-      _clk_bus <= ~_clk_bus;
-    end
-  end
+  assign clk_bus = _clk_bus;
 
-    assign clk_bus = _clk_bus;
 endmodule
