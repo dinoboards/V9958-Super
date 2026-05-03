@@ -191,8 +191,9 @@ module VDP_COMMAND (
   parameter ORB210  = 3'b010;  // OR DC=SC OR DC
   parameter EORB210 = 3'b011;  // XOR DC=SC XOR DC
   parameter NOTB210 = 3'b100;  // NOT DC=SC NOT DC
-  parameter RMAP210 = 3'b101;  // DC = (SC == 0 ?) REMAP_BACK_COLOUR : REMAP_FORE_COLOUR
-  parameter RMAPX210 = 3'b110;  // DC = (SC == 0 ?) REMAP_BACK_COLOUR : REMAP_FORE_COLOUR
+  parameter RMAP210 = 3'b101;  // DC = (SC == 0) ? REMAP_BACK_COLOUR : REMAP_FORE_COLOUR
+  parameter RMAPX210 = 3'b110;  // DC = (SC == 0) ? DC XOR REMAP_BACK_COLOUR : DC XOR REMAP_FORE_COLOUR
+  parameter RMAPO210 = 3'b111; // DC = (SC == 0) ? DC : REMAP_FORE_COLOUR
 
   assign p_reg_wr_ack = reg_wr_ack;
   assign p_tr_clr_ack = tr_clr_ack;
@@ -279,6 +280,7 @@ module VDP_COMMAND (
         NOTB210: logical_operation_dest_colour = ~(vram_wr_data_8 & COLMASK);
         RMAP210: logical_operation_dest_colour = vram_wr_data_8 == 0 ? ext_reg_remap_back_colour : ext_reg_remap_fore_colour;
         RMAPX210: logical_operation_dest_colour = vram_wr_data_8 == 0 ? ext_reg_remap_back_colour ^ RDPOINT : ext_reg_remap_fore_colour ^ RDPOINT;
+        RMAPO210: logical_operation_dest_colour = vram_wr_data_8 == 0 ? RDPOINT : ext_reg_remap_fore_colour;
         default: logical_operation_dest_colour = RDPOINT;
       endcase
 
@@ -626,7 +628,7 @@ module VDP_COMMAND (
               case (CMR[7:4])
                 BMXL: begin
 
-                  if (CMR[3:0] == RMAP210 || CMR[3:0] == RMAPX210) begin
+                  if (CMR[3:0] == RMAP210 || CMR[3:0] == RMAPX210 || CMR[3:0] == RMAPO210) begin
                     sa_phase <= 3'(sa_phase - 1);
                       // shift through the bits of each byte
                       // each bit is a single pixel

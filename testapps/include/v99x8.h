@@ -478,6 +478,7 @@ extern uint8_t vdp_cmd_point(uint16_t x, uint16_t y);
 #define CMD_LOGIC_NOT       0x04 /* DC = !SC */
 #define CMD_LOGIC_REMAP     0x05 /* DC = (SC == 0) ? REMAP_BACK_COLOUR : REMAP_FORE_COLOUR */
 #define CMD_LOGIC_REMAP_XOR 0x06 /* DC = (SC == 0) ? DC ^ REMAP_BACK_COLOUR : DC ^ REMAP_FORE_COLOUR */
+#define CMD_LOGIC_REMAP_OVER 0x07 /* DC = (SC == 0) ? DC : REMAP_FORE_COLOUR */
 
 #define CMD_LOGIC_TIMP 0x08 /* if SC != 0 then DC =  SC */
 #define CMD_LOGIC_TAND 0x09 /* if SC != 0 then DC &= SC*/

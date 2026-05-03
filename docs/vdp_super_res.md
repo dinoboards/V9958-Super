@@ -222,22 +222,23 @@ If the value of 255 is written then all extended registers are returned to their
 The logical operators available for super hdmi, now include the additional operator `REMAP`
 
 
-| Name | Operation | Value |
-| ---- | -----     | --- |
-| IMP |DC = SC | 0x0 |
-| AND | DC=SC & DC | 0x1 |
-| OR  | DC=SC \| DC | 0x2 |
-| EOR | DC= SC  ^ DC | 0x3 |
-| NOT |  DC=!SC | 0x4 |
-| **REMAP** | **DC = (SC == 0 ?) REMAP_BACK_COLOUR : REMAP_FORE_COLOUR** | **0x5** |
-| | | |
-| | | |
-| | | |
-| TIMP | DC = SC = 0 ? DC : SC | 0x8 |
-| TAND | DC = SC = 0 ? DC : SC & DC | 0x9 |
-| TOR | DC = SC = 0 ? DC : SC \| DC | 0xA |
-| TEOR | DC = SC = 0 ? DC : SC ^ DC | 0xB
-| TNOT | DC = SC = 0 ? DC : !SC | 0xC |
+| Name      | Operation                                                              | Value   |     |
+|:----------|:-----------------------------------------------------------------------|:--------|:----|
+| IMP       | DC = SC                                                                | 0x0     |     |
+| AND       | DC=SC & DC                                                             | 0x1     |     |
+| OR        | DC=SC \                                                                | DC      | 0x2 |
+| EOR       | DC= SC  ^ DC                                                           | 0x3     |     |
+| NOT       | DC=!SC                                                                 | 0x4     |     |
+| **REMAP** | **DC = (SC == 0) ? REMAP_BACK_COLOUR : REMAP_FORE_COLOUR**             | **0x5** |     |
+| **RMAPX** | **DC = (SC == 0) ? DC XOR REMAP_BACK_COLOUR : DC XOR REMAP_FORE_COLOUR | **0x6** |     |
+| **RMAPO** | **DC = (SC == 0) ? DC : DC XOR REMAP_FORE_COLOUR                       | **0x7** |     |
+|           |                                                                        |         |     |
+|           |                                                                        |         |     |
+| TIMP      | DC = SC = 0 ? DC : SC                                                  | 0x8     |     |
+| TAND      | DC = SC = 0 ? DC : SC & DC                                             | 0x9     |     |
+| TOR       | DC = SC = 0 ? DC : SC \                                                | DC      | 0xA |
+| TEOR      | DC = SC = 0 ? DC : SC ^ DC                                             | 0xB     |     |
+| TNOT      | DC = SC = 0 ? DC : !SC                                                 | 0xC     |     |
 
 ### New Command
 
@@ -255,25 +256,25 @@ REMAP_BACK_COLOUR is applied to the pixel and if the bit is a 1, then the REMAP_
 
 Parameters for the command are:
 
-| Register  | Name |  Description |
-| --------- | ------------------- | ------ |
-| #R32      | `SA[7:0]` (low)     | Source address (lowest 8 bits)                                  |
-| #R33      | `SA[15:8]` (mid)    | Source address (middle 8 bits)                                  |
-| #R34[3:0] | `SA[19:16]` (high)  | Source address (top 4 bits)                                     |
-| #R34[7]   | SAP                 | Source address phase. The starting nibble for 2ppb modes - typically assigned to 0 |
-| #R35      | N/A                 | Not used                                                        |
-| #R36[7:0] | `DX[7:0]`           | Destination X coordinate (lower 8 bits)                         |
-| #R37[1:0] | `DX[9:8]`           | Destination X coordinate (upper 2 bits)                         |
-| #R38[7:0] | `DY[7:0]`           | Destination Y coordinate (lower 8 bits)                         |
-| #R39[2:0] | `DY[10:8]`          | Destination Y coordinate (upper 3 bits)                         |
-| #R40[7:0] | `NX[7:0]`           | Number of pixels to transfer in the x direction (lower 8 bits)  |
-| #R41[1:0] | `NX[9:8]`           | Number of pixels to transfer in the x direction (upper 2 bits)  |
-| #R42[7:0] | `NY[7:0]`           | Number of pixels to transfer in the y direction (lower 8 bits)  |
-| #R43[2:0] | `NX[10:8]`          | Number of pixels to transfer in the y direction (upper 3 bits)  |
-| #R45[2]   | `DIX`               | Direction for NX from source point (0: DOWN, 1: UP)             |
-| #R45[3]   | `DIY`               | Direction for NY from source point (0: DOWN, 1: UP)             |
-| #R46[7:4] | `CMD`               | BMXL command code (0x03 - 0b0011)                               |
-| #R46[3:0] | `LO`                | Logical Operator - only `REMAP`(0b1001) or `IMP` (0b0000) supported |
+| Register  | Name               | Description                                                                        |
+|:----------|:-------------------|:-----------------------------------------------------------------------------------|
+| #R32      | `SA[7:0]` (low)    | Source address (lowest 8 bits)                                                     |
+| #R33      | `SA[15:8]` (mid)   | Source address (middle 8 bits)                                                     |
+| #R34[3:0] | `SA[19:16]` (high) | Source address (top 4 bits)                                                        |
+| #R34[7]   | SAP                | Source address phase. The starting nibble for 2ppb modes - typically assigned to 0 |
+| #R35      | N/A                | Not used                                                                           |
+| #R36[7:0] | `DX[7:0]`          | Destination X coordinate (lower 8 bits)                                            |
+| #R37[1:0] | `DX[9:8]`          | Destination X coordinate (upper 2 bits)                                            |
+| #R38[7:0] | `DY[7:0]`          | Destination Y coordinate (lower 8 bits)                                            |
+| #R39[2:0] | `DY[10:8]`         | Destination Y coordinate (upper 3 bits)                                            |
+| #R40[7:0] | `NX[7:0]`          | Number of pixels to transfer in the x direction (lower 8 bits)                     |
+| #R41[1:0] | `NX[9:8]`          | Number of pixels to transfer in the x direction (upper 2 bits)                     |
+| #R42[7:0] | `NY[7:0]`          | Number of pixels to transfer in the y direction (lower 8 bits)                     |
+| #R43[2:0] | `NX[10:8]`         | Number of pixels to transfer in the y direction (upper 3 bits)                     |
+| #R45[2]   | `DIX`              | Direction for NX from source point (0: DOWN, 1: UP)                                |
+| #R45[3]   | `DIY`              | Direction for NY from source point (0: DOWN, 1: UP)                                |
+| #R46[7:4] | `CMD`              | BMXL command code (0x03 - 0b0011)                                                  |
+| #R46[3:0] | `LO`               | Logical Operator - only `REMAP`(0b1001) or `IMP` (0b0000) supported                |
 
 
 <hr/>
