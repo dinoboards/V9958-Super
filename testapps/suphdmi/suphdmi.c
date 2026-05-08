@@ -4,8 +4,9 @@
 #include <v99x8.h>
 
 void pause_a_bit(void) {
-  for (volatile int32_t i = 0; i < 140000; i++)
-    ;
+  for (int32_t x = 0; x < 2; x++)
+    for (volatile int32_t i = 0; i < 140000; i++)
+      ;
 }
 
 char buffer[257];
@@ -118,8 +119,8 @@ void print_char_at(const uint8_t ch, const uint16_t x, const uint16_t y) {
   vdp_cmd_wait_completion();
   vdp_cmd_logical_move_vdp_to_vram(x, y, 8, 8, 0, DIX_RIGHT | DIY_DOWN, CMD_LOGIC_IMP);
 
-  //We could just use CMD_LOGIC_REMAP, without the need to clear the background in the previous line
-  //but this provides an example of the XOR REMAP operation
+  // We could just use CMD_LOGIC_REMAP, without the need to clear the background in the previous line
+  // but this provides an example of the XOR REMAP operation
   vdp_cmd_wait_completion();
   vdp_cmd_move_linear_to_xy(addr, x, y, 8, 8, DIX_RIGHT | DIY_DOWN, CMD_LOGIC_REMAP_XOR);
 }
@@ -156,10 +157,33 @@ void print_to_screen(void) {
   }
 }
 
-void test_pattern(uint8_t col_row_count, uint8_t white_colour_index) {
+void grid_pattern(void) {
 
   vdp_cmd_wait_completion();
-  vdp_cmd_logical_move_vdp_to_vram(0, 0, vdp_get_screen_width(), vdp_get_screen_height() + 30, 3, 0, 0);
+  vdp_cmd_logical_move_vdp_to_vram(0, 0, vdp_get_screen_width(), vdp_get_screen_height(), 0, 0, 0);
+
+  for (int y = 0; y < vdp_get_screen_height(); y += 8) {
+    vdp_cmd_wait_completion();
+    vdp_cmd_logical_move_vdp_to_vram(0, y, vdp_get_screen_width(), 1, 2, 0, 0);
+  }
+
+  vdp_cmd_wait_completion();
+  vdp_cmd_logical_move_vdp_to_vram(0, vdp_get_screen_height() - 1, vdp_get_screen_width(), 1, 5, 0, 0);
+
+  for (int x = 0; x < 3; x++) {
+    vdp_cmd_wait_completion();
+    vdp_cmd_logical_move_vdp_to_vram(x, 0, 1, 4, 5, 0, 0);
+  }
+
+  print_to_screen();
+
+  pause_a_bit();
+}
+
+void test_pattern(uint8_t col_row_count, uint8_t white_colour_index) {
+
+  // vdp_cmd_wait_completion();
+  // vdp_cmd_logical_move_vdp_to_vram(0, 0, vdp_get_screen_width(), vdp_get_screen_height() + 30, 3, 0, 0);
 
   vdp_cmd_wait_completion();
   vdp_cmd_logical_move_vdp_to_vram(0, 0, vdp_get_screen_width(), vdp_get_screen_height(), white_colour_index, 0, 0);
@@ -183,6 +207,8 @@ void test_pattern(uint8_t col_row_count, uint8_t white_colour_index) {
                                        0);
     }
   }
+
+  print_to_screen();
 
   for (int i = 0; i < 100; i++) {
     vdp_cmd_wait_completion();
@@ -241,7 +267,64 @@ void super_graphics_mode_test_pattern(uint8_t mode) {
 
   log_mode();
 
+  grid_pattern();
+
   test_pattern(16, 1);
+}
+
+uint8_t test_data[1] = {1 + (1 << 4)};
+
+void issue_test(uint8_t mode) {
+  vdp_set_super_graphic_mode(mode);
+  vdp_cmd_wait_completion();
+  vdp_set_extended_palette(get_pixel_per_byte() == 2 ? palette_16 : palette_256);
+
+  log_mode();
+
+  vdp_cmd_wait_completion();
+  vdp_cmd_logical_move_vdp_to_vram(0, 0, vdp_get_screen_width(), vdp_get_screen_height() + 30, 0, 0, 0);
+
+  vdp_cmd_wait_completion();
+  vdp_cmd_logical_move_vdp_to_vram(0, 0, vdp_get_screen_width(), vdp_get_screen_height(), 0, 0, 0);
+
+  // for(int i = 0; i < 128; i++) {
+  //   vdp_cpu_to_vram(test_data, i, 1);
+  // }
+
+  // getchar();
+
+  // for(int i = 0; i < 128; i++) {
+  //   vdp_cpu_to_vram(test_data, i+(vdp_get_screen_width()*6), 1);
+  // }
+
+  // for(int i = 0; i < 16; i++) {
+  //   vdp_cpu_to_vram(test_data, i+(vdp_get_screen_width()), 2);
+  //   getchar();
+  // }
+
+  /* the following produces glitch where first colum is up a single pixel for 27,28 only*/
+
+  for (int i = 0; i < 8; i++) {
+    vdp_cmd_wait_completion();
+    vdp_cmd_logical_move_vdp_to_vram(i, 0, 1, 1, 2, 0, 0);
+    getchar();
+  }
+
+  for (int i = 0; i < 8; i++) {
+    vdp_cmd_wait_completion();
+    vdp_cmd_logical_move_vdp_to_vram(i, 1, 1, 1, 2, 0, 0);
+    getchar();
+  }
+
+  vdp_cmd_wait_completion();
+  vdp_cmd_logical_move_vdp_to_vram(0, 9, 128, 1, 2, 0, 0);
+
+  getchar();
+
+  vdp_cmd_wait_completion();
+  vdp_cmd_logical_move_vdp_to_vram(0, vdp_get_screen_height() - 1, 128, 1, 2, 0, 0);
+
+  getchar();
 }
 
 void main_patterns(void) {

@@ -38,6 +38,7 @@ module VDP_SUPER_HALF_2PPB_RES (
   bit odd_phase;
   bit active_line;  // true if line is drawn from sdram, false if drawn from line buffer
   bit [3:0] line_buffer[720];
+  bit [3:0] first_pixel;
   bit [9:0] line_buffer_index;
 
   /*
@@ -92,16 +93,23 @@ module VDP_SUPER_HALF_2PPB_RES (
           end
         end
 
+        856: begin
+          if (!active_line || last_line) begin
+            super_half_2ppb_res_palette_addr <= vrm_32_1[7:4];
+            first_pixel = vrm_32_1[7:4];
+            line_buffer[line_buffer_index] <= vrm_32_1[7:4];
+
+          end else begin
+            super_half_2ppb_res_palette_addr <= line_buffer[line_buffer_index];
+            first_pixel <= line_buffer[line_buffer_index];
+
+          end
+          line_buffer_index <= 10'(line_buffer_index + 1);
+        end
+
         ext_reg_view_port_start_x: begin  //default: frame-width -1
           if (on_a_visible_line) begin
-            if (active_line) begin
-              super_half_2ppb_res_palette_addr <= vrm_32_1[7:4];
-              line_buffer[line_buffer_index]   <= vrm_32_1[7:4];
-            end else begin
-              super_half_2ppb_res_palette_addr <= line_buffer[line_buffer_index];
-            end
-
-            line_buffer_index <= 10'(line_buffer_index + 1);
+            super_half_2ppb_res_palette_addr <= first_pixel;
           end
         end
 
@@ -122,9 +130,9 @@ module VDP_SUPER_HALF_2PPB_RES (
                 if (active_line) begin
                   vrm_32_2 <= vrm_32_1;
                   super_half_2ppb_res_palette_addr <= vrm_32_1[3:0];
+                  line_buffer[line_buffer_index]   <= vrm_32_1[3:0];
                   super_half_2ppb_res_vram_addr <= 18'(super_half_2ppb_res_vram_addr + 1);
 
-                  line_buffer[line_buffer_index] <= vrm_32_1[3:0];
 
                 end else begin
                   super_half_2ppb_res_palette_addr <= line_buffer[line_buffer_index];
@@ -136,7 +144,7 @@ module VDP_SUPER_HALF_2PPB_RES (
               1: begin
                 if (active_line) begin
                   super_half_2ppb_res_palette_addr <= vrm_32_1[15:12];
-                  line_buffer[line_buffer_index] <= vrm_32_1[15:12];
+                  line_buffer[line_buffer_index]   <= vrm_32_1[15:12];
                   vrm_32_1 <= vrm_32;  //capture next 4 bytes
                 end else begin
                   super_half_2ppb_res_palette_addr <= line_buffer[line_buffer_index];
@@ -160,7 +168,7 @@ module VDP_SUPER_HALF_2PPB_RES (
               3: begin
                 if (active_line) begin
                   super_half_2ppb_res_palette_addr <= vrm_32_2[23:20];
-                  line_buffer[line_buffer_index] <= vrm_32_2[23:20];
+                  line_buffer[line_buffer_index]   <= vrm_32_2[23:20];
                   odd_phase <= 1;
                 end else begin
                   super_half_2ppb_res_palette_addr <= line_buffer[line_buffer_index];

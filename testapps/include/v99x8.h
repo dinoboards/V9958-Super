@@ -471,13 +471,13 @@ extern uint8_t vdp_cmd_point(uint16_t x, uint16_t y);
 #define CMD_YMMM  0xE0
 #define CMD_HMMC  0xF0
 
-#define CMD_LOGIC_IMP       0x00 /* DC =  SC */
-#define CMD_LOGIC_AND       0x01 /* DC &= SC */
-#define CMD_LOGIC_OR        0x02 /* DC |= SC */
-#define CMD_LOGIC_EOR       0x03 /* DC ^= SC */
-#define CMD_LOGIC_NOT       0x04 /* DC = !SC */
-#define CMD_LOGIC_REMAP     0x05 /* DC = (SC == 0) ? REMAP_BACK_COLOUR : REMAP_FORE_COLOUR */
-#define CMD_LOGIC_REMAP_XOR 0x06 /* DC = (SC == 0) ? DC ^ REMAP_BACK_COLOUR : DC ^ REMAP_FORE_COLOUR */
+#define CMD_LOGIC_IMP        0x00 /* DC =  SC */
+#define CMD_LOGIC_AND        0x01 /* DC &= SC */
+#define CMD_LOGIC_OR         0x02 /* DC |= SC */
+#define CMD_LOGIC_EOR        0x03 /* DC ^= SC */
+#define CMD_LOGIC_NOT        0x04 /* DC = !SC */
+#define CMD_LOGIC_REMAP      0x05 /* DC = (SC == 0) ? REMAP_BACK_COLOUR : REMAP_FORE_COLOUR */
+#define CMD_LOGIC_REMAP_XOR  0x06 /* DC = (SC == 0) ? DC ^ REMAP_BACK_COLOUR : DC ^ REMAP_FORE_COLOUR */
 #define CMD_LOGIC_REMAP_OVER 0x07 /* DC = (SC == 0) ? DC : REMAP_FORE_COLOUR */
 
 #define CMD_LOGIC_TIMP 0x08 /* if SC != 0 then DC =  SC */
@@ -696,10 +696,10 @@ extern void vdp_set_remap(uint8_t remap_background_colour, uint8_t remap_foregro
  * regardless of the pixel depths of the destination.  As such, if used on a destination that only support a 4 bit pixel depth, only
  * the lower 4 bits of each byte are applied to the logical operation.
  *
- * When used with logical operation `CMD_LOGIC_REMAP_xxx`, the individual bits of the source data are maps to the individual destination
- * pixels.  As such, the first byte at `src_addr` will be mapped to the first 8 bytes of the destination rectangle.  If the bit is
- * 0, the `remap_background_colour` is applied to the pixel and if the bit is a 1, then the `remap_foreground_colour` value is
- * applied.
+ * When used with logical operation `CMD_LOGIC_REMAP_xxx`, the individual bits of the source data are maps to the individual
+ * destination pixels.  As such, the first byte at `src_addr` will be mapped to the first 8 bytes of the destination rectangle.  If
+ * the bit is 0, the `remap_background_colour` is applied to the pixel and if the bit is a 1, then the `remap_foreground_colour`
+ * value is applied.
  *
  * > This function is only available with the Super HDMI Tang Nano FPGA module
  *
