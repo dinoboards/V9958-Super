@@ -97,8 +97,8 @@ module VDP_SUPER_HALF_RES (
 
         ext_reg_view_port_end_x: begin
           super_half_res_palette_addr <= REG_R7_FRAME_COL;
-          if (active_line) begin
-            vrm_32_1 <= vrm_32;  //load next 4 bytes for start of next row??
+          if (active_line && super_res_visible) begin
+            vrm_32_1 <= vrm_32;  //load next 4 bytes for start of next row
           end
         end
 
