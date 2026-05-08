@@ -59,21 +59,20 @@ module VDP_SUPER_HIGH_RES (
         725: begin  //cycle cx[1:0] == 1
           if (last_line) begin
             vrm_32_1 <= vrm_32;
-            // for the last line of frame (not visible)
-            //capture the data - assume this for first pixels
-            //top/left corner
-            // this is not 'apparently' impacted by addr change in 724
           end
         end
 
         ext_reg_view_port_start_x: begin  //default: frame-width -1
           if (on_a_visible_line) super_high_res_palette_addr <= vrm_32_1[7:0];
-          //first pixel of each row, including first row???
+          //first pixel of each row, including first row
         end
 
         ext_reg_view_port_end_x: begin
           super_high_res_palette_addr <= REG_R7_FRAME_COL;
-          vrm_32_1 <= vrm_32;  //load next 4 bytes for start of next row??
+          if (super_res_visible) begin
+            vrm_32_1 <= vrm_32;  //load next 4 bytes for start of next row
+          end
+
         end
 
         default begin
